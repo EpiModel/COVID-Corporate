@@ -1,13 +1,15 @@
 
 ##
-## COVID-19 Cruise Ship Network Model
+## COVID-19 Corporate Network Model
 ## Network Parameters and Model
 ##
 ## Authors: Samuel M. Jenness
-## Date: February 2020
+## Date: February 2021
 ##
 
 library("EpiModelCOVID")
+
+
 
 
 # Varying Parameters (Table 3) --------------------------------------------

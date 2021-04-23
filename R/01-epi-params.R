@@ -1,10 +1,10 @@
 
 ##
-## COVID-19 Cruise Ship Network Model
+## COVID-19 Corporate Network Model
 ## Model Parameters
 ##
 ## Authors: Samuel M. Jenness
-## Date: February 2020
+## Date: February 2021
 ##
 
 # Mortality Rates ---------------------------------------------------------
