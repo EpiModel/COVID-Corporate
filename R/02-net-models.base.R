@@ -11,6 +11,68 @@ library("EpiModelCOVID")
 
 
 
+# Simple 3-layer Network Model --------------------------------------------
+
+## For use in testing only ##
+
+# Set network
+n <- 1000
+nw <- network_initialize(n)
+
+
+## Within household network
+md.hh <- 2.5
+target.stats.hh <- md.hh * n/2
+
+formation.hh <- ~edges
+
+coef.diss.hh <- dissolution_coefs(dissolution = ~offset(edges), duration = 1e5)
+
+est.hh <- netest(nw, formation.hh, target.stats.hh, coef.diss.hh,
+                 set.control.ergm = control.ergm(MCMLE.maxit = 500))
+summary(est.hh)
+
+dx.hh <- netdx(est.hh, nsims = 25, ncores = 5, nsteps = 1000, dynamic = TRUE,
+               set.control.ergm = control.simulate.ergm(MCMC.burnin = 1e6))
+print(dx.hh)
+
+
+## Within office network
+md.oo <- 5
+target.stats.oo <- md.oo * n/2
+
+formation.oo <- ~edges
+
+coef.diss.oo <- dissolution_coefs(dissolution = ~offset(edges), duration = 1e5)
+
+est.oo <- netest(nw, formation.oo, target.stats.oo, coef.diss.oo,
+                 set.control.ergm = control.ergm(MCMLE.maxit = 500))
+summary(est.oo)
+
+dx.oo <- netdx(est.oo, nsims = 25, ncores = 5, nsteps = 1000, dynamic = TRUE,
+               set.control.ergm = control.simulate.ergm(MCMC.burnin = 1e6))
+print(dx.oo)
+
+
+## Community network
+md.cc <- 2
+target.stats.cc <- md.cc * n/2
+
+formation.cc <- ~edges
+
+coef.diss.cc <- dissolution_coefs(dissolution = ~offset(edges), duration = 1)
+
+est.cc <- netest(nw, formation.cc, target.stats.cc, coef.diss.cc,
+                 set.control.ergm = control.ergm(MCMLE.maxit = 500))
+summary(est.cc)
+
+dx.cc <- netdx(est.cc, nsims = 1000, dynamic = FALSE,
+               set.control.ergm = control.simulate.ergm(MCMC.burnin = 1e6))
+print(dx.cc)
+
+
+
+
 
 # Varying Parameters (Table 3) --------------------------------------------
 
