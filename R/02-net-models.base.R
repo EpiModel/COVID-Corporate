@@ -19,6 +19,18 @@ library("EpiModelCOVID")
 n <- 1000
 nw <- network_initialize(n)
 
+age <- round(rnorm(n, 40, 21), 1)
+age <- pmax(age, 0)
+age <- pmin(age, 99)
+hist(age)
+
+age.breaks <- seq(0, 100, 10)
+age.grp <- cut(age, age.breaks, labels = FALSE, right = FALSE)
+age.grp
+data.frame(age, age.grp)
+
+nw <- set_vertex_attribute(nw, "age", age)
+nw <- set_vertex_attribute(nw, "age.grp", age.grp)
 
 ## Within household network
 md.hh <- 2.5

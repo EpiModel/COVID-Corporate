@@ -9,87 +9,90 @@
 
 library("EpiModelCOVID")
 
+
 # Read in fitted network models
-est.pre <- readRDS("est/est.pre.rds")
-est.post <- readRDS("est/est.post.base.rds")
-est <- c(est.pre, est.post)
+est <- readRDS("data/input/est.simple.rds")
 
 # Model parameters
-source("01.epi-params.R")
-param <- param.net(inf.prob.pp = 0.11,
-                   inf.prob.pp.inter.rr = 0.6,
-                   inf.prob.pp.inter.time = Inf,
-                   act.rate.pp = 5,
-                   act.rate.pp.inter.rr = 1,
-                   act.rate.pp.inter.time = Inf,
-                   inf.prob.pc = 0.11,
-                   inf.prob.pc.inter.rr = 0.6,
-                   inf.prob.pc.inter.time = 15,
-                   act.rate.pc = 1,
-                   act.rate.pc.inter.rr = 1,
-                   act.rate.pc.inter.time = Inf,
-                   inf.prob.cc = 0.11,
-                   inf.prob.cc.inter.rr = 0.6,
-                   inf.prob.cc.inter.time = 15,
-                   act.rate.cc = 1,
-                   act.rate.cc.inter.rr = 1,
-                   act.rate.cc.inter.time = Inf,
+source("R/01-epi-params.R")
+param <- param.net(inf.prob = c(0.11, 0.11, 0.11),
+                   act.rate = c(5, 1, 1),
+                   inf.prob.inter.rr = c(0.6, 0.6, 0.6),
+                   inf.prob.inter.time = c(Inf, 15, 15),
+                   act.rate.inter.rr = c(1, 1, 1),
+                   act.rate.inter.time = c(Inf, Inf, Inf),
                    inf.prob.a.rr = 0.5,
-                   prop.clinical = c(0.40, 0.25, 0.37, 0.42, 0.51, 0.59, 0.72, 0.76),
+
                    act.rate.dx.inter.rr = 0.1,
-                   act.rate.dx.inter.time = 15,
-                   act.rate.sympt.inter.rr = 0.1,
-                   act.rate.sympt.inter.time = 15,
-                   network.lockdown.time = 15,
+                   act.rate.dx.inter.time = 1,
+                   act.rate.sympt.inter.rr = 0.5,
+                   act.rate.sympt.inter.time = 1,
+
+                   prop.clinical = c(0.40, 0.25, 0.37, 0.42, 0.51, 0.59, 0.72, 0.76),
+                   prop.hospit = c(0, 0, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1),
+
                    ea.rate = 1/4.0,
                    ar.rate = 1/5.0,
                    eip.rate = 1/4.0,
                    ipic.rate = 1/1.5,
                    icr.rate = 1/3.5,
+                   ich.rate = 1/3.5,
+                   hr.rate = 1/7,
+
                    pcr.sens = 0.8,
-                   dx.rate.sympt = c(rep(0, 15), rep(0.2, 5), rep(0.3, 5), rep(0.8, 100)),
-                   dx.rate.other = c(rep(0, 15), rep(0, 5), rep(0.07, 5), rep(0.19, 100)),
-                   allow.rescreen = FALSE,
+                   dx.rate.sympt = 0.1,
+                   dx.rate.other = 0.01,
+                   allow.rescreen = TRUE,
+
+                   vax.start = Inf,
+                   vax1.rate = 0.01,
+                   vax2.interval = 21 + 14,
+                   vax1.rr.infect = 0.75,
+                   vax2.rr.infect = 0.25,
+                   vax.rr.clinical = 0.05,
+
+                   a.rate = mean(mr_vec),
+                   arrival.age = 0,
                    mort.rates = mr_vec,
-                   mort.dis.mult = 180,
-                   exit.rate.pass = 0,
-                   exit.rate.crew = 0,
-                   exit.elig.status = c("ip", "ic"),
-                   exit.require.dx = FALSE)
+                   mort.dis.mult = 180)
 
 # Initial conditions
-init <- init.net(e.num.pass = 8,
-                 e.num.crew = 0)
+init <- init.net(e.num = 100)
 
 # Control settings
-# devtools::load_all("~/Dropbox/Dev/EpiModelCOVID")
-control <- control.net(nsteps = 31,
-                       nsims = 100,
-                       ncores = 4,
-                       initialize.FUN = init_covid_ship,
-                       aging.FUN = aging_covid_ship,
-                       departures.FUN = deaths_covid_ship,
-                       offload.FUN = offload_covid_ship,
-                       arrivals.FUN = NULL,
+pkgload::load_all("~/git/EpiModelCOVID")
+control <- control.net(nsteps = 100,
+                       nsims = 1,
+                       ncores = 1,
+                       initialize.FUN = init_covid_corporate,
+                       aging.FUN = aging_covid,
+                       departures.FUN = deaths_covid_corporate,
+                       arrivals.FUN = arrival_covid_corporate,
                        edges_correct.FUN = NULL,
-                       resim_nets.FUN = resim_nets_covid_ship,
-                       infection.FUN = infect_covid_ship,
-                       recovery.FUN = progress_covid_ship,
-                       dx.FUN = dx_covid_ship,
-                       get_prev.FUN = prevalence_covid_ship,
+                       resim_nets.FUN = resim_nets_covid_corporate,
+                       infection.FUN = infect_covid_corporate,
+                       recovery.FUN = progress_covid,
+                       dx.FUN = dx_covid,
+                       vax.FUN = vax_covid,
+                       prevalence.FUN = prevalence_covid_corporate,
                        module.order = c("aging.FUN",
                                         "departures.FUN",
-                                        "offload.FUN",
+                                        "arrivals.FUN",
                                         "resim_nets.FUN",
                                         "infection.FUN",
                                         "recovery.FUN",
                                         "dx.FUN",
-                                        "get_prev.FUN"),
-                       depend = TRUE,
-                       skip.check = TRUE)
+                                        "vax.FUN",
+                                        "prevalence.FUN"),
+                       resimulate.networks = TRUE,
+                       skip.check = TRUE,
+                       tergmLite = TRUE)
 
 sim <- netsim(est, param, init, control)
 # print(sim)
+
+
+plot(sim, y = c("s.num", "e.num", "a.num"))
 
 sim <- mutate_epi(sim, se.cuml = cumsum(se.flow),
                        dx.cuml = cumsum(nDx),
@@ -97,65 +100,4 @@ sim <- mutate_epi(sim, se.cuml = cumsum(se.flow),
                        totI = e.num + a.num + ip.num + ic.num)
 df <- as.data.frame(sim, out = "mean")
 names(df)
-
-df$dx.cuml
-summary(as.numeric(tail(sim$epi$dx.cuml, 1)))
-df$dx.pos.cuml
-max(pos.tests.day)
-pdf("analysis/Fig-Calibration1.pdf", height = 6, width = 10)
-par(mar = c(3,3,2,1), mgp = c(2,1,0))
-plot(sim, y = c("se.cuml", "dx.pos.cuml"), qnts = 0.5, legend = FALSE, mean.smooth = TRUE,
-     main = "Model Calibration", xlab = "Day", ylab = "Cumulative Count")
-pal <- RColorBrewer::brewer.pal(3, "Set1")
-legend("topleft", legend = c("Fitted Diagnoses", "Fitted Incidence", "Empirical Diagnoses"),
-       lty = c(1,1,2), lwd = 2, col = c(pal[1:2], 1), bty = "n")
-lines(pos.tests.day, lty = 2, lwd = 2)
-dev.off()
-
-summary(colSums(sim$epi$d.ic.flow))
-
-sum(df$d.ic.flow)
-sum(df$se.flow)
-summary(colSums(sim$epi$se.flow))
-
-# Plot outcomes
-par(mar = c(3,3,1,1), mgp = c(2,1,0))
-pal <- RColorBrewer::brewer.pal(9, "Set1")
-pal <- rainbow(9)
-pal <- 1:9
-
-plot(sim,
-     mean.col = pal, mean.lwd = 1, mean.smooth = TRUE,
-     qnts = 1, qnts.col = pal, qnts.alpha = 0.25, qnts.smooth = TRUE,
-     legend = TRUE)
-
-plot(sim, y = c("i.pass.num", "i.crew.num"),
-     mean.col = pal, mean.lwd = 1, mean.smooth = TRUE,
-     qnts = 1, qnts.col = pal, qnts.alpha = 0.25, qnts.smooth = TRUE,
-     legend = TRUE)
-
-plot(sim, y = c("se.flow", "ea.flow", "ar.flow"),
-     mean.col = pal, mean.lwd = 1, mean.smooth = TRUE,
-     qnts.col = pal, qnts.alpha = 0.25, qnts.smooth = TRUE,
-     legend = TRUE)
-
-plot(sim, y = c("se.flow", "eip.flow", "ipic.flow", "icr.flow"),
-     mean.col = pal, mean.lwd = 1, mean.smooth = TRUE,
-     qnts.col = pal, qnts.alpha = 0.25, qnts.smooth = TRUE,
-     legend = TRUE)
-
-plot(sim, y = c("se.pp.flow", "se.pc.flow", "se.cp.flow", "se.cc.flow"),
-     mean.col = pal, mean.lwd = 2, mean.smooth = FALSE, qnts = FALSE,
-     legend = TRUE)
-
-plot(sim, y = "d.flow",
-     mean.col = pal, mean.lwd = 1, mean.smooth = TRUE, qnts = FALSE,
-     qnts.col = pal, qnts.alpha = 0.25, qnts.smooth = TRUE,
-     legend = TRUE)
-
-plot(sim, y = "Rt", mean.smooth = FALSE)
-plot(sim, y = "se.cuml")
-abline(h = n.pass + n.crew)
-
-df$se.flow
-cumsum(df$se.flow)
+names(df)
