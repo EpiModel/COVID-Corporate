@@ -25,3 +25,14 @@ mr_vec <- rep(mr_pp_pd, times = age_spans)
 
 
 # Epi Curve ---------------------------------------------------------------
+
+
+
+# CorpMix Data Analysis ---------------------------------------------------
+
+# overall mean degree
+md <- readRDS("data/input/df_contact_by_location.RDS")
+mix <- readRDS("data/input/df_contact_proportion_by_location.RDS")
+
+md
+mix

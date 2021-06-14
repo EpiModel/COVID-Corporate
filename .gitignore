@@ -39,4 +39,4 @@ vignettes/*.pdf
 .Renviron
 .DS_Store
 renv/
-data/
+data/input/est.*
