@@ -38,7 +38,7 @@ md <- readRDS("data/input/df_contact_by_location.RDS")
 mix <- readRDS("data/input/df_contact_proportion_by_location.RDS")
 
 
-# contruct processed mean degree file
+## construct processed mean degree file ##
 md
 
 # categorize all non-work and home as community
@@ -48,14 +48,26 @@ md2$contact_location <- ifelse(md2$contact_location != "Work" &
                                "Community", md2$contact_location)
 md2
 
+# recatgorize age
+md2$age_participant <- ifelse(md2$age_participant %in% c("60-69", "70+"),
+                              "60+", md2$age_participant)
+md2
+
 # sum up contacts by grouped locations
 md3 <- summarise(
   group_by(md2, contact_location, age_participant),
   contacts = sum(count_contacts)
 )
+md3
+
+# Count up numbers per group
+n <- summarise(
+  group_by(md2[md2$contact_location == "Work", ], age_participant),
+  n = sum(n_age)
+)$n
 
 # Add counts per age group
-md3$n <- rep(md2$n_age[md2$contact_location == "Work"], 3)
+md3$n <- rep(n, 3)
 md3
 
 # calculate overall counts (for edges terms)
@@ -71,14 +83,14 @@ md3.oa <- data.frame(
 md3.oa
 
 md3 <- rbind(md3, md3.oa)
-print(md3, 100)
+md3
 
 # add per-capita rates
 md3$rate <- md3$contacts / md3$n
 md3
 
 # Add confidence intervals on the rates
-md3 <- as.data.frame(md3)
+# md3 <- as.data.frame(md3)
 md3$rate.lcl <- rep(NA, nrow(md3))
 md3$rate.ucl <- rep(NA, nrow(md3))
 for (i in 1:nrow(md3)) {
@@ -87,11 +99,43 @@ for (i in 1:nrow(md3)) {
 }
 md3
 
+
 saveRDS(md3, file = "data/input/cm2.meandegree.rds")
 
+## construct processed mixing data file
+head(mix)
 
-mix
+mix2 <- mix
+mix2$contact_location <- ifelse(mix2$contact_location != "Work" &
+                                  mix2$contact_location != "Home",
+                                "Community", mix2$contact_location)
+mix2
 
+# recatgorize age
+mix2$age_participant <- ifelse(mix2$age_participant %in% c("60-69", "70+"),
+                               "60+", mix2$age_participant)
+mix2$age_contact <- ifelse(mix2$age_contact %in% c("<1", "1-9", "10-19"),
+                           "<20", mix2$age_contact)
+mix2$age_contact <- ifelse(mix2$age_contact %in% c("60-69", "70+"),
+                           "60+", mix2$age_contact)
 
+mix2
 
-mix
+# sum up contacts by grouped locations
+mix3 <- summarise(
+  group_by(mix2, contact_location, age_participant, age_contact),
+  contacts = sum(tot_contacts_loc_age)
+)
+mix3
+
+mix4 <- left_join(mix3, md3, by = c("contact_location", "age_participant"))
+mix4
+
+mix4 <- select(mix4, -n, -rate, -rate.lcl, -rate.ucl)
+mix4 <- rename(mix4, contacts.grp = contacts.x, contacts.all = contacts.y)
+mix4
+
+mix4$grp.prop <- mix4$contacts.grp / mix4$contacts.all
+mix4
+
+saveRDS(mix4, file = "data/input/cm2.mixing.rds")
