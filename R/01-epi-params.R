@@ -138,4 +138,13 @@ mix4
 mix4$grp.prop <- mix4$contacts.grp / mix4$contacts.all
 mix4
 
+# Add confidence intervals on the proportions
+mix4$grp.prop.lcl <- rep(NA, nrow(mix4))
+mix4$grp.prop.ucl <- rep(NA, nrow(mix4))
+for (i in 1:nrow(mix4)) {
+  mix4$grp.prop.lcl[i] <- binom.test(mix4$contacts.grp[i], mix4$contacts.all[i])$conf.int[1]
+  mix4$grp.prop.ucl[i] <- binom.test(mix4$contacts.grp[i], mix4$contacts.all[i])$conf.int[2]
+}
+mix4
+
 saveRDS(mix4, file = "data/input/cm2.mixing.rds")
