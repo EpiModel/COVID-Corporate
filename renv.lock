@@ -25,9 +25,9 @@
       "RemoteHost": "api.github.com",
       "RemoteRepo": "EpiModel",
       "RemoteUsername": "statnet",
-      "RemoteRef": "master",
-      "RemoteSha": "e4222589a74f0ecb52c509c06f6fcb720a073187",
-      "Hash": "66bc619d96e531bcbfcc1c4fd8001ce0"
+      "RemoteRef": "HEAD",
+      "RemoteSha": "3c3c345bd01d13ff99149ecb5ccc17bda4b0a751",
+      "Hash": "6d2500000f3ef3e8c8dac96e91a8633b"
     },
     "EpiModelCOVID": {
       "Package": "EpiModelCOVID",
@@ -162,16 +162,10 @@
     },
     "ergm": {
       "Package": "ergm",
-      "Version": "4.0-6411",
-      "Source": "GitHub",
-      "Remotes": "github::statnet/statnet.common@master,\ngithub::statnet/rle@master, github::statnet/network@master,\ngithub::statnet/tergm@master, github::statnet/ergm.count@master",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "ergm",
-      "RemoteUsername": "statnet",
-      "RemoteRef": "master",
-      "RemoteSha": "1c1ecf10914104595457f2210b670f6f653a93ce",
-      "Hash": "608c11c6f028536de0ec0f1bbbbeca4d"
+      "Version": "4.0.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "a780261b59df31cc7ef48efa02519ca9"
     },
     "fansi": {
       "Package": "fansi",
@@ -301,28 +295,17 @@
     },
     "network": {
       "Package": "network",
-      "Version": "1.17.1-685",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "network",
-      "RemoteUsername": "statnet",
-      "RemoteRef": "master",
-      "RemoteSha": "832d83aa55fb1e31797fb0496ebb780d4466e723",
-      "Hash": "ec90395821c460102459048aa582766e"
+      "Version": "1.17.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "a3a94709afe998d2745847ce69c6c5d9"
     },
     "networkDynamic": {
       "Package": "networkDynamic",
-      "Version": "0.10.2",
-      "Source": "GitHub",
-      "Remotes": "github::statnet/network@master",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "networkDynamic",
-      "RemoteUsername": "statnet",
-      "RemoteRef": "master",
-      "RemoteSha": "e275b9444f999f723eb8ca0b38721d7fa083b1e6",
-      "Hash": "b8dd93add44bb8946985f1993909a2c9"
+      "Version": "0.11.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "5afdc90e4f1e49b06d406e48bea01c4f"
     },
     "nlme": {
       "Package": "nlme",
@@ -382,15 +365,10 @@
     },
     "rle": {
       "Package": "rle",
-      "Version": "0.9.2-234",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "rle",
-      "RemoteUsername": "statnet",
-      "RemoteRef": "master",
-      "RemoteSha": "c387d82eaf7bbee91359acf21be187ccf5bc8833",
-      "Hash": "b1c8673cb6087580392ac99cde6cb33f"
+      "Version": "0.9.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "f84d8f430c496bb5c6769fed95705562"
     },
     "robustbase": {
       "Package": "robustbase",
@@ -422,28 +400,23 @@
     },
     "statnet.common": {
       "Package": "statnet.common",
-      "Version": "4.5.0-362",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "statnet.common",
-      "RemoteUsername": "statnet",
-      "RemoteRef": "master",
-      "RemoteSha": "940fe49bd53eccdde3565b0904c96f82f6a2e5ae",
-      "Hash": "62a11f68f63c5416eb6e7c3a0294c0dd"
+      "Version": "4.5.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "caf9dc2f33cc6ea4b1930cd71ee29d10"
     },
     "tergm": {
       "Package": "tergm",
-      "Version": "4.0.0-2232",
+      "Version": "4.0-2347",
       "Source": "GitHub",
       "Remotes": "github::statnet/statnet.common@master,\ngithub::statnet/network@master,\ngithub::statnet/networkDynamic@master,\ngithub::statnet/ergm@master",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "tergm",
       "RemoteUsername": "statnet",
-      "RemoteRef": "master",
-      "RemoteSha": "603814a66b6f6dde44219eb0bb66d768a06f22eb",
-      "Hash": "b21536ab4247834d09e1fc57ba496496"
+      "RemoteRef": "HEAD",
+      "RemoteSha": "366c7713c70ae5ef05a6a3d1d32c33cb18ad27f2",
+      "Hash": "cc2578cc006b8f07c42ab3b493603ed0"
     },
     "tergmLite": {
       "Package": "tergmLite",
@@ -454,9 +427,9 @@
       "RemoteHost": "api.github.com",
       "RemoteRepo": "tergmLite",
       "RemoteUsername": "statnet",
-      "RemoteRef": "master",
-      "RemoteSha": "c7d8d6856981c4d25010bca40005b327a1d974dd",
-      "Hash": "a4bf56513fbf7c5e3e1b3307f70bb79c"
+      "RemoteRef": "HEAD",
+      "RemoteSha": "527529f134487f30360a835343e69fc91c94d93a",
+      "Hash": "b8c000912369aef5177626e91b46956c"
     },
     "tibble": {
       "Package": "tibble",
