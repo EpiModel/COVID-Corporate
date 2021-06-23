@@ -32,15 +32,16 @@
     },
     "EpiModel": {
       "Package": "EpiModel",
-      "Version": "2.0.6",
+      "Version": "2.1.0",
       "Source": "GitHub",
+      "Remotes": "github::statnet/tergm@master, github::statnet/tergmLite@master",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "EpiModel",
       "RemoteUsername": "statnet",
       "RemoteRef": "HEAD",
-      "RemoteSha": "daae94bcbd24b17f556d79b34a855159d5794bbf",
-      "Hash": "3c41e754365952732e6c72c730ddf947"
+      "RemoteSha": "502330ac71653e0edcc1b79d09f4b9812a7c31a8",
+      "Hash": "1109d093ef0dad780b49016409c724db"
     },
     "EpiModelCOVID": {
       "Package": "EpiModelCOVID",
@@ -137,6 +138,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "2368dde18d8ef1ca933e7e2eea3ece57"
+    },
+    "cachem": {
+      "Package": "cachem",
+      "Version": "1.0.5",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "5346f76a33eb7417812c270b04a5581b"
     },
     "callr": {
       "Package": "callr",
@@ -273,10 +281,10 @@
     },
     "ergm": {
       "Package": "ergm",
-      "Version": "3.11.0",
+      "Version": "4.0.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "665ec8b000f3d6159c047f07a9e4cc8a"
+      "Hash": "a780261b59df31cc7ef48efa02519ca9"
     },
     "evaluate": {
       "Package": "evaluate",
@@ -298,6 +306,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "c98eb5133d9cb9e1622b8691487f11bb"
+    },
+    "fastmap": {
+      "Package": "fastmap",
+      "Version": "1.1.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "77bd60a6157420d4ffa93b27cf6a58b8"
     },
     "forcats": {
       "Package": "forcats",
@@ -467,12 +482,12 @@
       "Repository": "CRAN",
       "Hash": "3471fb65971f1a7b2d4ae7848cf2db8d"
     },
-    "lpSolve": {
-      "Package": "lpSolve",
-      "Version": "5.6.15",
+    "lpSolveAPI": {
+      "Package": "lpSolveAPI",
+      "Version": "5.5.2.0-17.7",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "90c3bc497e7d5ec9dbb863621be15abb"
+      "Hash": "f21a3e5a2844bf0f2f4299a2882e5d9b"
     },
     "lubridate": {
       "Package": "lubridate",
@@ -494,6 +509,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "61e4a10781dd00d7d81dd06ca9b94e95"
+    },
+    "memoise": {
+      "Package": "memoise",
+      "Version": "2.0.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "a0bc51650201a56d00a4798523cc91b3"
     },
     "mgcv": {
       "Package": "mgcv",
@@ -525,17 +547,17 @@
     },
     "network": {
       "Package": "network",
-      "Version": "1.16.1",
+      "Version": "1.17.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "11a33fc54e67aabc4d8bccc0f70229ea"
+      "Hash": "a3a94709afe998d2745847ce69c6c5d9"
     },
     "networkDynamic": {
       "Package": "networkDynamic",
-      "Version": "0.10.1",
+      "Version": "0.11.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "e5dc15cd4d70701f7e99ce95f53c7466"
+      "Hash": "5afdc90e4f1e49b06d406e48bea01c4f"
     },
     "nlme": {
       "Package": "nlme",
@@ -728,10 +750,10 @@
     },
     "statnet.common": {
       "Package": "statnet.common",
-      "Version": "4.4.1",
+      "Version": "4.5.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "907fc94133d6ec985d959e4210e41efc"
+      "Hash": "caf9dc2f33cc6ea4b1930cd71ee29d10"
     },
     "stringi": {
       "Package": "stringi",
@@ -756,17 +778,29 @@
     },
     "tergm": {
       "Package": "tergm",
-      "Version": "3.7.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "835da1780185c2e546fffe719312c5a8"
+      "Version": "4.0-2347",
+      "Source": "GitHub",
+      "Remotes": "github::statnet/statnet.common@master,\ngithub::statnet/network@master,\ngithub::statnet/networkDynamic@master,\ngithub::statnet/ergm@master",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "tergm",
+      "RemoteUsername": "statnet",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "366c7713c70ae5ef05a6a3d1d32c33cb18ad27f2",
+      "Hash": "cc2578cc006b8f07c42ab3b493603ed0"
     },
     "tergmLite": {
       "Package": "tergmLite",
-      "Version": "2.2.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "330a5fd83c328ff24106dfd26fbc4ee0"
+      "Version": "2.5.0",
+      "Source": "GitHub",
+      "Remotes": "github::statnet/rle@master,\ngithub::statnet/statnet.common@master,\ngithub::statnet/network@master,\ngithub::statnet/networkDynamic@master,\ngithub::statnet/ergm@master, github::statnet/tergm@master,\ngithub::statnet/EpiModel@master",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "tergmLite",
+      "RemoteUsername": "statnet",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "527529f134487f30360a835343e69fc91c94d93a",
+      "Hash": "b8c000912369aef5177626e91b46956c"
     },
     "tibble": {
       "Package": "tibble",
