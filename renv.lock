@@ -45,15 +45,16 @@
     },
     "EpiModelCOVID": {
       "Package": "EpiModelCOVID",
-      "Version": "1.0.0",
+      "Version": "1.1.1",
       "Source": "GitHub",
+      "Remotes": "github::statnet/tergm@master,\ngithub::statnet/tergmLite@master,\ngithub::statnet/EpiModel@master",
       "RemoteType": "github",
       "RemoteHost": "api.github.com",
       "RemoteRepo": "EpiModelCOVID",
       "RemoteUsername": "EpiModel",
-      "RemoteRef": "Corporate",
-      "RemoteSha": "576ed0c8b31700b82ffddbee9706e73670141122",
-      "Hash": "b7f87765cccfb8226970a82ea07be6cb"
+      "RemoteRef": "HEAD",
+      "RemoteSha": "0d24ca52a63d34d8124b62c7cd36c9a00fd3095c",
+      "Hash": "2e438780889a365ddcf996f336d08f58"
     },
     "MASS": {
       "Package": "MASS",
