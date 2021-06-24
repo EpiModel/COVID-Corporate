@@ -62,7 +62,7 @@ param <- param.net(inf.prob = c(0.11, 0.11, 0.11),
 init <- init.net(e.num = 100)
 
 # Control settings
-pkgload::load_all("~/git/EpiModelCOVID")
+# pkgload::load_all("~/git/EpiModelCOVID")
 control <- control.net(nsteps = 100,
                        nsims = 1,
                        ncores = 1,
@@ -89,13 +89,7 @@ control <- control.net(nsteps = 100,
                        resimulate.network = TRUE,
                        skip.check = TRUE,
                        save.nwstats = TRUE,
-                       tergmLite = TRUE,
-                       nwstats.formula.1 = "formation",
-                       nwstats.formula.2 = "formation",
-                       nwstats.formula.3 = "formation",
-                       mcmc.control.tergm.1 = control.simulate.formula.tergm(),
-                       mcmc.control.tergm.2 = control.simulate.formula.tergm(),
-                       mcmc.control.ergm.3 = control.simulate.formula())
+                       tergmLite = TRUE)
 
 sim <- netsim(est, param, init, control)
 # print(sim)

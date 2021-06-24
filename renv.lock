@@ -788,14 +788,14 @@
       "Package": "tergmLite",
       "Version": "2.5.0",
       "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteUsername": "statnet",
-      "RemoteRepo": "tergmLite",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "947332a109c3e9cdc1306afeee1d1629febb25aa",
-      "RemoteHost": "api.github.com",
       "Remotes": "github::statnet/tergm@master, github::statnet/EpiModel@master",
-      "Hash": "185f5e82d9320c8b736cd42d981f3933"
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "tergmLite",
+      "RemoteUsername": "statnet",
+      "RemoteRef": "master",
+      "RemoteSha": "491af90ec9321e8eae1c5b7adf5daf2acda924ac",
+      "Hash": "557db1452dd778f0903a9436cf7b39ae"
     },
     "tibble": {
       "Package": "tibble",
