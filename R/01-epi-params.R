@@ -95,3 +95,42 @@ mix
 
 
 mix
+
+# Population proportions from census data --------------------------------------
+
+library(dplyr)
+
+data <- read.csv("~/git/COVID-Corporate/data/input/ACS Census Data 2019.csv")
+
+data <- data[1:20, ]
+data <- data[-2, ]
+
+data <- data %>%
+  rename(estimate = United.States..Total..Estimate)
+
+data <- data %>%
+  mutate(estimate = gsub(",", "", data$estimate)) %>%
+  mutate(estimate = as.numeric(estimate))
+
+total <- data$estimate[1]
+
+data <- data[-1, ]
+
+eightfive <- data %>%
+  slice_tail(n = 1) %>%
+  mutate(per_year = estimate) %>%
+  mutate(age = 85)
+
+data <- data %>%
+  mutate(per_year = estimate / 5) %>%
+  slice(rep(1:(n()-1), each = 5)) %>%
+  mutate(age = 0:84)
+
+data <- rbind(data, eightfive) %>%
+  mutate(prop = (per_year / total))
+
+pop_prop <- data %>%
+  select(age, prop)
+
+saveRDS(pop_prop, file = "data/input/pop_prop.rds")
+
