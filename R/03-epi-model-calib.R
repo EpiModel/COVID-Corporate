@@ -45,7 +45,7 @@ param <- param.net(inf.prob = c(0.11, 0.11, 0.11),
                    allow.rescreen = TRUE,
 
                    vax.start = Inf,
-                   vax1.rate = 0.01,
+                   vax1.rate = c(0, 0, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1),
                    vax2.interval = 21,
                    vax1.rr.infect = 0.75,
                    vax2.rr.infect = 0.25,
