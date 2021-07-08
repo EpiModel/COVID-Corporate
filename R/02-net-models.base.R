@@ -44,9 +44,20 @@ est.hh <- netest(nw, formation.hh, target.stats.hh, coef.diss.hh,
                  set.control.ergm = control.ergm(MCMLE.maxit = 500))
 summary(est.hh)
 
+# est <- netest(nw, formation, target.stats, coef.diss, edapprox = TRUE,
+#               set.control.ergm = control.ergm(MCMC.burnin=1e7, MCMC.interval=1e7,
+#                                               MCMC.samplesize = 20000,
+#                                               init.MPLE.samplesize = 1e8,
+#                                               SAN.control = control.san(SAN.nsteps = 1e8)))
+
 dx.hh <- netdx(est.hh, nsims = 25, ncores = 5, nsteps = 1000, dynamic = TRUE,
                set.control.ergm = control.simulate.ergm(MCMC.burnin = 1e6))
 print(dx.hh)
+
+# dx <- netdx(est, nsims = 1, nsteps = 1000, keep.tedgelist = TRUE,
+#             set.control.ergm = control.simulate.stergm(MCMC.init.maxchanges = 1e8,
+#                                                        MCMC.burnin.min = 1.5e5,
+#                                                        MCMC.burnin.max = 1.5e5))
 
 
 ## Within office network
