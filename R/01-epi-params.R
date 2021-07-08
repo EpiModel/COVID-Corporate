@@ -151,7 +151,7 @@ saveRDS(mix4, file = "data/input/cm2.mixing.rds")
 
 library(dplyr)
 
-data <- read.csv("~/git/COVID-Corporate/data/input/ACS Census Data 2019.csv")
+data <- read.csv("~/git/COVID-Corporate/data/input/ACSCensusData2019.csv")
 
 data <- data[1:20, ]
 data <- data[-2, ]
