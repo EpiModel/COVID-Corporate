@@ -184,3 +184,19 @@ pop_prop <- data %>%
   select(age, prop)
 
 saveRDS(pop_prop, file = "data/input/pop_prop.rds")
+
+# Hospitalization data ---------------------------------------------------------
+
+hospit <-
+  read.csv("~/git/COVID-Corporate/data/input/prop_hospit_estimates.csv")
+
+hospit <- hospit[1:11, ] %>%
+  mutate(total = hospitalized + not_hospitalized) %>%
+  mutate(prop = hospitalized / total) %>%
+  select(age_decade, prop)
+
+hospit <- hospit[1:8, ]
+
+prop.hospit <- hospit$prop
+
+saveRDS(prop.hospit, file = "data/input/prop.hospit.rds")
