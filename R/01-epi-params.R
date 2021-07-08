@@ -110,30 +110,52 @@ mix2$contact_location <- ifelse(mix2$contact_location != "Work" &
                                   mix2$contact_location != "Home",
                                 "Community", mix2$contact_location)
 mix2
+str(mix2)
+
+mix2$participant_age <- as.character(mix2$participant_age)
+str(mix2)
 
 # recatgorize age
-mix2$age_participant <- ifelse(mix2$age_participant %in% c("60-69", "70+"),
-                               "60+", mix2$age_participant)
-mix2$age_contact <- ifelse(mix2$age_contact %in% c("<1", "1-9", "10-19"),
-                           "<20", mix2$age_contact)
-mix2$age_contact <- ifelse(mix2$age_contact %in% c("60-69", "70+"),
-                           "60+", mix2$age_contact)
+mix2$participant_age <- ifelse(mix2$participant_age %in% c("60-69", "70+"),
+                               "60+", mix2$participant_age)
+mix2$contact_age <- ifelse(mix2$contact_age %in% c("<1", "1-9", "10-19"),
+                           "<20", mix2$contact_age)
+mix2$contact_age <- ifelse(mix2$contact_age %in% c("60-69", "70+"),
+                           "60+", mix2$contact_age)
 
 mix2
 
 # sum up contacts by grouped locations
 mix3 <- summarise(
-  group_by(mix2, contact_location, age_participant, age_contact),
-  contacts = sum(tot_contacts_loc_age)
+  group_by(mix2, contact_location, participant_age, contact_age),
+  contacts = sum(count_contacts_location)
 )
 mix3
 
-mix4 <- left_join(mix3, md3, by = c("contact_location", "age_participant"))
+mix[mix$contact_location == "Home" & mix$participant_age == "20-29", ]
+
+mix3[mix3$contact_location == "Home" & mix3$participant_age == "20-29", ]
+sum(mix3[mix3$contact_location == "Home" & mix3$participant_age == "20-29",]$contacts)
+
+md3
+md[md$contact_location == "Home", ]
+
+# unclear why total contacts per age per location are inconsistent
+# for example 712 in md versus 576 in mix for Home 20-29
+
+md4 <- md3
+md4 <- rename(md4, participant_age = age_participant)
+
+# need to merge with md because need total contacts per age group per location
+
+mix4 <- left_join(mix3, md4, by = c("contact_location", "participant_age"))
 mix4
 
 mix4 <- select(mix4, -n, -rate, -rate.lcl, -rate.ucl)
 mix4 <- rename(mix4, contacts.grp = contacts.x, contacts.all = contacts.y)
 mix4
+
+
 
 mix4$grp.prop <- mix4$contacts.grp / mix4$contacts.all
 mix4
@@ -147,4 +169,5 @@ for (i in 1:nrow(mix4)) {
 }
 mix4
 
-saveRDS(mix4, file = "data/input/cm2.mixing.rds")
+# saveRDS(mix4, file = "data/input/cm2.mixing.rds")
+
