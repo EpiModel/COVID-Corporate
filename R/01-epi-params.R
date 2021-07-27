@@ -34,73 +34,71 @@ library("tidyverse")
 options(tibble.print_max = 1000)
 
 # overall mean degree
-md <- readRDS("data/input/df_contact_by_location.RDS")
+# md <- readRDS("data/input/df_contact_by_location.RDS")
 mix <- readRDS("data/input/df_contact_proportion_by_location.RDS")
 
 
-## construct processed mean degree file ##
-md
-
-# categorize all non-work and home as community
-md2 <- md
-md2$contact_location <- ifelse(md2$contact_location != "Work" &
-                                 md2$contact_location != "Home",
-                               "Community", md2$contact_location)
-md2
-
-# recatgorize age
-md2$age_participant <- ifelse(md2$age_participant %in% c("60-69", "70+"),
-                              "60+", md2$age_participant)
-md2
-
-# sum up contacts by grouped locations
-md3 <- summarise(
-  group_by(md2, contact_location, age_participant),
-  contacts = sum(count_contacts)
-)
-md3
-
-# Count up numbers per group
-n <- summarise(
-  group_by(md2[md2$contact_location == "Work", ], age_participant),
-  n = sum(n_age)
-)$n
-
-# Add counts per age group
-md3$n <- rep(n, 3)
-md3
-
-# calculate overall counts (for edges terms)
-md3.oa <- data.frame(
-  contact_location = c("Community", "Home", "Work"),
-  age_participant = rep("Overall", 3),
-  contacts = c(sum(md3$contacts[md3$contact_location == "Work"]),
-               sum(md3$contacts[md3$contact_location == "Home"]),
-               sum(md3$contacts[md3$contact_location == "Community"])
-  ),
-  n = rep(sum(md3$n[md3$contact_location == "Work"]), 3)
-)
-md3.oa
-
-md3 <- rbind(md3, md3.oa)
-md3
-
-# add per-capita rates
-md3$rate <- md3$contacts / md3$n
-md3
-
-# Add confidence intervals on the rates
-# md3 <- as.data.frame(md3)
-md3$rate.lcl <- rep(NA, nrow(md3))
-md3$rate.ucl <- rep(NA, nrow(md3))
-for (i in 1:nrow(md3)) {
-  md3$rate.lcl[i] <- poisson.test(md3$contacts[i])$conf.int[1] / md3$n[i]
-  md3$rate.ucl[i] <- poisson.test(md3$contacts[i])$conf.int[2] / md3$n[i]
-}
-md3
-
-
-saveRDS(md3, file = "data/input/cm2.meandegree.rds")
+# ## construct processed mean degree file ##
+# md
+#
+# # categorize all non-work and home as community
+# md2 <- md
+# md2$contact_location <- ifelse(md2$contact_location != "Work" &
+#                                  md2$contact_location != "Home",
+#                                "Community", md2$contact_location)
+# md2
+#
+# # recatgorize age
+# md2$age_participant <- ifelse(md2$age_participant %in% c("60-69", "70+"),
+#                               "60+", md2$age_participant)
+# md2
+#
+# # sum up contacts by grouped locations
+# md3 <- summarise(
+#   group_by(md2, contact_location, age_participant),
+#   contacts = sum(count_contacts)
+# )
+# md3
+#
+# # Count up numbers per group
+# n <- summarise(
+#   group_by(md2[md2$contact_location == "Work", ], age_participant),
+#   n = sum(n_age)
+# )$n
+#
+# # Add counts per age group
+# md3$n <- rep(n, 3)
+# md3
+#
+# # calculate overall counts (for edges terms)
+# md3.oa <- data.frame(
+#   contact_location = c("Community", "Home", "Work"),
+#   age_participant = rep("Overall", 3),
+#   contacts = c(sum(md3$contacts[md3$contact_location == "Work"]),
+#                sum(md3$contacts[md3$contact_location == "Home"]),
+#                sum(md3$contacts[md3$contact_location == "Community"])
+#   ),
+#   n = rep(sum(md3$n[md3$contact_location == "Work"]), 3)
+# )
+# md3.oa
+#
+# md3 <- rbind(md3, md3.oa)
+# md3
+#
+# # add per-capita rates
+# md3$rate <- md3$contacts / md3$n
+# md3
+#
+# # Add confidence intervals on the rates
+# # md3 <- as.data.frame(md3)
+# md3$rate.lcl <- rep(NA, nrow(md3))
+# md3$rate.ucl <- rep(NA, nrow(md3))
+# for (i in 1:nrow(md3)) {
+#   md3$rate.lcl[i] <- poisson.test(md3$contacts[i])$conf.int[1] / md3$n[i]
+#   md3$rate.ucl[i] <- poisson.test(md3$contacts[i])$conf.int[2] / md3$n[i]
+# }
+# md3
+#
 
 ## construct processed mixing data file
 head(mix)
@@ -128,7 +126,7 @@ mix2
 # sum up contacts by grouped locations
 mix3 <- summarise(
   group_by(mix2, contact_location, participant_age, contact_age),
-  contacts = sum(count_contacts_location)
+  contacts = sum(count_contacts_d1)
 )
 mix3
 
@@ -142,6 +140,7 @@ md[md$contact_location == "Home", ]
 
 # unclear why total contacts per age per location are inconsistent
 # for example 712 in md versus 576 in mix for Home 20-29
+
 
 md4 <- md3
 md4 <- rename(md4, participant_age = age_participant)
