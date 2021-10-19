@@ -272,6 +272,10 @@ for (i in 1:nrow(mix6)) {
     mix6$n_age_total[i]
 }
 
+# Final data set with overall contact rate defined for each location-specific
+# participant/contact combo and overall contact rate for age group for each
+# location
+
 mix7 <- mix6 %>%
   select(contact_location, participant_age, contact_age,
          n_age_total, pair_contact_count, pair_contact_rate,
@@ -310,6 +314,9 @@ for (i in 1:nrow(mix11)) {
   mix11$prop_pair_contacts.age_ucl[i] <- binom.test(mix11$pair_contacts_total[i],
                                                    mix11$total_contacts_age[i])$conf.int[2]
 }
+
+# Final data set with proportion of total contacts for each age group that are
+# within each contact age group
 
 mix12 <- mix11 %>%
   select(participant_age, contact_age, prop_pair_contacts.age,
