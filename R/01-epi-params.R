@@ -163,8 +163,10 @@ mix4
 mix4$grp.prop.lcl <- rep(NA, nrow(mix4))
 mix4$grp.prop.ucl <- rep(NA, nrow(mix4))
 for (i in 1:nrow(mix4)) {
-  mix4$grp.prop.lcl[i] <- binom.test(mix4$contacts.grp[i], mix4$contacts.all[i])$conf.int[1]
-  mix4$grp.prop.ucl[i] <- binom.test(mix4$contacts.grp[i], mix4$contacts.all[i])$conf.int[2]
+  mix4$grp.prop.lcl[i] <-
+    binom.test(mix4$contacts.grp[i], mix4$contacts.all[i])$conf.int[1]
+  mix4$grp.prop.ucl[i] <-
+    binom.test(mix4$contacts.grp[i], mix4$contacts.all[i])$conf.int[2]
 }
 mix4
 
@@ -216,6 +218,8 @@ mix3 <- full_join(mix2, mixBase) %>%
 mix3$count_contacts_d1[is.na(mix3$count_contacts_d1)] <- 0
 mix3$count_contacts_d2[is.na(mix3$count_contacts_d2)] <- 0
 
+#Needs to be made reproducible
+
 mix3 <- mix3 %>%
   mutate(n_age_d1 = case_when(
     participant_age == "20-29" ~ 632,
@@ -239,36 +243,30 @@ mix4 <- mix3 %>%
   group_by(contact_location, participant_age, contact_age, n_age_total) %>%
   summarise(count_contacts_d1 = sum(count_contacts_d1),
             count_contacts_d2 = sum(count_contacts_d2)) %>%
-  mutate(pair_contact_count = count_contacts_d1 + count_contacts_d2) %>%
-  mutate(pair_contact_rate = pair_contact_count / n_age_total)
+  mutate(contact_count = count_contacts_d1 + count_contacts_d2) %>%
+  mutate(contact_rate = contact_count / n_age_total)
 
 mix5 <- mix4 %>%
   group_by(contact_location, participant_age, n_age_total) %>%
-  summarise(age_contact_count = sum(pair_contact_count),
-            age_contact_rate = sum(pair_contact_rate))
+  summarise(contact_count = sum(contact_count),
+            contact_rate = sum(contact_rate)) %>%
+  mutate(contact_age = "all")
 
 
-mix6 <- full_join(mix5, mix4) %>%
-  mutate(age_contact_rate.lcl = NA,
-         age_contact_rate.ucl = NA,
-         pair_contact_rate.lcl = NA,
-         pair_contact_rate.ucl = NA)
+mix6 <- bind_rows(mix5, mix4) %>%
+  mutate(contact_rate.lcl = NA,
+         contact_rate.ucl = NA) %>%
+  arrange(contact_location, participant_age) %>%
+  select(contact_location, participant_age, contact_age, n_age_total,
+         contact_count, contact_rate, contact_rate.lcl, contact_rate.ucl)
 
 for (i in 1:nrow(mix6)) {
-  mix6$pair_contact_rate.lcl[i] <-
-    poisson.test(mix6$pair_contact_count[i])$conf.int[1] /
+  mix6$contact_rate.lcl[i] <-
+    poisson.test(mix6$contact_count[i])$conf.int[1] /
     mix6$n_age_total[i]
 
-  mix6$pair_contact_rate.ucl[i] <-
-    poisson.test(mix6$pair_contact_count[i])$conf.int[2] /
-    mix6$n_age_total[i]
-
-  mix6$age_contact_rate.lcl[i] <-
-    poisson.test(mix6$age_contact_count[i])$conf.int[1] /
-    mix6$n_age_total[i]
-
-  mix6$age_contact_rate.ucl[i] <-
-    poisson.test(mix6$age_contact_count[i])$conf.int[2] /
+  mix6$contact_rate.ucl[i] <-
+    poisson.test(mix6$contact_count[i])$conf.int[2] /
     mix6$n_age_total[i]
 }
 
@@ -278,21 +276,22 @@ for (i in 1:nrow(mix6)) {
 
 mix7 <- mix6 %>%
   select(contact_location, participant_age, contact_age,
-         n_age_total, pair_contact_count, pair_contact_rate,
-         pair_contact_rate.lcl, pair_contact_rate.ucl,
-         n_age_total, age_contact_count, age_contact_rate,
-         age_contact_rate.lcl, age_contact_rate.ucl)
+         n_age_total, contact_count, contact_rate,
+         contact_rate.lcl, contact_rate.ucl)
+
 
 #-------------------------------------------------------------------------------
 
 mix8 <- mix3 %>%
-  group_by(participant_age, contact_age, n_age_d1, n_age_d2, n_age_total) %>%
+  group_by(participant_age, contact_age, n_age_d1, n_age_d2, n_age_total,
+           contact_location) %>%
   summarize(count_contacts_d1_age = sum(count_contacts_d1),
             count_contacts_d2_age = sum(count_contacts_d2)) %>%
-  mutate(count_contacts_total_age = count_contacts_d1_age + count_contacts_d2_age)
+  mutate(
+    count_contacts_total_age = count_contacts_d1_age + count_contacts_d2_age)
 
 mix9 <- mix8 %>%
-  group_by(participant_age, n_age_total) %>%
+  group_by(participant_age, n_age_total, contact_location) %>%
   summarize(count_contacts_by_age = sum(count_contacts_total_age))
 
 mix10 <- full_join(mix8, mix9) %>%
@@ -303,22 +302,27 @@ mix10 <- full_join(mix8, mix9) %>%
 mix11 <- mix10 %>%
   ungroup() %>%
   select(participant_age, contact_age, prop_pair_contacts.age,
-         pair_contacts_total, total_contacts_age)
+         pair_contacts_total, total_contacts_age, contact_location)
 
 mix11$prop_pair_contacts.age_lcl <- rep(NA, nrow(mix11))
 mix11$prop_pair_contacts.age_ucl <- rep(NA, nrow(mix11))
+
 for (i in 1:nrow(mix11)) {
   mix11$prop_pair_contacts.age_lcl[i] <-
     binom.test(mix11$pair_contacts_total[i],
                mix11$total_contacts_age[i])$conf.int[1]
-  mix11$prop_pair_contacts.age_ucl[i] <- binom.test(mix11$pair_contacts_total[i],
-                                                   mix11$total_contacts_age[i])$conf.int[2]
+  mix11$prop_pair_contacts.age_ucl[i] <-
+    binom.test(mix11$pair_contacts_total[i],
+               mix11$total_contacts_age[i])$conf.int[2]
 }
 
 # Final data set with proportion of total contacts for each age group that are
 # within each contact age group
 
 mix12 <- mix11 %>%
-  select(participant_age, contact_age, prop_pair_contacts.age,
+  select(contact_location, participant_age, contact_age, prop_pair_contacts.age,
          prop_pair_contacts.age_lcl, prop_pair_contacts.age_ucl)
 
+mix12 %>%
+  subset(contact_location == "Home" & participant_age == "40-49") %>%
+  summarize(total = sum(prop_pair_contacts.age))
