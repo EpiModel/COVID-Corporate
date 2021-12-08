@@ -22,7 +22,7 @@ param <- param.net(inf.prob = c(0.11, 0.11, 0.11),
 
                    prop.clinical = c(0.40, 0.25, 0.37, 0.42, 0.51, 0.59, 0.72,
                                      0.76),
-                   prop.hospit = c(0, 0, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1),
+                   prop.hospit = prop.hospit,
 
                    ea.rate = 1/4.0,
                    ar.rate = 1/5.0,
@@ -38,7 +38,7 @@ param <- param.net(inf.prob = c(0.11, 0.11, 0.11),
                    allow.rescreen = TRUE,
 
                    vax.start = Inf,
-                   vax1.rate = 0.01,
+                   vax1.rate = c(0, 0, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01),
                    vax2.interval = 21,
                    vax1.rr.infect = 0.75,
                    vax2.rr.infect = 0.25,
@@ -54,7 +54,7 @@ param <- param.net(inf.prob = c(0.11, 0.11, 0.11),
 # Initial conditions
 init <- init.net(e.num = 100)
 
-# Set control settings with nsims = 25
+# Set control settings with nsims = 5
 pkgload::load_all("~/git/EpiModelCOVID")
 control <- control.net(nsteps = 100,
                        nsims = 5,
@@ -108,7 +108,7 @@ param_vax1 <- param.net(inf.prob = c(0.11, 0.11, 0.11),
 
                         prop.clinical = c(0.40, 0.25, 0.37, 0.42, 0.51, 0.59,
                                           0.72, 0.76),
-                        prop.hospit = c(0, 0, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1),
+                        prop.hospit = prop.hospit,
 
                         ea.rate = 1/4.0,
                         ar.rate = 1/5.0,
@@ -124,7 +124,7 @@ param_vax1 <- param.net(inf.prob = c(0.11, 0.11, 0.11),
                         allow.rescreen = TRUE,
 
                         vax.start = 1,
-                        vax1.rate = 0.01,
+                        vax1.rate = c(0, 0, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01),
                         vax2.interval = 21,
                         vax1.rr.infect = 0.75,
                         vax2.rr.infect = 0.25,
@@ -161,7 +161,7 @@ param_vax50 <- param.net(inf.prob = c(0.11, 0.11, 0.11),
 
                          prop.clinical = c(0.40, 0.25, 0.37, 0.42, 0.51, 0.59,
                                            0.72, 0.76),
-                         prop.hospit = c(0, 0, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1),
+                         prop.hospit = prop.hospit,
 
                          ea.rate = 1/4.0,
                          ar.rate = 1/5.0,
@@ -177,7 +177,7 @@ param_vax50 <- param.net(inf.prob = c(0.11, 0.11, 0.11),
                          allow.rescreen = TRUE,
 
                          vax.start = 50,
-                         vax1.rate = 0.01,
+                         vax1.rate = c(0, 0, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01),
                          vax2.interval = 21,
                          vax1.rr.infect = 0.75,
                          vax2.rr.infect = 0.25,
@@ -299,8 +299,7 @@ param_vax1_uptake10 <- param.net(inf.prob = c(0.11, 0.11, 0.11),
 
                                  prop.clinical = c(0.40, 0.25, 0.37, 0.42, 0.51,
                                                    0.59, 0.72, 0.76),
-                                 prop.hospit = c(0, 0, 0.1, 0.1, 0.1, 0.1, 0.1,
-                                                 0.1),
+                                 prop.hospit = prop.hospit,
 
                                  ea.rate = 1/4.0,
                                  ar.rate = 1/5.0,
@@ -316,7 +315,7 @@ param_vax1_uptake10 <- param.net(inf.prob = c(0.11, 0.11, 0.11),
                                  allow.rescreen = TRUE,
 
                                  vax.start = 1,
-                                 vax1.rate = 0.10,
+                                 vax1.rate = c(0, 0, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1),
                                  vax2.interval = 21,
                                  vax1.rr.infect = 0.75,
                                  vax2.rr.infect = 0.25,
@@ -351,8 +350,7 @@ param_vax1_uptake100 <- param.net(inf.prob = c(0.11, 0.11, 0.11),
 
                                  prop.clinical = c(0.40, 0.25, 0.37, 0.42, 0.51,
                                                    0.59, 0.72, 0.76),
-                                 prop.hospit = c(0, 0, 0.1, 0.1, 0.1, 0.1, 0.1,
-                                                 0.1),
+                                 prop.hospit = prop.hospit,
 
                                  ea.rate = 1/4.0,
                                  ar.rate = 1/5.0,
@@ -368,7 +366,7 @@ param_vax1_uptake100 <- param.net(inf.prob = c(0.11, 0.11, 0.11),
                                  allow.rescreen = TRUE,
 
                                  vax.start = 1,
-                                 vax1.rate = 1,
+                                 vax1.rate = c(0, 0, 1, 1, 1, 1, 1, 1),
                                  vax2.interval = 21,
                                  vax1.rr.infect = 0.75,
                                  vax2.rr.infect = 0.25,
@@ -403,8 +401,7 @@ param_vax1_uptake30 <- param.net(inf.prob = c(0.11, 0.11, 0.11),
 
                                   prop.clinical = c(0.40, 0.25, 0.37, 0.42,
                                                     0.51, 0.59, 0.72, 0.76),
-                                  prop.hospit = c(0, 0, 0.1, 0.1, 0.1, 0.1, 0.1,
-                                                  0.1),
+                                  prop.hospit = prop.hospit,
 
                                   ea.rate = 1/4.0,
                                   ar.rate = 1/5.0,
@@ -420,7 +417,7 @@ param_vax1_uptake30 <- param.net(inf.prob = c(0.11, 0.11, 0.11),
                                   allow.rescreen = TRUE,
 
                                   vax.start = 1,
-                                  vax1.rate = 0.3,
+                                  vax1.rate = c(0, 0, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3),
                                   vax2.interval = 21,
                                   vax1.rr.infect = 0.75,
                                   vax2.rr.infect = 0.25,
@@ -594,7 +591,7 @@ param_vax1_uptake100_rr0 <- param.net(inf.prob = c(0.11, 0.11, 0.11),
 
                         prop.clinical = c(0.40, 0.25, 0.37, 0.42, 0.51, 0.59,
                                           0.72, 0.76),
-                        prop.hospit = c(0, 0, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1),
+                        prop.hospit = prop.hospit,
 
                         ea.rate = 1/4.0,
                         ar.rate = 1/5.0,
@@ -645,8 +642,7 @@ param_vax1_uptake100_rr1 <- param.net(inf.prob = c(0.11, 0.11, 0.11),
 
                                       prop.clinical = c(0.40, 0.25, 0.37, 0.42,
                                                         0.51, 0.59, 0.72, 0.76),
-                                      prop.hospit = c(0, 0, 0.1, 0.1, 0.1, 0.1,
-                                                      0.1, 0.1),
+                                      prop.hospit = prop.hospit,
 
                                       ea.rate = 1/4.0,
                                       ar.rate = 1/5.0,
@@ -662,7 +658,7 @@ param_vax1_uptake100_rr1 <- param.net(inf.prob = c(0.11, 0.11, 0.11),
                                       allow.rescreen = TRUE,
 
                                       vax.start = 1,
-                                      vax1.rate = 1,
+                                      vax1.rate = c(0, 0, 1, 1, 1, 1, 1, 1),
                                       vax2.interval = 21,
                                       vax1.rr.infect = 1,
                                       vax2.rr.infect = 1,

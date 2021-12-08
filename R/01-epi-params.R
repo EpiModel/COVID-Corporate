@@ -37,7 +37,6 @@ options(tibble.print_max = 1000)
 # md <- readRDS("data/input/df_contact_by_location.RDS")
 mix <- readRDS("data/input/df_contact_proportion_by_location.RDS")
 
-
 # ## construct processed mean degree file ##
 # md
 #
