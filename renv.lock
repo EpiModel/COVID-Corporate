@@ -28,12 +28,12 @@
       "Version": "2.2.0",
       "Source": "GitHub",
       "RemoteType": "github",
-      "RemoteUsername": "statnet",
+      "RemoteHost": "api.github.com",
       "RemoteRepo": "EpiModel",
+      "RemoteUsername": "EpiModel",
       "RemoteRef": "HEAD",
       "RemoteSha": "45712035b693358fff54ce9be7f757b6ffcec517",
-      "RemoteHost": "api.github.com",
-      "Hash": "153772128d498d6b6b29918b02aae67d"
+      "Hash": "bdc0a1ac5f4c2380bd207bc45c172562"
     },
     "EpiModelCOVID": {
       "Package": "EpiModelCOVID",
