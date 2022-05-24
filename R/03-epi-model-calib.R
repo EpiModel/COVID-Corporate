@@ -29,7 +29,7 @@ param <- param.net(inf.prob = c(0.11, 0.11, 0.11),
                    act.rate.sympt.inter.time = 1,
 
                    prop.clinical = c(0.40, 0.25, 0.37, 0.42, 0.51, 0.59, 0.72, 0.76),
-                   prop.hospit = prop.hospit,
+                   prop.hospit = c(0.40, 0.25, 0.37, 0.42, 0.51, 0.59, 0.72, 0.76),
 
                    ea.rate = 1/4.0,
                    ar.rate = 1/5.0,

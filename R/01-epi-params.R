@@ -134,46 +134,45 @@ mix[mix$contact_location == "Home" & mix$participant_age == "20-29", ]
 mix3[mix3$contact_location == "Home" & mix3$participant_age == "20-29", ]
 sum(mix3[mix3$contact_location == "Home" & mix3$participant_age == "20-29",]$contacts)
 
-md3
-md[md$contact_location == "Home", ]
+mix3
+mix3[mix3$contact_location == "Home", ]
 
 # unclear why total contacts per age per location are inconsistent
 # for example 712 in md versus 576 in mix for Home 20-29
 
 
-md4 <- md3
-md4 <- rename(md4, participant_age = age_participant)
-
-# need to merge with md because need total contacts per age group per location
-
-mix4 <- left_join(mix3, md4, by = c("contact_location", "participant_age"))
-mix4
-
-mix4 <- select(mix4, -n, -rate, -rate.lcl, -rate.ucl)
-mix4 <- rename(mix4, contacts.grp = contacts.x, contacts.all = contacts.y)
-mix4
-
-
-
-mix4$grp.prop <- mix4$contacts.grp / mix4$contacts.all
-mix4
-
-# Add confidence intervals on the proportions
-mix4$grp.prop.lcl <- rep(NA, nrow(mix4))
-mix4$grp.prop.ucl <- rep(NA, nrow(mix4))
-for (i in 1:nrow(mix4)) {
-  mix4$grp.prop.lcl[i] <-
-    binom.test(mix4$contacts.grp[i], mix4$contacts.all[i])$conf.int[1]
-  mix4$grp.prop.ucl[i] <-
-    binom.test(mix4$contacts.grp[i], mix4$contacts.all[i])$conf.int[2]
-}
-mix4
+# md4 <- mix3
+# md4 <- rename(md4, participant_age = age_participant)
+#
+# # need to merge with md because need total contacts per age group per location
+#
+# mix4 <- left_join(mix3, md4, by = c("contact_location", "participant_age"))
+# mix4
+#
+# mix4 <- select(mix4, -n, -rate, -rate.lcl, -rate.ucl)
+# mix4 <- rename(mix4, contacts.grp = contacts.x, contacts.all = contacts.y)
+# mix4
+#
+#
+#
+# mix4$grp.prop <- mix4$contacts.grp / mix4$contacts.all
+# mix4
+#
+# # Add confidence intervals on the proportions
+# mix4$grp.prop.lcl <- rep(NA, nrow(mix4))
+# mix4$grp.prop.ucl <- rep(NA, nrow(mix4))
+# for (i in 1:nrow(mix4)) {
+#   mix4$grp.prop.lcl[i] <-
+#     binom.test(mix4$contacts.grp[i], mix4$contacts.all[i])$conf.int[1]
+#   mix4$grp.prop.ucl[i] <-
+#     binom.test(mix4$contacts.grp[i], mix4$contacts.all[i])$conf.int[2]
+# }
+# mix4
 
 # saveRDS(mix4, file = "data/input/cm2.mixing.rds")
 
----
 
-library(tidyverse)
+library("tidyverse")
 
 mix <- readRDS("data/input/df_contact_proportion_by_location.RDS")
 
