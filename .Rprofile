@@ -1,7 +1,11 @@
 
 # 1. renv package management
 if (dir.exists("renv/")) {
-  source("renv/activate.R")
+  if (file.exists("renv/activate.R")) {
+    source("renv/activate.R")
+  } else {
+    cat("* renv may have been incompletely set up. Run renv::init() to continue\n")
+  }
   if (interactive()) {
     renv::status()
   }
@@ -18,6 +22,9 @@ if (!dir.exists("data/output/")) {
 }
 if (!dir.exists("out/")) {
   dir.create("out/")
+}
+if (!dir.exists("workflows/")) {
+  dir.create("workflows/")
 }
 
 # 3. Helpful aliases
