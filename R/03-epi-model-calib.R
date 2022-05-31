@@ -70,7 +70,6 @@ control <- control.net(nsteps = 100,
                        aging.FUN = aging_covid,
                        departures.FUN = deaths_covid_corporate,
                        arrivals.FUN = arrival_covid_corporate,
-                       edges_correct.FUN = NULL,
                        resim_nets.FUN = resim_nets_covid_corporate,
                        infection.FUN = infect_covid_corporate,
                        recovery.FUN = progress_covid,
@@ -87,8 +86,6 @@ control <- control.net(nsteps = 100,
                                         "vax.FUN",
                                         "prevalence.FUN"),
                        resimulate.network = TRUE,
-                       skip.check = TRUE,
-                       save.nwstats = TRUE,
                        tergmLite = TRUE)
 
 sim <- netsim(est, param, init, control)
@@ -102,3 +99,6 @@ sim <- mutate_epi(sim, se.cuml = cumsum(se.flow),
                        totI = e.num + a.num + ip.num + ic.num)
 df <- as.data.frame(sim, out = "mean")
 names(df)
+head(df)
+
+get_nwstats(sim)
