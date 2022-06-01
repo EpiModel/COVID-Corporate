@@ -51,7 +51,7 @@ summary(est.hh)
 #                                               SAN.control = control.san(SAN.nsteps = 1e8)))
 
 dx.hh <- netdx(est.hh, nsims = 25, ncores = 5, nsteps = 1000, dynamic = TRUE,
-               set.control.ergm = control.simulate.ergm(MCMC.burnin = 1e6))
+               set.control.ergm = control.simulate.formula(MCMC.burnin = 1e6))
 print(dx.hh)
 
 # dx <- netdx(est, nsims = 1, nsteps = 1000, keep.tedgelist = TRUE,
@@ -73,7 +73,7 @@ est.oo <- netest(nw, formation.oo, target.stats.oo, coef.diss.oo,
 summary(est.oo)
 
 dx.oo <- netdx(est.oo, nsims = 25, ncores = 5, nsteps = 1000, dynamic = TRUE,
-               set.control.ergm = control.simulate.ergm(MCMC.burnin = 1e6))
+               set.control.ergm = control.simulate.formula(MCMC.burnin = 1e6))
 print(dx.oo)
 
 
@@ -90,8 +90,12 @@ est.cc <- netest(nw, formation.cc, target.stats.cc, coef.diss.cc,
 summary(est.cc)
 
 dx.cc <- netdx(est.cc, nsims = 1000, dynamic = FALSE,
-               set.control.ergm = control.simulate.ergm(MCMC.burnin = 1e6))
+               set.control.ergm = control.simulate.formula(MCMC.burnin = 1e6))
 print(dx.cc)
+
+est.hh <- trim_netest(est.hh)
+est.oo <- trim_netest(est.oo)
+est.cc <- trim_netest(est.cc)
 
 est.simple <- list(est.hh, est.oo, est.cc)
 saveRDS(est.simple, file = "data/input/est.simple.rds")
