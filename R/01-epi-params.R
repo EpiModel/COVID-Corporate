@@ -103,42 +103,63 @@ mix <- readRDS("data/input/df_contact_proportion_by_location.RDS")
 head(mix)
 
 mix2 <- mix
+
+# re-categorize location
 mix2$contact_location <- ifelse(mix2$contact_location != "Work" &
                                   mix2$contact_location != "Home",
                                 "Community", mix2$contact_location)
-mix2
-str(mix2)
 
-mix2$participant_age <- as.character(mix2$participant_age)
-str(mix2)
-
-# recatgorize age
+# re-categorize age
 mix2$participant_age <- ifelse(mix2$participant_age %in% c("60-69", "70+"),
-                               "60+", mix2$participant_age)
+                               "60+", as.character(mix2$participant_age))
 mix2$contact_age <- ifelse(mix2$contact_age %in% c("<1", "1-9", "10-19"),
                            "<20", mix2$contact_age)
 mix2$contact_age <- ifelse(mix2$contact_age %in% c("60-69", "70+"),
                            "60+", mix2$contact_age)
 
-mix2
+# pull out number of participants per location, (new) age group, and day
+n.age1 <- mix2 %>%
+  select(participant_age,n_age_d1) %>%
+  distinct() %>%
+  filter(!is.na(n_age_d1)) %>%
+  group_by(participant_age) %>%
+  summarise(n_age_d1 = sum(n_age_d1))
+
+n.age2 <- mix2 %>%
+  select(participant_age,n_age_d2) %>%
+  distinct() %>%
+  filter(!is.na(n_age_d2)) %>%
+  group_by(participant_age) %>%
+  summarise(n_age_d2 = sum(n_age_d2))
 
 # sum up contacts by grouped locations
-mix3 <- summarise(
-  group_by(mix2, contact_location, participant_age, contact_age),
-  contacts = sum(count_contacts_d1)
-)
-mix3
+# sum unique contacts across both days
+mix3 <- mix2 %>%
+  select(-starts_with("prop_"),-count_contacts_total_d1,-count_contacts_total_d2) %>%
+  group_by(contact_location, participant_age, contact_age) %>%
+  summarise(across(starts_with("count"),~ sum(.x, na.rm = TRUE))) %>%
+  rowwise() %>%
+  mutate(count_contacts = sum(count_contacts_d1,count_contacts_d2,na.rm = T)) %>%
+  group_by(contact_location, participant_age) %>%
+  mutate(count_contacts_total_d1 = sum(count_contacts_d1, na.rm = T),
+         count_contacts_total_d2 = sum(count_contacts_d2, na.rm = T),
+         count_contacts_total = sum(count_contacts, na.rm = T)) %>%
+  left_join(n.age1,by = "participant_age") %>%
+  left_join(n.age2,by = "participant_age") %>%
+  rowwise() %>%
+  # is this meaningful?? or just use d1?
+  mutate(n_age = sum(n_age_d1,n_age_d2))
 
 mix[mix$contact_location == "Home" & mix$participant_age == "20-29", ]
 
 mix3[mix3$contact_location == "Home" & mix3$participant_age == "20-29", ]
-sum(mix3[mix3$contact_location == "Home" & mix3$participant_age == "20-29",]$contacts)
+sum(mix3[mix3$contact_location == "Home" & mix3$participant_age == "20-29",]$count_contacts)
 
-mix3
 mix3[mix3$contact_location == "Home", ]
 
 # unclear why total contacts per age per location are inconsistent
 # for example 712 in md versus 576 in mix for Home 20-29
+# seems like number of participants also varies across datasets - is this supposed to be consistent?
 
 
 # md4 <- mix3
@@ -172,155 +193,42 @@ mix3[mix3$contact_location == "Home", ]
 # saveRDS(mix4, file = "data/input/cm2.mixing.rds")
 
 
-library("tidyverse")
-
-mix <- readRDS("data/input/df_contact_proportion_by_location.RDS")
-
-mix1 <- mix
-
-# Clean up base dataset
-
-mix1$contact_location <- ifelse(mix1$contact_location == "Work", "Work",
-                                ifelse(mix1$contact_location == "Home", "Home",
-                                       "Community"))
-
-mix1$participant_age <- as.character(mix1$participant_age)
-
-mix1$participant_age <- ifelse(mix1$participant_age %in% c("60-69", "70+"),
-                               "60+", mix1$participant_age)
-mix1$contact_age <- ifelse(mix1$contact_age %in% c("<1", "1-9", "10-19"),
-                           "<20", mix1$contact_age)
-mix1$contact_age <- ifelse(mix1$contact_age %in% c("60-69", "70+"),
-                           "60+", mix1$contact_age)
-mix2 <- mix1 %>%
-  select(contact_location, participant_age, contact_age, count_contacts_d1,
-         count_contacts_d2, n_age_d1, n_age_d2)
-
-#Create a complete age combination dataset
-
-contact_age <- c("<20", "20-29", "30-39", "40-49", "50-59",
-                 "60+")
-participant_age <- c(rep("20-29", 6), rep("30-39", 6), rep("40-49", 6),
-                     rep("50-59", 6), rep("60+", 6))
-contact_location <- c(rep("Community", 30), rep("Work", 30), rep("Home", 30))
-
-mixBase <- data.frame(contact_location = contact_location,
-                      participant_age = rep(participant_age, 3),
-                      contact_age = rep(contact_age, 5))
-
-mix3 <- full_join(mix2, mixBase) %>%
-  arrange(contact_location, participant_age, contact_age)
-
-# Clean up missing data
-
-mix3$count_contacts_d1[is.na(mix3$count_contacts_d1)] <- 0
-mix3$count_contacts_d2[is.na(mix3$count_contacts_d2)] <- 0
-
-#Needs to be made reproducible
-
-mix3 <- mix3 %>%
-  mutate(n_age_d1 = case_when(
-    participant_age == "20-29" ~ 632,
-    participant_age == "30-39" ~ 324,
-    participant_age == "40-49" ~ 82,
-    participant_age == "50-59" ~ 38,
-    participant_age == "60+" ~ 20
-  )) %>%
-  mutate(n_age_d2 = case_when(
-    participant_age == "20-29" ~ 497,
-    participant_age == "30-39" ~ 292,
-    participant_age == "40-49" ~ 72,
-    participant_age == "50-59" ~ 34,
-    participant_age == "60+" ~ 18
-  ))
-
-mix3 <- mix3 %>%
-  mutate(n_age_total = n_age_d1 + n_age_d2)
 
 mix4 <- mix3 %>%
-  group_by(contact_location, participant_age, contact_age, n_age_total) %>%
-  summarise(count_contacts_d1 = sum(count_contacts_d1),
-            count_contacts_d2 = sum(count_contacts_d2)) %>%
-  mutate(contact_count = count_contacts_d1 + count_contacts_d2) %>%
-  mutate(contact_rate = contact_count / n_age_total)
+  mutate(contact_rate = count_contacts / n_age_d1)
 
 mix5 <- mix4 %>%
-  group_by(contact_location, participant_age, n_age_total) %>%
-  summarise(contact_count = sum(contact_count),
+  group_by(contact_location, participant_age, n_age_d1) %>%
+  summarise(count_contacts = sum(count_contacts),
             contact_rate = sum(contact_rate)) %>%
-  mutate(contact_age = "all")
+  mutate(contact_age = "Total")
 
 
 mix6 <- bind_rows(mix5, mix4) %>%
   mutate(contact_rate.lcl = NA,
          contact_rate.ucl = NA) %>%
   arrange(contact_location, participant_age) %>%
-  select(contact_location, participant_age, contact_age, n_age_total,
-         contact_count, contact_rate, contact_rate.lcl, contact_rate.ucl)
+  select(contact_location, participant_age, contact_age, n_age_d1,
+         count_contacts, contact_rate, contact_rate.lcl, contact_rate.ucl)
 
 for (i in 1:nrow(mix6)) {
   mix6$contact_rate.lcl[i] <-
-    poisson.test(mix6$contact_count[i])$conf.int[1] /
-    mix6$n_age_total[i]
+    poisson.test(mix6$count_contacts[i])$conf.int[1] /
+    mix6$n_age_d1[i]
 
   mix6$contact_rate.ucl[i] <-
-    poisson.test(mix6$contact_count[i])$conf.int[2] /
-    mix6$n_age_total[i]
+    poisson.test(mix6$count_contacts[i])$conf.int[2] /
+    mix6$n_age_d1[i]
 }
 
-# Final data set with overall contact rate defined for each location-specific
-# participant/contact combo and overall contact rate for age group for each
-# location
+# Summary statistics for ERGM model
 
-mix7 <- mix6 %>%
-  select(contact_location, participant_age, contact_age,
-         n_age_total, contact_count, contact_rate,
-         contact_rate.lcl, contact_rate.ucl)
+mix.sum <- mix6 %>%
+  select(-starts_with("contact_rate")) %>%
+  filter(contact_age != "Total") %>%
+  mutate(degree = (count_contacts/n_age_d1)/2) %>%
+  group_by(contact_location,participant_age) %>%
+  mutate(total_degree = sum(degree)) %>%
+  mutate(prop_degree = degree/total_degree)
 
 
-#-------------------------------------------------------------------------------
-
-mix8 <- mix3 %>%
-  group_by(participant_age, contact_age, n_age_d1, n_age_d2, n_age_total,
-           contact_location) %>%
-  summarize(count_contacts_d1_age = sum(count_contacts_d1),
-            count_contacts_d2_age = sum(count_contacts_d2)) %>%
-  mutate(
-    count_contacts_total_age = count_contacts_d1_age + count_contacts_d2_age)
-
-mix9 <- mix8 %>%
-  group_by(participant_age, n_age_total, contact_location) %>%
-  summarize(count_contacts_by_age = sum(count_contacts_total_age))
-
-mix10 <- full_join(mix8, mix9) %>%
-  rename(total_contacts_age = count_contacts_by_age,
-         pair_contacts_total = count_contacts_total_age) %>%
-  mutate(prop_pair_contacts.age = pair_contacts_total / total_contacts_age)
-
-mix11 <- mix10 %>%
-  ungroup() %>%
-  select(participant_age, contact_age, prop_pair_contacts.age,
-         pair_contacts_total, total_contacts_age, contact_location)
-
-mix11$prop_pair_contacts.age_lcl <- rep(NA, nrow(mix11))
-mix11$prop_pair_contacts.age_ucl <- rep(NA, nrow(mix11))
-
-for (i in 1:nrow(mix11)) {
-  mix11$prop_pair_contacts.age_lcl[i] <-
-    binom.test(mix11$pair_contacts_total[i],
-               mix11$total_contacts_age[i])$conf.int[1]
-  mix11$prop_pair_contacts.age_ucl[i] <-
-    binom.test(mix11$pair_contacts_total[i],
-               mix11$total_contacts_age[i])$conf.int[2]
-}
-
-# Final data set with proportion of total contacts for each age group that are
-# within each contact age group
-
-mix12 <- mix11 %>%
-  select(contact_location, participant_age, contact_age, prop_pair_contacts.age,
-         prop_pair_contacts.age_lcl, prop_pair_contacts.age_ucl)
-
-mix12 %>%
-  subset(contact_location == "Home" & participant_age == "40-49") %>%
-  summarize(total = sum(prop_pair_contacts.age))
