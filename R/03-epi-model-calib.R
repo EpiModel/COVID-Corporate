@@ -86,6 +86,10 @@ control <- control.net(nsteps = 100,
                                         "vax.FUN",
                                         "prevalence.FUN"),
                        resimulate.network = TRUE,
+                       save.nwstats = TRUE,
+                       nwstats.formula.1 = "formation",
+                       nwstats.formula.2 = "formation",
+                       nwstats.formula.3 = "formation",
                        tergmLite = TRUE)
 
 sim <- netsim(est, param, init, control)
