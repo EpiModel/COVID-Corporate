@@ -24,211 +24,178 @@ age_spans <- c(1, 4, rep(5, 16), 1)
 mr_vec <- rep(mr_pp_pd, times = age_spans)
 
 
-# Epi Curve ---------------------------------------------------------------
-
-
-
-# CorpMix Data Analysis ---------------------------------------------------
+# Load libraries and data  ------------------------------------------------
 
 library("tidyverse")
-options(tibble.print_max = 1000)
 
-# overall mean degree
-# md <- readRDS("data/input/df_contact_by_location.RDS")
-mix <- readRDS("data/input/df_contact_proportion_by_location.RDS")
+## contact data rounds 2-4
+mix2 <- readRDS("data/input/df_merged_rd2.RDS")
+mix3 <- readRDS("data/input/df_merged_rd3.RDS")
+mix4 <- readRDS("data/input/df_merged_rd4.RDS")
 
-# ## construct processed mean degree file ##
-# md
-#
-# # categorize all non-work and home as community
-# md2 <- md
-# md2$contact_location <- ifelse(md2$contact_location != "Work" &
-#                                  md2$contact_location != "Home",
-#                                "Community", md2$contact_location)
-# md2
-#
-# # recatgorize age
-# md2$age_participant <- ifelse(md2$age_participant %in% c("60-69", "70+"),
-#                               "60+", md2$age_participant)
-# md2
-#
-# # sum up contacts by grouped locations
-# md3 <- summarise(
-#   group_by(md2, contact_location, age_participant),
-#   contacts = sum(count_contacts)
-# )
-# md3
-#
-# # Count up numbers per group
-# n <- summarise(
-#   group_by(md2[md2$contact_location == "Work", ], age_participant),
-#   n = sum(n_age)
-# )$n
-#
-# # Add counts per age group
-# md3$n <- rep(n, 3)
-# md3
-#
-# # calculate overall counts (for edges terms)
-# md3.oa <- data.frame(
-#   contact_location = c("Community", "Home", "Work"),
-#   age_participant = rep("Overall", 3),
-#   contacts = c(sum(md3$contacts[md3$contact_location == "Work"]),
-#                sum(md3$contacts[md3$contact_location == "Home"]),
-#                sum(md3$contacts[md3$contact_location == "Community"])
-#   ),
-#   n = rep(sum(md3$n[md3$contact_location == "Work"]), 3)
-# )
-# md3.oa
-#
-# md3 <- rbind(md3, md3.oa)
-# md3
-#
-# # add per-capita rates
-# md3$rate <- md3$contacts / md3$n
-# md3
-#
-# # Add confidence intervals on the rates
-# # md3 <- as.data.frame(md3)
-# md3$rate.lcl <- rep(NA, nrow(md3))
-# md3$rate.ucl <- rep(NA, nrow(md3))
-# for (i in 1:nrow(md3)) {
-#   md3$rate.lcl[i] <- poisson.test(md3$contacts[i])$conf.int[1] / md3$n[i]
-#   md3$rate.ucl[i] <- poisson.test(md3$contacts[i])$conf.int[2] / md3$n[i]
-# }
-# md3
-#
+# round 1 (match rounds 2-4 format)
+contacts1 <- readRDS("data/input/df_contact_clean_rd1.RDS") %>%
+  rename(id = part_id)
+part1 <- readRDS("data/input/df_participant_clean_rd1.RDS") %>%
+  rename(id = part_id)
+mix1 <- part1 %>%
+  select(id,age_cat) %>%
+  rename(participant_age_2 = age_cat) %>%
+  right_join(contacts1,by = "id") %>%
+  rename(contact_age_3 = contact_age) %>%
+  mutate(contact_location2 = case_when(cont_home == 1 ~ "Home",
+                                       work == 1 ~ "Work",
+                                       street == 1 |
+                                         store == 1 |
+                                         cont_otherhome == 1 |
+                                         school == 1 |
+                                         worship == 1 |
+                                         leisure == 1 |
+                                         transport == 1 |
+                                         healthcare == 1 |
+                                         gym == 1 |
+                                         playground == 1 |
+                                         loc_other == 1 ~ "Community")) %>%
+  filter(!is.na(contact_location2)) %>%
+  mutate(contact_location2 = factor(contact_location2,
+                                    levels = c("Home","Work","Community"),
+                                    ordered = TRUE)) %>%
+  mutate(participant_age_2 = factor(participant_age_2,
+                                    levels = c("20-29","30-39","40-49",
+                                               "50-59","60+"),
+                                    ordered = TRUE))
 
-## construct processed mixing data file
-head(mix)
+# create list with all rounds
+mix.list <- list(mix1,mix2,mix3,mix4)
 
-mix2 <- mix
+# Format data  ------------------------------------------------------------
 
-# re-categorize location
-mix2$contact_location <- ifelse(mix2$contact_location != "Work" &
-                                  mix2$contact_location != "Home",
-                                "Community", mix2$contact_location)
+## function to collapse data and estimate mean degree
+summariseContacts <- function(df) {
 
-# re-categorize age
-mix2$participant_age <- ifelse(mix2$participant_age %in% c("60-69", "70+"),
-                               "60+", as.character(mix2$participant_age))
-mix2$contact_age <- ifelse(mix2$contact_age %in% c("<1", "1-9", "10-19"),
-                           "<20", mix2$contact_age)
-mix2$contact_age <- ifelse(mix2$contact_age %in% c("60-69", "70+"),
-                           "60+", mix2$contact_age)
+  df <- df %>%
+    select(id,participant_age_2,contact_age_3,contact_location2) %>%
+    rename(p_age = participant_age_2,
+           location = contact_location2) %>%
+    mutate(contact_age = ifelse(contact_age_3 %in% c("0-9","10-19"),
+                                "<20",as.character(contact_age_3))) %>%
+    mutate(contact_age = factor(contact_age)) %>%
+    mutate(p_age = factor(p_age)) %>%
+    mutate(location = factor(location)) %>%
+    select(-contact_age_3) %>%
+    group_by(p_age) %>%
+    mutate(n_participants = n_distinct(id)) %>%  # total number of participants by age group
+    group_by(location,p_age,contact_age,n_participants,.drop = FALSE) %>%
+    summarise(n_contacts = n()) %>%  # total number of contacts reported over 2 days
+    ungroup() %>%
+    complete(location,p_age,contact_age) %>%
+    group_by(location,p_age) %>%
+    fill(n_participants,.direction = "downup") %>%
+    mutate(degree = (n_contacts/n_participants)/2) %>%   # average mean degree for 1 day
+    mutate(total_degree = sum(degree)) %>%  # total degree by location and participant age
+    mutate(prop_degree = degree/total_degree)  # age distribution of contacts by location and participant age
 
-# pull out number of participants per location, (new) age group, and day
-n.age1 <- mix2 %>%
-  select(participant_age,n_age_d1) %>%
-  distinct() %>%
-  filter(!is.na(n_age_d1)) %>%
-  group_by(participant_age) %>%
-  summarise(n_age_d1 = sum(n_age_d1))
-
-n.age2 <- mix2 %>%
-  select(participant_age,n_age_d2) %>%
-  distinct() %>%
-  filter(!is.na(n_age_d2)) %>%
-  group_by(participant_age) %>%
-  summarise(n_age_d2 = sum(n_age_d2))
-
-# sum up contacts by grouped locations
-# sum unique contacts across both days
-mix3 <- mix2 %>%
-  select(-starts_with("prop_"),-count_contacts_total_d1,-count_contacts_total_d2) %>%
-  group_by(contact_location, participant_age, contact_age) %>%
-  summarise(across(starts_with("count"),~ sum(.x, na.rm = TRUE))) %>%
-  rowwise() %>%
-  mutate(count_contacts = sum(count_contacts_d1,count_contacts_d2,na.rm = T)) %>%
-  group_by(contact_location, participant_age) %>%
-  mutate(count_contacts_total_d1 = sum(count_contacts_d1, na.rm = T),
-         count_contacts_total_d2 = sum(count_contacts_d2, na.rm = T),
-         count_contacts_total = sum(count_contacts, na.rm = T)) %>%
-  left_join(n.age1,by = "participant_age") %>%
-  left_join(n.age2,by = "participant_age") %>%
-  rowwise() %>%
-  # is this meaningful?? or just use d1?
-  mutate(n_age = sum(n_age_d1,n_age_d2))
-
-mix[mix$contact_location == "Home" & mix$participant_age == "20-29", ]
-
-mix3[mix3$contact_location == "Home" & mix3$participant_age == "20-29", ]
-sum(mix3[mix3$contact_location == "Home" & mix3$participant_age == "20-29",]$count_contacts)
-
-mix3[mix3$contact_location == "Home", ]
-
-# unclear why total contacts per age per location are inconsistent
-# for example 712 in md versus 576 in mix for Home 20-29
-# seems like number of participants also varies across datasets - is this supposed to be consistent?
-
-
-# md4 <- mix3
-# md4 <- rename(md4, participant_age = age_participant)
-#
-# # need to merge with md because need total contacts per age group per location
-#
-# mix4 <- left_join(mix3, md4, by = c("contact_location", "participant_age"))
-# mix4
-#
-# mix4 <- select(mix4, -n, -rate, -rate.lcl, -rate.ucl)
-# mix4 <- rename(mix4, contacts.grp = contacts.x, contacts.all = contacts.y)
-# mix4
-#
-#
-#
-# mix4$grp.prop <- mix4$contacts.grp / mix4$contacts.all
-# mix4
-#
-# # Add confidence intervals on the proportions
-# mix4$grp.prop.lcl <- rep(NA, nrow(mix4))
-# mix4$grp.prop.ucl <- rep(NA, nrow(mix4))
-# for (i in 1:nrow(mix4)) {
-#   mix4$grp.prop.lcl[i] <-
-#     binom.test(mix4$contacts.grp[i], mix4$contacts.all[i])$conf.int[1]
-#   mix4$grp.prop.ucl[i] <-
-#     binom.test(mix4$contacts.grp[i], mix4$contacts.all[i])$conf.int[2]
-# }
-# mix4
-
-# saveRDS(mix4, file = "data/input/cm2.mixing.rds")
-
-
-
-mix4 <- mix3 %>%
-  mutate(contact_rate = count_contacts / n_age_d1)
-
-mix5 <- mix4 %>%
-  group_by(contact_location, participant_age, n_age_d1) %>%
-  summarise(count_contacts = sum(count_contacts),
-            contact_rate = sum(contact_rate)) %>%
-  mutate(contact_age = "Total")
-
-
-mix6 <- bind_rows(mix5, mix4) %>%
-  mutate(contact_rate.lcl = NA,
-         contact_rate.ucl = NA) %>%
-  arrange(contact_location, participant_age) %>%
-  select(contact_location, participant_age, contact_age, n_age_d1,
-         count_contacts, contact_rate, contact_rate.lcl, contact_rate.ucl)
-
-for (i in 1:nrow(mix6)) {
-  mix6$contact_rate.lcl[i] <-
-    poisson.test(mix6$count_contacts[i])$conf.int[1] /
-    mix6$n_age_d1[i]
-
-  mix6$contact_rate.ucl[i] <-
-    poisson.test(mix6$count_contacts[i])$conf.int[2] /
-    mix6$n_age_d1[i]
 }
 
-# Summary statistics for ERGM model
+## apply function to list of contact data
+mix.list <- lapply(mix.list, summariseContacts)
 
-mix.sum <- mix6 %>%
-  select(-starts_with("contact_rate")) %>%
-  filter(contact_age != "Total") %>%
-  mutate(degree = (count_contacts/n_age_d1)/2) %>%
-  group_by(contact_location,participant_age) %>%
-  mutate(total_degree = sum(degree)) %>%
-  mutate(prop_degree = degree/total_degree)
+## split up data sets for each round
+mix1.sum <- mix.list[[1]] %>%
+  rename(n_participants = n_participants,
+         n_contacts = n_contacts,
+         degree = degree,
+         total_degree = total_degree,
+         prop_degree = prop_degree) %>%
+  mutate(round = 1) %>%
+  ungroup()
 
+mix2.sum <- mix.list[[2]] %>%
+  rename(n_participants = n_participants,
+         n_contacts = n_contacts,
+         degree = degree,
+         total_degree = total_degree,
+         prop_degree = prop_degree) %>%
+  mutate(round = 2) %>%
+  ungroup()
 
+mix3.sum <- mix.list[[3]] %>%
+  rename(n_participants = n_participants,
+         n_contacts = n_contacts,
+         degree = degree,
+         total_degree = total_degree,
+         prop_degree = prop_degree) %>%
+  mutate(round = 3) %>%
+  ungroup()
+
+mix4.sum <- mix.list[[4]] %>%
+  rename(n_participants = n_participants,
+         n_contacts = n_contacts,
+         degree = degree,
+         total_degree = total_degree,
+         prop_degree = prop_degree) %>%
+  mutate(round = 4) %>%
+  ungroup()
+
+## join all rounds to compare
+mix.sum <- mix1.sum %>%
+  add_row(mix2.sum) %>%
+  add_row(mix3.sum) %>%
+  add_row(mix4.sum)
+
+## plot degrees to compare across rounds -----------------------------------
+library(ggplot2)
+library(NatParksPalettes)
+
+# Total degree by participant age group and location
+mix.sum.total <- mix.sum %>%
+  select(location,p_age,total_degree,round) %>%
+  distinct()
+
+ggplot(data = mix.sum.total, mapping = aes(x = as.factor(round),
+                                           y = total_degree,
+                                           group = p_age,
+                                           color = p_age))+
+  geom_line(size = 1)+
+  facet_grid(cols = vars(location))+
+  scale_color_manual(values=natparks.pals("Yellowstone", 5))+
+  theme_bw()+
+  labs(x = "Round", y = "Total degree", color = "Participant age")
+ggsave(filename = "out/total_degree.png",height = 3,width = 6)
+
+# Degree by participant age, contact age, and location
+ggplot(data = mix.sum %>%
+         filter(contact_age != "40-59") %>%
+         mutate(contact_age = factor(contact_age,
+                                     levels = c("<20","20-29","30-39",
+                                                "40-49","50-59","60+"))),
+       mapping = aes(x = round,
+                     y = degree,
+                     color = contact_age,
+                     group = contact_age))+
+  geom_line(size = 0.8)+
+  facet_grid(cols = vars(location),
+             rows = vars(p_age))+
+  scale_color_manual(values=natparks.pals("Yellowstone", 6))+
+  theme_bw()+
+  labs(x = "Round", y = "Degree", color = "Contact age")
+ggsave(filename = "out/degree_by_age.png",height = 7,width = 7)
+
+# Distribution of contact age groups by participant age and location
+ggplot(data = mix.sum %>%
+         filter(round != 1) %>%
+         filter(contact_age != "40-59") %>%
+         mutate(contact_age = factor(contact_age,
+                                     levels = c("<20","20-29","30-39",
+                                                "40-49","50-59","60+"))),
+       mapping = aes(x = round,
+                     y = prop_degree,
+                     fill = contact_age,
+                     group = contact_age))+
+  geom_area()+
+  facet_grid(cols = vars(location),
+             rows = vars(p_age))+
+  scale_fill_manual(values=natparks.pals("Yellowstone", 6))+
+  theme_bw()+
+  labs(x = "Round", y = "Proportion of contacts", fill = "Contact age")
+ggsave(filename = "out/prop_degree_by_age.png",height = 7,width = 7)
