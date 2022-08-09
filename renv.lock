@@ -33,9 +33,9 @@
       "RemoteUsername": "EpiModel",
       "RemoteRepo": "EpiModel",
       "RemoteRef": "HEAD",
-      "RemoteSha": "7a3dc83197c5398044a2688c2182be2733a5d4d3",
+      "RemoteSha": "8755c1e2eca75c9990a1e8cb0b4588e37eeaedf6",
       "RemoteHost": "api.github.com",
-      "Hash": "a9ea68da4c45257c2d94bee16895105a",
+      "Hash": "2e1b6af9fca8082ad60d59daeb821527",
       "Requirements": [
         "RColorBrewer",
         "Rcpp",
@@ -75,10 +75,10 @@
     },
     "MASS": {
       "Package": "MASS",
-      "Version": "7.3-58",
+      "Version": "7.3-58.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "4bf2c61e656bbc238634c798c208d386",
+      "Hash": "762e1804143a332333c054759f89a706",
       "Requirements": []
     },
     "Matrix": {
@@ -89,6 +89,21 @@
       "Hash": "699c47c606293bdfbc9fd78a93c9c8fe",
       "Requirements": [
         "lattice"
+      ]
+    },
+    "NatParksPalettes": {
+      "Package": "NatParksPalettes",
+      "Version": "0.1.0",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "NatParksPalettes",
+      "RemoteUsername": "kevinsblake",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "8b3aea33ad66527fc0994b3b5563cff29c23a4d7",
+      "Hash": "6b8749ce548234b94eb370f5ae8152ee",
+      "Requirements": [
+        "ggplot2"
       ]
     },
     "R6": {
@@ -449,16 +464,16 @@
     },
     "ergm": {
       "Package": "ergm",
-      "Version": "4.2-6964",
+      "Version": "4.3-6976",
       "Source": "GitHub",
       "RemoteType": "github",
       "RemoteUsername": "statnet",
       "RemoteRepo": "ergm",
       "RemoteRef": "master",
-      "RemoteSha": "61ebeea9e83cf906a39f60c253ede05f77da03b6",
+      "RemoteSha": "4000e0fcfdfc834c1b1fc3cb5456f3a4d8433b37",
       "RemoteHost": "api.github.com",
       "Remotes": "github::statnet/statnet.common@master, github::statnet/tergm@master,\n    github::statnet/ergm.count@master",
-      "Hash": "adfeaf040895d00c88c62fc49e28405e",
+      "Hash": "5f7545d0d6d8a3113ac5c947915875b6",
       "Requirements": [
         "MASS",
         "Matrix",
