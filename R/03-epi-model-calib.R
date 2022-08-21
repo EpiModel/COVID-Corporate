@@ -65,6 +65,7 @@ init <- init.net(e.num = 100)
 
 # Control settings
 # pkgload::load_all("~/git/EpiModelCOVID")
+# pkgload::load_all("C:/Users/mgarc48/git/EpiModelCOVID")
 control <- control.net(nsteps = 100,
                        nsims = 1,
                        ncores = 1,

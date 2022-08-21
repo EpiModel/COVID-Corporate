@@ -65,6 +65,12 @@ mix1 <- part1 %>%
                                                "50-59","60+"),
                                     ordered = TRUE))
 
+# participants with 0 contacts in round 1
+rd1.no.contacts <- part1 %>%
+  filter(!(id %in% contacts1$id)) %>%
+  group_by(age_cat) %>%
+  tally(name = "n_participants0")
+
 # create list with all rounds
 mix.list <- list(mix1,mix2,mix3,mix4)
 
@@ -143,6 +149,52 @@ mix.sum <- mix1.sum %>%
   add_row(mix3.sum) %>%
   add_row(mix4.sum)
 
+## apply ratio of 40-49-50:59 contacts from round 2 to round 1 -------------
+r40.50 <- mix2.sum %>%
+  filter(contact_age %in% c("40-49","50-59")) %>%
+  group_by(location,p_age) %>%
+  mutate(ratio = n_contacts/sum(n_contacts)) %>%
+  select(location,p_age,contact_age,ratio) %>%
+  mutate(contact_age = paste0("age",substr(contact_age,1,2),"s")) %>%
+  pivot_wider(names_from = contact_age,values_from = ratio)
+
+mix1.40.59 <- mix1.sum %>%
+  filter(contact_age == "40-59") %>%
+  left_join(r40.50,by = c("location","p_age")) %>%
+  mutate(contacts40s = age40s*n_contacts,
+         contacts50s = age50s*n_contacts) %>%
+  select(location,p_age,n_participants,contacts40s,contacts50s) %>%
+  pivot_longer(cols = c("contacts40s","contacts50s"),
+               names_to = "contact_age",values_to = "n_contacts") %>%
+  mutate(contact_age = case_when(contact_age == "contacts40s" ~ "40-49",
+                                 contact_age == "contacts50s" ~ "50-59")) %>%
+  select(location,p_age,contact_age,n_participants,n_contacts)
+
+mix1.sum.edit <- mix1.sum %>%
+  select(names(mix1.40.59)) %>%
+  add_row(mix1.40.59) %>%
+  filter(contact_age != "40-59") %>%
+  arrange(location,p_age,contact_age)
+
+## add participants with 0 contacts in round 1 -----------------------------
+mix1.sum.edit <- mix1.sum.edit %>%
+  left_join(rd1.no.contacts,by = c("p_age" = "age_cat")) %>%
+  mutate(n_participants = n_participants + n_participants0) %>%
+  select(-n_participants0) %>%
+  group_by(location,p_age) %>%
+  mutate(degree = (n_contacts/n_participants)/2) %>%   # average mean degree for 1 day
+  mutate(total_degree = sum(degree)) %>%  # total degree by location and participant age
+  mutate(prop_degree = degree/total_degree) %>%   # age distribution of contacts by location and participant age
+  mutate(round = 1) %>%
+  ungroup()
+
+
+## join all rounds with edited round 1 data --------------------------------
+mix.sum <- mix1.sum.edit %>%
+  add_row(mix2.sum) %>%
+  add_row(mix3.sum) %>%
+  add_row(mix4.sum)
+
 ## plot degrees to compare across rounds -----------------------------------
 library(ggplot2)
 library(NatParksPalettes)
@@ -183,8 +235,6 @@ ggsave(filename = "out/degree_by_age.png",height = 7,width = 7)
 
 # Distribution of contact age groups by participant age and location
 ggplot(data = mix.sum %>%
-         filter(round != 1) %>%
-         filter(contact_age != "40-59") %>%
          mutate(contact_age = factor(contact_age,
                                      levels = c("<20","20-29","30-39",
                                                 "40-49","50-59","60+"))),
