@@ -23,6 +23,8 @@ param <- param.net(inf.prob = c(0.11, 0.11, 0.11),
                    act.rate.inter.time = c(Inf, Inf, Inf),
                    inf.prob.a.rr = 0.5,
 
+                   iso.prob = 0.8,
+
                    act.rate.dx.inter.rr = 0.1,
                    act.rate.dx.inter.time = 1,
                    act.rate.sympt.inter.rr = 0.5,
