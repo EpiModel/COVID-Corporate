@@ -283,6 +283,9 @@ mix.sum.no15 <- mix1.sum.edit.no15 %>%
   add_row(mix3.sum.no15) %>%
   add_row(mix4.sum.no15)
 
+## save round 4 contact data ------
+saveRDS(mix4.sum.no15, file = "data/input/rd4_mean_degree.rds")
+
 ############################## DESCRIPTIVE FIGURES #####################################################
 ############################## ALL CONTACTS ############################################################
 ## plot degrees to compare across rounds -----------------------------------
