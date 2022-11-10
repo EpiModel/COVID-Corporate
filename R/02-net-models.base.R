@@ -9,6 +9,24 @@
 
 library("EpiModelCOVID")
 
+# load CorpMix round 4 contact data----------------------------------------
+cm <- readRDS("data/input/rd4_mean_degree.rds")
+
+md <- cm %>%
+  group_by(location,p_age,n_participants) %>%
+  summarise(n_contacts = sum(n_contacts)) %>%
+  ungroup() %>%
+  group_by(location) %>%
+  summarise(n_contacts = sum(n_contacts),
+            n_participants = sum(n_participants)) %>%
+  mutate(md = (n_contacts/n_participants)/2) %>%
+  select(location,md)
+
+md.age <- cm %>%
+  group_by(location,p_age,n_participants) %>%
+  mutate(n_contacts = sum(n_contacts)) %>%
+  select(location,p_age,n_participants,n_contacts,total_degree) %>%
+  distinct()
 
 
 # Simple 3-layer Network Model --------------------------------------------
@@ -16,7 +34,7 @@ library("EpiModelCOVID")
 ## For use in testing only ##
 
 # Set network
-n <- 1000
+n <- 10000
 nw <- network_initialize(n)
 
 age <- round(rnorm(n, 40, 21), 1)
@@ -33,7 +51,11 @@ nw <- set_vertex_attribute(nw, "age", age)
 nw <- set_vertex_attribute(nw, "age.grp", age.grp)
 
 ## Within household network
-md.hh <- 2.5
+md.hh <- md %>%
+  filter(location == "Home") %>%
+  select(md) %>%
+  as.numeric()
+
 target.stats.hh <- md.hh * n/2
 
 formation.hh <- ~edges
@@ -61,7 +83,10 @@ print(dx.hh)
 
 
 ## Within office network
-md.oo <- 5
+md.oo <- md %>%
+  filter(location == "Work") %>%
+  select(md) %>%
+  as.numeric()
 target.stats.oo <- md.oo * n/2
 
 formation.oo <- ~edges
@@ -74,11 +99,15 @@ summary(est.oo)
 
 dx.oo <- netdx(est.oo, nsims = 25, ncores = 5, nsteps = 1000, dynamic = TRUE,
                set.control.ergm = control.simulate.formula(MCMC.burnin = 1e6))
+
 print(dx.oo)
 
 
 ## Community network
-md.cc <- 2
+md.cc <- md %>%
+  filter(location == "Community") %>%
+  select(md) %>%
+  as.numeric()
 target.stats.cc <- md.cc * n/2
 
 formation.cc <- ~edges
