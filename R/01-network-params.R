@@ -10,6 +10,7 @@
 # Load libraries and data  ------------------------------------------------
 
 library("tidyverse")
+library("socialmixr")
 
 ## contact data rounds 2-4
 mix2 <- readRDS("data/input/df_merged_rd2.RDS")
@@ -285,6 +286,192 @@ mix.sum.no15 <- mix1.sum.edit.no15 %>%
 
 ## save round 4 contact data ------
 saveRDS(mix4.sum.no15, file = "data/input/rd4_mean_degree.rds")
+
+## create symmetrical social mixing matrix with socialmixr -----
+p.home <- mix4 %>%
+  filter(contact_location2 == "Home") %>%
+  filter(!(contact_duration %in% c("<5 mins","5-15 mins"))) %>%
+  select(id,participant_age) %>%
+  rename(part_id = id) %>%
+  mutate(part_age = case_when(participant_age == "20-29" ~ 25,
+                              participant_age == "30-39" ~ 35,
+                              participant_age == "40-49" ~ 45,
+                              participant_age == "50-59" ~ 55,
+                              participant_age == "60-69" ~ 65,
+                              participant_age == "70+" ~ 75)) %>%
+  select(-participant_age)
+
+c.home <- mix4 %>%
+  filter(contact_location2 == "Home") %>%
+  mutate(cont_id = row_number()) %>%
+  mutate(part_age = case_when(participant_age == "20-29" ~ 25,
+                              participant_age == "30-39" ~ 35,
+                              participant_age == "40-49" ~ 45,
+                              participant_age == "50-59" ~ 55,
+                              participant_age == "60-69" ~ 65,
+                              participant_age == "70+" ~ 75)) %>%
+  mutate(cnt_age = case_when(contact_age_2 == "0-9" ~ 5,
+                              contact_age_2 == "10-19" ~ 15,
+                              contact_age_2 == "20-29" ~ 25,
+                              contact_age_2 == "30-39" ~ 35,
+                              contact_age_2 == "40-49" ~ 45,
+                              contact_age_2 == "50-59" ~ 55,
+                              contact_age_2 == "60-69" ~ 65,
+                              contact_age_2 == "70+" ~ 75)) %>%
+  select(id,cont_id,cnt_age,contact_location2,contact_duration) %>%
+  rename(part_id = id,
+         location = contact_location2) %>%
+  mutate(country = factor(location))
+
+survey <- survey(p.home, c.home)
+
+contact_matrix(survey, age.limits = c(0,10,20,30,40,50,60,70), symmetric = T)
+### not working
+
+## create symmetrical social mixing matrix by adding contacts as participant rows ----
+
+contacts4 <- mix4 %>%
+  mutate(contact_age = as.character(participant_age),
+         p_age = as.character(contact_age_2),
+         location = as.character(contact_location2),
+         id = id + 1000) %>%
+  select(id,p_age,contact_age,location,contact_duration)
+
+
+sym.mix <- mix4 %>%
+  mutate(p_age = as.character(participant_age),
+         contact_age = as.character(contact_age_2),
+         location = as.character(contact_location2)) %>%
+  select(id,p_age,contact_age,location,contact_duration) %>%
+  add_row(contacts4) %>%
+  mutate(contact_age = factor(contact_age)) %>%
+  mutate(p_age = factor(p_age)) %>%
+  mutate(location = factor(location)) %>%
+  group_by(p_age) %>%
+  mutate(n_participants = n_distinct(id)) %>%  # total number of participants by age group
+  ungroup() %>%
+  filter(!(contact_duration %in% c("<5 mins","5-15 mins"))) %>%
+  group_by(location,p_age,contact_age,n_participants,.drop = FALSE) %>%
+  summarise(n_contacts = n()) %>%  # total number of contacts reported over 2 days
+  ungroup() %>%
+  complete(location,p_age,contact_age) %>%
+  group_by(location,p_age) %>%
+  fill(n_participants,.direction = "downup") %>%
+  mutate(degree = (n_contacts/n_participants)/2) %>%   # average mean degree for 1 day
+  mutate(total_degree = sum(degree)) %>%  # total degree by location and participant age
+  mutate(prop_degree = degree/total_degree)  # age distribution of contacts by location and participant age
+
+## create symmetrical social mixing matrix by taking average ----
+
+avg.mix <- mix4 %>%
+  mutate(p_age = as.character(participant_age),
+         contact_age = as.character(contact_age_2),
+         location = as.character(contact_location2)) %>%
+  select(id,p_age,contact_age,location,contact_duration) %>%
+  mutate(contact_age = factor(contact_age)) %>%
+  mutate(p_age = factor(p_age)) %>%
+  mutate(location = factor(location)) %>%
+  group_by(p_age) %>%
+  mutate(n_participants = n_distinct(id)) %>%  # total number of participants by age group
+  ungroup() %>%
+  filter(!(contact_duration %in% c("<5 mins","5-15 mins"))) %>%
+  group_by(location,p_age,contact_age,n_participants,.drop = FALSE) %>%
+  summarise(n_contacts = n()) %>%  # total number of contacts reported over 2 days
+  ungroup() %>%
+  complete(location,p_age,contact_age) %>%
+  group_by(p_age) %>%
+  fill(n_participants,.direction = "downup") %>%
+  group_by(location,p_age) %>%
+  mutate(degree = (n_contacts/n_participants)/2) %>%   # average mean degree for 1 day
+  mutate(mix = case_when(p_age == "20-29" & contact_age == "20-29" ~ "20s-20s",
+                         (p_age == "20-29" & contact_age == "30-39") |
+                           (p_age == "30-39" & contact_age == "20-29") ~ "20s-30s",
+                         (p_age == "20-29" & contact_age == "40-49") |
+                           (p_age == "40-49" & contact_age == "20-29") ~ "20s-40s",
+                         (p_age == "20-29" & contact_age == "50-59") |
+                           (p_age == "50-59" & contact_age == "20-29") ~ "20s-50s",
+                         (p_age == "20-29" & contact_age == "60-69") |
+                           (p_age == "60-69" & contact_age == "20-29") ~ "20s-60s",
+                         (p_age == "20-29" & contact_age == "70+") |
+                           (p_age == "70+" & contact_age == "20-29") ~ "20s-70s",
+                         p_age == "30-39" & contact_age == "30-39" ~ "30s-30s",
+                         (p_age == "30-39" & contact_age == "40-49") |
+                           (p_age == "40-49" & contact_age == "30-39") ~ "30s-40s",
+                         (p_age == "30-39" & contact_age == "50-59") |
+                           (p_age == "50-59" & contact_age == "30-39") ~ "30s-50s",
+                         (p_age == "30-39" & contact_age == "60-69") |
+                           (p_age == "60-69" & contact_age == "30-39") ~ "30s-60s",
+                         (p_age == "30-39" & contact_age == "70+") |
+                           (p_age == "70+" & contact_age == "30-39") ~ "30s-70s",
+                         p_age == "40-49" & contact_age == "40-49" ~ "40s-40s",
+                         (p_age == "40-49" & contact_age == "50-59") |
+                           (p_age == "50-59" & contact_age == "40-49") ~ "40s-50s",
+                         (p_age == "40-49" & contact_age == "60-69") |
+                           (p_age == "60-69" & contact_age == "40-49") ~ "40s-60s",
+                         (p_age == "40-49" & contact_age == "70+") |
+                           (p_age == "70+" & contact_age == "40-49") ~ "40s-70s",
+                         p_age == "50-59" & contact_age == "50-59" ~ "50s-50s",
+                         (p_age == "50-59" & contact_age == "60-69") |
+                           (p_age == "60-69" & contact_age == "50-59") ~ "50s-60s",
+                         (p_age == "50-59" & contact_age == "70+") |
+                           (p_age == "70+" & contact_age == "50-59") ~ "50s-70s",
+                         p_age == "60-69" & contact_age == "60-69" ~ "60s-60s",
+                         (p_age == "60-69" & contact_age == "70+") |
+                           (p_age == "70+" & contact_age == "60-69") ~ "60s-70s",
+                         p_age == "70+" & contact_age == "70+" ~ "70s-70s",
+                         p_age == "20-29" & contact_age == "0-9" ~ "0s-20s",
+                         p_age == "30-39" & contact_age == "0-9" ~ "0s-30s",
+                         p_age == "40-49" & contact_age == "0-9" ~ "0s-40s",
+                         p_age == "50-59" & contact_age == "0-9" ~ "0s-50s",
+                         p_age == "60-69" & contact_age == "0-9" ~ "0s-60s",
+                         p_age == "70+" & contact_age == "0-9" ~ "0s-70s",
+                         p_age == "20-29" & contact_age == "10-19" ~ "10s-20s",
+                         p_age == "30-39" & contact_age == "10-19" ~ "10s-30s",
+                         p_age == "40-49" & contact_age == "10-19" ~ "10s-40s",
+                         p_age == "50-59" & contact_age == "10-19" ~ "10s-50s",
+                         p_age == "60-69" & contact_age == "10-19" ~ "10s-60s",
+                         p_age == "70+" & contact_age == "10-19" ~ "10s-70s")) %>%
+  ungroup() %>%
+  group_by(location,mix) %>%
+  summarise(degree = mean(degree))
+
+
+avg.matrix <- avg.mix %>%
+  separate(mix,c("age1","age2")) %>%
+  pivot_wider(names_from = "age1",values_from = "degree")
+
+avg.total <- avg.mix %>%
+  ungroup() %>%
+  mutate(age20s = ifelse(grepl("20s",mix),degree,NA),
+         age30s = ifelse(grepl("30s",mix),degree,NA),
+         age40s = ifelse(grepl("40s",mix),degree,NA),
+         age50s = ifelse(grepl("50s",mix),degree,NA),
+         age60s = ifelse(grepl("60s",mix),degree,NA),
+         age70s = ifelse(grepl("70s",mix),degree,NA)) %>%
+  select(-mix,-degree) %>%
+  group_by(location) %>%
+  summarise(age20s = sum(age20s, na.rm = T),
+            age30s = sum(age30s, na.rm = T),
+            age40s = sum(age40s, na.rm = T),
+            age50s = sum(age50s, na.rm = T),
+            age60s = sum(age60s, na.rm = T),
+            age70s = sum(age70s, na.rm = T)) %>%
+  pivot_longer(cols = -location,names_to = "age2", values_to = "total_degree") %>%
+  mutate(age2 = substr(age2,4,6))
+
+avg.matrix <- avg.matrix %>%
+  left_join(avg.total, by = c("location","age2")) %>%
+  rename(age = age2) %>%
+  mutate(prop_match = case_when(age == "20s" ~ `20s`/total_degree,
+                                age == "30s" ~ `30s`/total_degree,
+                                age == "40s" ~ `40s`/total_degree,
+                                age == "50s" ~ `50s`/total_degree,
+                                age == "60s" ~ `60s`/total_degree,
+                                age == "70s" ~ `70s`/total_degree))
+
+saveRDS(avg.matrix, file = "data/input/rd4_matrix.rds")
+# write.csv(avg.matrix,"cm_mixing_matrix.csv",row.names = F,na = "")
+
 
 ############################## DESCRIPTIVE FIGURES #####################################################
 ############################## ALL CONTACTS ############################################################
