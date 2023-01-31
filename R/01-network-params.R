@@ -287,80 +287,6 @@ mix.sum.no15 <- mix1.sum.edit.no15 %>%
 ## save round 4 contact data ------
 saveRDS(mix4.sum.no15, file = "data/input/rd4_mean_degree.rds")
 
-## create symmetrical social mixing matrix with socialmixr -----
-p.home <- mix4 %>%
-  filter(contact_location2 == "Home") %>%
-  filter(!(contact_duration %in% c("<5 mins","5-15 mins"))) %>%
-  select(id,participant_age) %>%
-  rename(part_id = id) %>%
-  mutate(part_age = case_when(participant_age == "20-29" ~ 25,
-                              participant_age == "30-39" ~ 35,
-                              participant_age == "40-49" ~ 45,
-                              participant_age == "50-59" ~ 55,
-                              participant_age == "60-69" ~ 65,
-                              participant_age == "70+" ~ 75)) %>%
-  select(-participant_age)
-
-c.home <- mix4 %>%
-  filter(contact_location2 == "Home") %>%
-  mutate(cont_id = row_number()) %>%
-  mutate(part_age = case_when(participant_age == "20-29" ~ 25,
-                              participant_age == "30-39" ~ 35,
-                              participant_age == "40-49" ~ 45,
-                              participant_age == "50-59" ~ 55,
-                              participant_age == "60-69" ~ 65,
-                              participant_age == "70+" ~ 75)) %>%
-  mutate(cnt_age = case_when(contact_age_2 == "0-9" ~ 5,
-                              contact_age_2 == "10-19" ~ 15,
-                              contact_age_2 == "20-29" ~ 25,
-                              contact_age_2 == "30-39" ~ 35,
-                              contact_age_2 == "40-49" ~ 45,
-                              contact_age_2 == "50-59" ~ 55,
-                              contact_age_2 == "60-69" ~ 65,
-                              contact_age_2 == "70+" ~ 75)) %>%
-  select(id,cont_id,cnt_age,contact_location2,contact_duration) %>%
-  rename(part_id = id,
-         location = contact_location2) %>%
-  mutate(country = factor(location))
-
-survey <- survey(p.home, c.home)
-
-contact_matrix(survey, age.limits = c(0,10,20,30,40,50,60,70), symmetric = T)
-### not working
-
-## create symmetrical social mixing matrix by adding contacts as participant rows ----
-
-contacts4 <- mix4 %>%
-  mutate(contact_age = as.character(participant_age),
-         p_age = as.character(contact_age_2),
-         location = as.character(contact_location2),
-         id = id + 1000) %>%
-  select(id,p_age,contact_age,location,contact_duration)
-
-
-sym.mix <- mix4 %>%
-  mutate(p_age = as.character(participant_age),
-         contact_age = as.character(contact_age_2),
-         location = as.character(contact_location2)) %>%
-  select(id,p_age,contact_age,location,contact_duration) %>%
-  add_row(contacts4) %>%
-  mutate(contact_age = factor(contact_age)) %>%
-  mutate(p_age = factor(p_age)) %>%
-  mutate(location = factor(location)) %>%
-  group_by(p_age) %>%
-  mutate(n_participants = n_distinct(id)) %>%  # total number of participants by age group
-  ungroup() %>%
-  filter(!(contact_duration %in% c("<5 mins","5-15 mins"))) %>%
-  group_by(location,p_age,contact_age,n_participants,.drop = FALSE) %>%
-  summarise(n_contacts = n()) %>%  # total number of contacts reported over 2 days
-  ungroup() %>%
-  complete(location,p_age,contact_age) %>%
-  group_by(location,p_age) %>%
-  fill(n_participants,.direction = "downup") %>%
-  mutate(degree = (n_contacts/n_participants)/2) %>%   # average mean degree for 1 day
-  mutate(total_degree = sum(degree)) %>%  # total degree by location and participant age
-  mutate(prop_degree = degree/total_degree)  # age distribution of contacts by location and participant age
-
 ## create symmetrical social mixing matrix by taking average ----
 
 avg.mix <- mix4 %>%
@@ -469,9 +395,46 @@ avg.matrix <- avg.matrix %>%
                                 age == "60s" ~ `60s`/total_degree,
                                 age == "70s" ~ `70s`/total_degree))
 
-saveRDS(avg.matrix, file = "data/input/rd4_matrix.rds")
+saveRDS(avg.matrix, file = "data/input/rd4_matrix.rds") #matrix with mean degree in each cell
 # write.csv(avg.matrix,"cm_mixing_matrix.csv",row.names = F,na = "")
 
+# complete matrix with proportions instead of mean degree, incorporating comix data for children
+avg.mix2 <- avg.mix %>%
+  separate(mix,c("age1","age2")) %>%
+  rename(age2 = age1,
+         age1 = age2) %>%
+  filter(age1 != age2)
+
+avg.matrix2 <- avg.mix %>%
+  separate(mix,c("age1","age2")) %>%
+  ungroup() %>%
+  add_row(avg.mix2) %>%
+  mutate(location = factor(location),
+         age1 = factor(age1),
+         age2 = factor(age2)) %>%
+  complete(location,age1,age2) %>%
+  pivot_wider(names_from = "age2",values_from = "degree")
+
+avg.total2 <- avg.total %>%
+  add_row(data.frame(location = c("Home","Home","Community","Community"),
+                     age2 = c("0s","10s","0s","10s"),
+                     #total_degree = c(2.25,2.25,4,6) # numbers from comix, includes contacts <15min
+                     total_degree = c(1.36,1.14,2.08,3.42) # numbers from polymod, excludes contacts <15min
+                     ))
+
+avg.matrix.prop <- avg.matrix2 %>%
+  left_join(avg.total2, by = c("location","age1" = "age2")) %>%
+  rename(age = age1) %>%
+  mutate(`20s` = `20s`/total_degree,
+         `30s` = `30s`/total_degree,
+         `40s` = `40s`/total_degree,
+         `50s` = `50s`/total_degree,
+         `60s` = `60s`/total_degree,
+         `70s` = `70s`/total_degree)
+
+
+saveRDS(avg.matrix.prop, file = "data/input/rd4_matrix_prop.rds") # matrix with proportion of total mean degree in each cell
+write.csv(avg.matrix.prop,"cm_mixing_matrix_prop.csv",row.names = F,na = "")
 
 ############################## DESCRIPTIVE FIGURES #####################################################
 ############################## ALL CONTACTS ############################################################
