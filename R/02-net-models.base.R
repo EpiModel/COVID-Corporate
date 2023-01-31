@@ -8,10 +8,23 @@
 ##
 
 library("EpiModelCOVID")
+library("tidyverse")
+library(socialmixr)
 
 # load CorpMix round 4 contact data----------------------------------------
+
+# 'raw' round 4 mixing data
 cm <- readRDS("data/input/rd4_mean_degree.rds")
 
+# 'balanced' round 4 mixing matrix
+cm2 <- readRDS("data/input/rd4_matrix.rds") %>%
+  ungroup()
+
+# round 4 mixing matrix with proportions in each cell
+cm.prop <- readRDS("data/input/rd4_matrix_prop.rds") %>%
+  ungroup()
+
+# total mean degree by location using raw data
 md <- cm %>%
   group_by(location,p_age,n_participants) %>%
   summarise(n_contacts = sum(n_contacts)) %>%
@@ -19,15 +32,58 @@ md <- cm %>%
   group_by(location) %>%
   summarise(n_contacts = sum(n_contacts),
             n_participants = sum(n_participants)) %>%
-  mutate(md = (n_contacts/n_participants)/2) %>%
-  select(location,md)
+  mutate(md = (n_contacts/n_participants)/2)
 
-md.age <- cm %>%
-  group_by(location,p_age,n_participants) %>%
-  mutate(n_contacts = sum(n_contacts)) %>%
-  select(location,p_age,n_participants,n_contacts,total_degree) %>%
-  distinct()
+# md.age <- cm %>%
+#   group_by(location,p_age,n_participants) %>%
+#   mutate(n_contacts = sum(n_contacts)) %>%
+#   select(location,p_age,n_participants,n_contacts,total_degree) %>%
+#   distinct() %>%
+#   ungroup()
 
+# proportion within age group mixing by location
+md.match.raw <- cm %>%
+  filter(as.character(p_age) == as.character(contact_age)) %>%
+  group_by(location) %>%
+  summarise(n_contacts = sum(n_contacts),
+            n_participants = sum(n_participants)) %>%
+  mutate(md.match = (n_contacts/n_participants)/2) %>%
+  left_join(md,by = "location") %>%
+  mutate(match = md.match/md)
+
+md.match <- cm2 %>%
+  mutate(within_age_edges = total_degree*prop_match) %>%
+  select(location,age,total_degree,within_age_edges) %>%
+  group_by(location) %>%
+  summarise(total_degree = sum(total_degree),
+            within_age_edges = sum(within_age_edges)) %>%
+  mutate(match = within_age_edges/total_degree)
+
+# load POLYMOD data -------------------------------------------------------
+
+data("polymod")
+contact_matrix(polymod, age.limits = c(0,10,20,30,40,50,60,70,80,90,100),
+               filter = list(cnt_home=1, duration_multi=c(3,4,5)))
+
+# home contactas > 15 mins
+poly.home <- contact_matrix(polymod, age.limits = c(0,10,20,30,40,50,60,70,80,90,100),
+               filter = list(cnt_home=1, duration_multi=c(3,4,5)))$matrix
+rowSums(poly.home)
+
+# home contacts all durations
+poly.home.all <- contact_matrix(polymod, age.limits = c(0,10,20,30,40,50,60,70,80,90,100),
+                            filter = list(cnt_home=1))$matrix
+rowSums(poly.home.all)
+
+# contacts outside the home > 15 mins
+poly.nothome <- contact_matrix(polymod, age.limits = c(0,10,20,30,40,50,60,70,80,90,100),
+                            filter = list(cnt_home=0, duration_multi=c(3,4,5)))$matrix
+rowSums(poly.nothome)
+
+# contacts outside the home all durations
+poly.nothome.all <- contact_matrix(polymod, age.limits = c(0,10,20,30,40,50,60,70,80,90,100),
+                               filter = list(cnt_home=0))$matrix
+rowSums(poly.nothome.all)
 
 # Simple 3-layer Network Model --------------------------------------------
 
@@ -44,23 +100,58 @@ hist(age)
 
 age.breaks <- seq(0, 100, 10)
 age.grp <- cut(age, age.breaks, labels = FALSE, right = FALSE)
-age.grp
-data.frame(age, age.grp)
 
 nw <- set_vertex_attribute(nw, "age", age)
 nw <- set_vertex_attribute(nw, "age.grp", age.grp)
 
+age.grp.num <- as.numeric(table(age.grp))
+
 ## Within household network
+nw.loc <- "Home"
+
+# Mean degree from corp mix data
 md.hh <- md %>%
-  filter(location == "Home") %>%
+  filter(location == nw.loc) %>%
   select(md) %>%
   as.numeric()
 
-target.stats.hh <- md.hh * n/2
+# Weighted mean degree
+md.hh.age <- cm2 %>%
+  filter(location == nw.loc & age != "70s") %>%
+  pull(total_degree)
+# add polymod data for missing age groups
+md.hh.age <- c(1.36,1.14,md.hh.age,0.63,0.68,0.65)
+# multiply by weights
+w <- age.grp.num/sum(age.grp.num)
+md.hh2 <- sum(md.hh.age * w)
 
-formation.hh <- ~edges
+edges.hh <- md.hh * n/2
 
-coef.diss.hh <- dissolution_coefs(dissolution = ~offset(edges), duration = 1e5)
+# Number of edges per age group for nodefactor()
+# note this only includes age groups 20-60+
+md.hh.ag <- cm2 %>%
+  filter(location == nw.loc) %>%
+  select(total_degree) %>%
+  as_vector() %>%
+  as.numeric()
+# adding missing md for other age groups for now
+md.hh.ag <- c(NA,NA,md.hh.ag,NA,NA)
+
+nf.hh.ag <- md.hh.ag * age.grp.num
+
+# Proportion within-group mixing for nodematch()
+match.hh.ag <- md.match$match[md.match$location == nw.loc]
+
+nm.hh.ag <- edges.hh * match.hh.ag
+
+formation.hh <- ~edges + nodefactor("age.grp", levels = 3:7) + nodematch("age.grp", diff = F)
+# formation.hh <- ~edges + nodefactor("age.grp", levels = 3:7)
+# test keeping/dropping nodefactor levels
+
+target.stats.hh <- c(edges.hh, nf.hh.ag[3:7], nm.hh.ag)
+# target.stats.hh <- c(edges.hh, nf.hh.ag[3:7])
+
+coef.diss.hh <- dissolution_coefs(dissolution = ~offset(edges), duration = 1e6)
 
 est.hh <- netest(nw, formation.hh, target.stats.hh, coef.diss.hh,
                  set.control.ergm = control.ergm(MCMLE.maxit = 500))
@@ -72,9 +163,67 @@ summary(est.hh)
 #                                               init.MPLE.samplesize = 1e8,
 #                                               SAN.control = control.san(SAN.nsteps = 1e8)))
 
-dx.hh <- netdx(est.hh, nsims = 25, ncores = 5, nsteps = 1000, dynamic = TRUE,
-               set.control.ergm = control.simulate.formula(MCMC.burnin = 1e6))
+dx.hh <- netdx(est.hh, nsims = 1, ncores = 1, nsteps = 1000, dynamic = TRUE,
+               set.control.ergm = control.simulate.formula(MCMC.burnin = 1e6),
+               nwstats.formula = ~edges + nodefactor("age.grp",levels = NULL) + nodematch("age.grp",diff = T) +
+                 nodemix("age.grp",levels2 = NULL), keep.tedgelist = TRUE)
 print(dx.hh)
+
+#list of edges over time steps
+#tail and head are positional ids, could look at ages for these
+#can calculate my own statistics from this
+as.data.frame(dx.hh)
+
+# pull positional ids and corresponding age groups
+vertex.names <- get_vertex_attribute(nw, "vertex.names")
+age.grp <- get_vertex_attribute(nw, "age.grp")
+id.age <- as.data.frame(cbind(vertex.names,age.grp))
+num.age <- id.age %>%
+  group_by(age.grp) %>%
+  tally(name = "num.participants")
+
+# generate network summary statistics
+dx.hh.sum <- as.data.frame(dx.hh) %>%
+  select(tail,head) %>%
+  left_join(id.age, by = c("head" = "vertex.names")) %>%
+  rename(head.age = age.grp) %>%
+  left_join(id.age, by = c("tail" = "vertex.names")) %>%
+  rename(tail.age = age.grp) %>%
+  left_join(num.age, by = c("head.age" = "age.grp")) %>%
+  group_by(head.age,tail.age,num.participants) %>%
+  tally(name = "num.contacts") %>%
+  ungroup() %>%
+  group_by(head.age,num.participants) %>%
+  mutate(total.contacts = sum(num.contacts)) %>%
+  mutate(age.degree = num.contacts/num.participants,
+         total.degree = total.contacts/num.participants)
+
+# second version with one row for each head AND tail contact
+dx.hh.sum <- as.data.frame(dx.hh) %>%
+  rename(head = "tail", tail = "head") %>%
+  add_row(as.data.frame(dx.hh)) %>%
+  select(tail,head) %>%
+  left_join(id.age, by = c("head" = "vertex.names")) %>%
+  rename(head.age = age.grp) %>%
+  left_join(id.age, by = c("tail" = "vertex.names")) %>%
+  rename(tail.age = age.grp) %>%
+  left_join(num.age, by = c("head.age" = "age.grp")) %>%
+  group_by(head.age,tail.age,num.participants) %>%
+  tally(name = "num.contacts") %>%
+  ungroup() %>%
+  group_by(head.age,num.participants) %>%
+  mutate(total.contacts = sum(num.contacts)) %>%
+  mutate(age.degree = num.contacts/num.participants,
+         total.degree = total.contacts/num.participants)
+
+dx.hh.match <- dx.hh.sum %>%
+  filter(head.age == tail.age) %>%
+  mutate(prop.match =  age.degree/total.degree)
+
+dx.hh.mix <- dx.hh.sum %>%
+  ungroup() %>%
+  select(head.age,tail.age,age.degree) %>%
+  pivot_wider(values_from = "age.degree",names_from = "tail.age")
 
 # dx <- netdx(est, nsims = 1, nsteps = 1000, keep.tedgelist = TRUE,
 #             set.control.ergm = control.simulate.stergm(MCMC.init.maxchanges = 1e8,
