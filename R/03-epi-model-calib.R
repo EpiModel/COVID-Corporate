@@ -23,6 +23,8 @@ param <- param.net(inf.prob = c(0.11, 0.11, 0.11),
                    act.rate.inter.time = c(Inf, Inf, Inf),
                    inf.prob.a.rr = 0.5,
 
+                   iso.prob = 0.8,
+
                    act.rate.dx.inter.rr = 0.1,
                    act.rate.dx.inter.time = 1,
                    act.rate.sympt.inter.rr = 0.5,
@@ -65,6 +67,7 @@ init <- init.net(e.num = 100)
 
 # Control settings
 # pkgload::load_all("~/git/EpiModelCOVID")
+# pkgload::load_all("C:/Users/mgarc48/git/EpiModelCOVID")
 control <- control.net(nsteps = 100,
                        nsims = 1,
                        ncores = 1,
