@@ -18,17 +18,21 @@ source("R/01-epi-params.R")
 param <- param.net(inf.prob = c(0.11, 0.11, 0.11),
                    act.rate = c(5, 1, 1),
                    inf.prob.inter.rr = c(0.6, 0.6, 0.6),
-                   inf.prob.inter.time = c(Inf, 15, 15),
+                   inf.prob.inter.time = c(Inf, Inf, Inf),
                    act.rate.inter.rr = c(1, 1, 1),
                    act.rate.inter.time = c(Inf, Inf, Inf),
                    inf.prob.a.rr = 0.5,
+                   inf.prob.mask.rr = 0.3,
 
                    iso.prob = 0.8,
+                   notif.prob = 0.3,
 
                    act.rate.dx.inter.rr = 0.1,
-                   act.rate.dx.inter.time = 1,
+                   act.rate.dx.inter.time = Inf,
                    act.rate.sympt.inter.rr = 0.5,
-                   act.rate.sympt.inter.time = 1,
+                   act.rate.sympt.inter.time = Inf,
+                   act.rate.iso.inter.time = 1,
+                   act.rate.iso.inter.rr = 0.3,
 
                    prop.clinical = c(0.40, 0.25, 0.37, 0.42, 0.51, 0.59, 0.72, 0.76),
                    prop.hospit = c(0.40, 0.25, 0.37, 0.42, 0.51, 0.59, 0.72, 0.76),
@@ -40,6 +44,7 @@ param <- param.net(inf.prob = c(0.11, 0.11, 0.11),
                    icr.rate = 1/3.5,
                    ich.rate = 1/3.5,
                    hr.rate = 1/7,
+                   rs.rate = 1/180, #UPDATE WITH REAL NUMBER, ASSUMING 6 MONTHS FOR NOW
 
                    pcr.sens = 0.8,
                    dx.rate.sympt = 0.1,
@@ -53,9 +58,13 @@ param <- param.net(inf.prob = c(0.11, 0.11, 0.11),
                    vax1.rr.infect = 0.75,
                    vax2.rr.infect = 0.25,
                    vax.rr.clinical = 0.05,
+                   vax1.rr.hosp = 0.5, #UPDATE WITH REAL NUMBER
+                   vax2.rr.hosp = 0.5, #UPDATE WITH REAL NUMBER
+                   vax3.rr.hosp = 0.5, #UPDATE WITH REAL NUMBER
                    vax1.immune = 7,
                    vax2.immune = 14,
                    vax3.immune = 14,
+                   half.life = 120, #UPDATE WITH REAL NUMBER
 
                    a.rate = mean(mr_vec),
                    arrival.age = 0,
@@ -95,7 +104,9 @@ control <- control.net(nsteps = 100,
                        nwstats.formula.1 = "formation",
                        nwstats.formula.2 = "formation",
                        nwstats.formula.3 = "formation",
-                       tergmLite = TRUE)
+                       tergmLite = TRUE,
+                       cumulative.edgelist = TRUE,
+                       truncate.el.cuml = 10)
 
 sim <- netsim(est, param, init, control)
 # print(sim)
