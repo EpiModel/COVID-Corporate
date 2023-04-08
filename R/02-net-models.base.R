@@ -11,17 +11,17 @@ library("EpiModelCOVID")
 library("tidyverse")
 library(socialmixr)
 
-# load CorpMix round 4 contact data----------------------------------------
+# load CorpMix round 5 contact data----------------------------------------
 
 # 'raw' round 4 mixing data
-cm <- readRDS("data/input/rd4_mean_degree.rds")
+cm <- readRDS("data/input/rd5_mean_degree.rds")
 
-# 'balanced' round 4 mixing matrix
-cm2 <- readRDS("data/input/rd4_matrix.rds") %>%
+# 'balanced' round 5 mixing matrix
+cm2 <- readRDS("data/input/rd5_matrix.rds") %>%
   ungroup()
 
-# round 4 mixing matrix with proportions in each cell
-cm.prop <- readRDS("data/input/rd4_matrix_prop.rds") %>%
+# round 5 mixing matrix with proportions in each cell
+cm.prop <- readRDS("data/input/rd5_matrix_prop.rds") %>%
   ungroup()
 
 # total mean degree by location using raw data

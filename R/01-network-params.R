@@ -12,10 +12,11 @@
 library("tidyverse")
 library("socialmixr")
 
-## contact data rounds 2-4
+## contact data rounds 2-5
 mix2 <- readRDS("data/input/df_merged_rd2.RDS")
 mix3 <- readRDS("data/input/df_merged_rd3.RDS")
 mix4 <- readRDS("data/input/df_merged_rd4.RDS")
+mix5 <- readRDS("data/input/df_merged_rd5.RDS")
 
 # round 1 (match rounds 2-4 format)
 contacts1 <- readRDS("data/input/df_contact_clean_rd1.RDS") %>%
@@ -61,7 +62,9 @@ rd1.no.contacts <- part1 %>%
   tally(name = "n_participants0")
 
 # create list with all rounds
-mix.list.raw <- list(mix1,mix2,mix3,mix4)
+mix5x <- mix5 %>%
+  mutate(participant_age_2 = participant_age)
+mix.list.raw <- list(mix1,mix2,mix3,mix4,mix5x)
 
 ## function to collapse data and estimate mean degree------
 summariseContacts <- function(df,filter.length = c("")) {
@@ -135,11 +138,21 @@ mix4.sum <- mix.list[[4]] %>%
   mutate(round = 4) %>%
   ungroup()
 
+mix5.sum <- mix.list[[5]] %>%
+  rename(n_participants = n_participants,
+         n_contacts = n_contacts,
+         degree = degree,
+         total_degree = total_degree,
+         prop_degree = prop_degree) %>%
+  mutate(round = 5) %>%
+  ungroup()
+
 ## join all rounds to compare
 mix.sum <- mix1.sum %>%
   add_row(mix2.sum) %>%
   add_row(mix3.sum) %>%
-  add_row(mix4.sum)
+  add_row(mix4.sum) %>%
+  add_row(mix5.sum)
 
 ## apply ratio of 40-49-50:59 contacts from round 2 to round 1 -------------
 r40.50 <- mix2.sum %>%
@@ -185,7 +198,8 @@ mix1.sum.edit <- mix1.sum.edit %>%
 mix.sum <- mix1.sum.edit %>%
   add_row(mix2.sum) %>%
   add_row(mix3.sum) %>%
-  add_row(mix4.sum)
+  add_row(mix4.sum) %>%
+  add_row(mix5.sum)
 
 ############################## EXCLUDING CONTACTS < 15 MIN #############################################
 # Format data: Excluding contacts <15 mins  ------------------------------------------------------------
@@ -232,11 +246,21 @@ mix4.sum.no15 <- mix.list.no15[[4]] %>%
   mutate(round = 4) %>%
   ungroup()
 
+mix5.sum.no15 <- mix.list.no15[[5]] %>%
+  rename(n_participants = n_participants,
+         n_contacts = n_contacts,
+         degree = degree,
+         total_degree = total_degree,
+         prop_degree = prop_degree) %>%
+  mutate(round = 5) %>%
+  ungroup()
+
 ## join all rounds to compare
 mix.sum.no15 <- mix1.sum.no15 %>%
   add_row(mix2.sum.no15) %>%
   add_row(mix3.sum.no15) %>%
-  add_row(mix4.sum.no15)
+  add_row(mix4.sum.no15) %>%
+  add_row(mix5.sum.no15)
 
 ## apply ratio of 40-49-50:59 contacts from round 2 to round 1 -------------
 r40.50.no15 <- mix2.sum.no15 %>%
@@ -282,12 +306,14 @@ mix1.sum.edit.no15 <- mix1.sum.edit.no15 %>%
 mix.sum.no15 <- mix1.sum.edit.no15 %>%
   add_row(mix2.sum.no15) %>%
   add_row(mix3.sum.no15) %>%
-  add_row(mix4.sum.no15)
+  add_row(mix4.sum.no15) %>%
+  add_row(mix5.sum.no15)
 
-## save round 4 contact data ------
+## save round 4 and 5 contact data ------
 saveRDS(mix4.sum.no15, file = "data/input/rd4_mean_degree.rds")
+saveRDS(mix5.sum.no15, file = "data/input/rd5_mean_degree.rds")
 
-## create symmetrical social mixing matrix by taking average ----
+## Round 4: create symmetrical social mixing matrix by taking average ----
 
 avg.mix <- mix4 %>%
   mutate(p_age = as.character(participant_age),
@@ -396,7 +422,7 @@ avg.matrix <- avg.matrix %>%
                                 age == "70s" ~ `70s`/total_degree))
 
 saveRDS(avg.matrix, file = "data/input/rd4_matrix.rds") #matrix with mean degree in each cell
-# write.csv(avg.matrix,"cm_mixing_matrix.csv",row.names = F,na = "")
+write.csv(avg.matrix,"cm_mixing_matrix.csv",row.names = F,na = "")
 
 # complete matrix with proportions instead of mean degree, incorporating comix data for children
 avg.mix2 <- avg.mix %>%
@@ -435,6 +461,140 @@ avg.matrix.prop <- avg.matrix2 %>%
 
 saveRDS(avg.matrix.prop, file = "data/input/rd4_matrix_prop.rds") # matrix with proportion of total mean degree in each cell
 write.csv(avg.matrix.prop,"cm_mixing_matrix_prop.csv",row.names = F,na = "")
+
+## Round 5: create symmetrical social mixing matrix by taking average ----
+
+avg.mix5 <- mix5 %>%
+  mutate(p_age = as.character(participant_age),
+         contact_age = as.character(contact_age_3),
+         location = as.character(contact_location2)) %>%
+  select(id,p_age,contact_age,location,contact_duration) %>%
+  mutate(contact_age = factor(contact_age)) %>%
+  mutate(p_age = factor(p_age)) %>%
+  mutate(location = factor(location)) %>%
+  group_by(p_age) %>%
+  mutate(n_participants = n_distinct(id)) %>%  # total number of participants by age group
+  ungroup() %>%
+  filter(!(contact_duration %in% c("<5 mins","5-15 mins"))) %>%
+  group_by(location,p_age,contact_age,n_participants,.drop = FALSE) %>%
+  summarise(n_contacts = n()) %>%  # total number of contacts reported over 2 days
+  ungroup() %>%
+  complete(location,p_age,contact_age) %>%
+  group_by(p_age) %>%
+  fill(n_participants,.direction = "downup") %>%
+  group_by(location,p_age) %>%
+  mutate(degree = (n_contacts/n_participants)/2) %>%   # average mean degree for 1 day
+  mutate(mix = case_when(p_age == "20-29" & contact_age == "20-29" ~ "20s-20s",
+                         (p_age == "20-29" & contact_age == "30-39") |
+                           (p_age == "30-39" & contact_age == "20-29") ~ "20s-30s",
+                         (p_age == "20-29" & contact_age == "40-49") |
+                           (p_age == "40-49" & contact_age == "20-29") ~ "20s-40s",
+                         (p_age == "20-29" & contact_age == "50-59") |
+                           (p_age == "50-59" & contact_age == "20-29") ~ "20s-50s",
+                         (p_age == "20-29" & contact_age == "60+") |
+                           (p_age == "60+" & contact_age == "20-29") ~ "20s-60s",
+                         p_age == "30-39" & contact_age == "30-39" ~ "30s-30s",
+                         (p_age == "30-39" & contact_age == "40-49") |
+                           (p_age == "40-49" & contact_age == "30-39") ~ "30s-40s",
+                         (p_age == "30-39" & contact_age == "50-59") |
+                           (p_age == "50-59" & contact_age == "30-39") ~ "30s-50s",
+                         (p_age == "30-39" & contact_age == "60+") |
+                           (p_age == "60+" & contact_age == "30-39") ~ "30s-60s",
+                         p_age == "40-49" & contact_age == "40-49" ~ "40s-40s",
+                         (p_age == "40-49" & contact_age == "50-59") |
+                           (p_age == "50-59" & contact_age == "40-49") ~ "40s-50s",
+                         (p_age == "40-49" & contact_age == "60+") |
+                           (p_age == "60+" & contact_age == "40-49") ~ "40s-60s",
+                         p_age == "50-59" & contact_age == "50-59" ~ "50s-50s",
+                         (p_age == "50-59" & contact_age == "60+") |
+                           (p_age == "60+" & contact_age == "50-59") ~ "50s-60s",
+                         p_age == "60+" & contact_age == "60+" ~ "60s-60s",
+                         p_age == "20-29" & contact_age == "0-9" ~ "0s-20s",
+                         p_age == "30-39" & contact_age == "0-9" ~ "0s-30s",
+                         p_age == "40-49" & contact_age == "0-9" ~ "0s-40s",
+                         p_age == "50-59" & contact_age == "0-9" ~ "0s-50s",
+                         p_age == "60+" & contact_age == "0-9" ~ "0s-60s",
+                         p_age == "20-29" & contact_age == "10-19" ~ "10s-20s",
+                         p_age == "30-39" & contact_age == "10-19" ~ "10s-30s",
+                         p_age == "40-49" & contact_age == "10-19" ~ "10s-40s",
+                         p_age == "50-59" & contact_age == "10-19" ~ "10s-50s",
+                         p_age == "60+" & contact_age == "10-19" ~ "10s-60s")) %>%
+  ungroup() %>%
+  group_by(location,mix) %>%
+  summarise(degree = mean(degree))
+
+
+avg.matrix5 <- avg.mix5 %>%
+  separate(mix,c("age1","age2")) %>%
+  pivot_wider(names_from = "age1",values_from = "degree")
+
+avg.total5 <- avg.mix5 %>%
+  ungroup() %>%
+  mutate(age20s = ifelse(grepl("20s",mix),degree,NA),
+         age30s = ifelse(grepl("30s",mix),degree,NA),
+         age40s = ifelse(grepl("40s",mix),degree,NA),
+         age50s = ifelse(grepl("50s",mix),degree,NA),
+         age60s = ifelse(grepl("60s",mix),degree,NA),
+         age70s = ifelse(grepl("70s",mix),degree,NA)) %>%
+  select(-mix,-degree) %>%
+  group_by(location) %>%
+  summarise(age20s = sum(age20s, na.rm = T),
+            age30s = sum(age30s, na.rm = T),
+            age40s = sum(age40s, na.rm = T),
+            age50s = sum(age50s, na.rm = T),
+            age60s = sum(age60s, na.rm = T),
+            age70s = sum(age70s, na.rm = T)) %>%
+  pivot_longer(cols = -location,names_to = "age2", values_to = "total_degree") %>%
+  mutate(age2 = substr(age2,4,6))
+
+avg.matrix5 <- avg.matrix5 %>%
+  left_join(avg.total5, by = c("location","age2")) %>%
+  rename(age = age2) %>%
+  mutate(prop_match = case_when(age == "20s" ~ `20s`/total_degree,
+                                age == "30s" ~ `30s`/total_degree,
+                                age == "40s" ~ `40s`/total_degree,
+                                age == "50s" ~ `50s`/total_degree,
+                                age == "60s" ~ `60s`/total_degree))
+
+saveRDS(avg.matrix5, file = "data/input/rd5_matrix.rds") #matrix with mean degree in each cell
+write.csv(avg.matrix5,"rd5_cm_mixing_matrix.csv",row.names = F,na = "")
+
+# complete matrix with proportions instead of mean degree, incorporating comix data for children
+avg.mix2 <- avg.mix5 %>%
+  separate(mix,c("age1","age2")) %>%
+  rename(age2 = age1,
+         age1 = age2) %>%
+  filter(age1 != age2)
+
+avg.matrix2 <- avg.mix5 %>%
+  separate(mix,c("age1","age2")) %>%
+  ungroup() %>%
+  add_row(avg.mix2) %>%
+  mutate(location = factor(location),
+         age1 = factor(age1),
+         age2 = factor(age2)) %>%
+  complete(location,age1,age2) %>%
+  pivot_wider(names_from = "age2",values_from = "degree")
+
+avg.total2 <- avg.total5 %>%
+  add_row(data.frame(location = c("Home","Home","Community","Community"),
+                     age2 = c("0s","10s","0s","10s"),
+                     #total_degree = c(2.25,2.25,4,6) # numbers from comix, includes contacts <15min
+                     total_degree = c(1.36,1.14,2.08,3.42) # numbers from polymod, excludes contacts <15min
+  ))
+
+avg.matrix.prop5 <- avg.matrix2 %>%
+  left_join(avg.total2, by = c("location","age1" = "age2")) %>%
+  rename(age = age1) %>%
+  mutate(`20s` = `20s`/total_degree,
+         `30s` = `30s`/total_degree,
+         `40s` = `40s`/total_degree,
+         `50s` = `50s`/total_degree,
+         `60s` = `60s`/total_degree)
+
+
+saveRDS(avg.matrix.prop5, file = "data/input/rd5_matrix_prop.rds") # matrix with proportion of total mean degree in each cell
+write.csv(avg.matrix.prop5,"rd5_cm_mixing_matrix_prop.csv",row.names = F,na = "")
 
 ############################## DESCRIPTIVE FIGURES #####################################################
 ############################## ALL CONTACTS ############################################################
