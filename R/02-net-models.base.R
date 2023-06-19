@@ -8,8 +8,7 @@
 ##
 
 library("EpiModelCOVID")
-library("tidyverse")
-library(socialmixr)
+library("dplyr")
 
 # load CorpMix round 5 contact data----------------------------------------
 
@@ -85,28 +84,91 @@ poly.nothome.all <- contact_matrix(polymod, age.limits = c(0,10,20,30,40,50,60,7
                                filter = list(cnt_home=0))$matrix
 rowSums(poly.nothome.all)
 
-# Simple 3-layer Network Model --------------------------------------------
 
-## For use in testing only ##
-
-# Set network
+# Set network ------------------------------------------------------------------
 n <- 10000
-nw <- network_initialize(n)
 
-age <- round(rnorm(n, 40, 21), 1)
-age <- pmax(age, 0)
-age <- pmin(age, 99)
+# Initialize age - from http://wonder.cdc.gov/bridged-race-v2020.html
+# From Karina's model
+age.pyr <- c( 0.01167, 0.01179, 0.01209, 0.01232, 0.01260, 0.01279, 0.01271,
+              0.01266, 0.01296, 0.01306, 0.01313, 0.01323, 0.01380, 0.01388,
+              0.01383, 0.01367, 0.01369, 0.01355, 0.01351, 0.01392, 0.01391,
+              0.01353, 0.01348, 0.01344, 0.01344, 0.01375, 0.01402, 0.01433,
+              0.01462, 0.01480, 0.01470, 0.01413, 0.01367, 0.01334, 0.01330,
+              0.01350, 0.01303, 0.01328, 0.01330, 0.01326, 0.01366, 0.01284,
+              0.01262, 0.01256, 0.01218, 0.01269, 0.01242, 0.01279, 0.01338,
+              0.01398, 0.01392, 0.01293, 0.01256, 0.01251, 0.01272, 0.01326,
+              0.01324, 0.01297, 0.01274, 0.01265, 0.01250, 0.01197, 0.01164,
+              0.01156, 0.01102, 0.01076, 0.01022, 0.00975, 0.00930, 0.00899,
+              0.00880, 0.00851, 0.00841, 0.00857, 0.00626, 0.00609, 0.00576,
+              0.00574, 0.00482, 0.00433, 0.00400, 0.00357, 0.00322, 0.00282,
+              0.00259, 0.00223, 0.00193, 0.00166, 0.00144, 0.00124, 0.00107,
+              0.00092, 0.00080, 0.00069, 0.00059, 0.00051, 0.00044, 0.00038,
+              0.00033, 0.00028)
+age <- sample(x = 0:99, size = n, prob = age.pyr, replace = TRUE)
+age_noise <- runif(n)
+age <- age + age_noise
 hist(age)
 
 age.breaks <- seq(0, 100, 10)
 age.grp <- cut(age, age.breaks, labels = FALSE, right = FALSE)
 
-nw <- set_vertex_attribute(nw, "age", age)
-nw <- set_vertex_attribute(nw, "age.grp", age.grp)
-
 age.grp.num <- as.numeric(table(age.grp))
 
-## Within household network
+# From: https://www.bls.gov/cps/cpsaat09.htm
+# 158,291,000 employed persons aged 16+ in 2022
+# 'Office' jobs:
+# Management, business, and financial operations occupations: 29,350,000
+# Computer + mathematical: 6,171,000
+# Architecture + engineering: 3,464,000
+# Life, physical, and social science: 1,840,000
+# Community and social service: 2,945,000
+# Legal: 1,861,000
+# Sales + office: 30,412,000
+## proportion office workers among employed:
+p.office <- (29350+6171+3464+1840+2945+1861+30412)/158291
+
+# From: https://www.bls.gov/cps/cpsaat03.htm
+# Percent 20-24y employed: 66.0%
+# Percent 25-54y employed: 79.9% (minimal heterogeneity within finer age groups)
+# Percent 55-59y employed: 71.1%
+# Percent 60-64y employed: 56.0%
+# Percent 65-69y employed: 32.4%
+# Percent 70-74y employed: 17.8%
+# Percent 75y+ employed: 8.2%
+## proportion office workers by age:
+o.age <- c(0,0,(0.66+0.799)/2,0.799,0.799,(0.799+0.711)/2,
+           (0.560+0.324)/2,(0.178+0.082)/2,0.082,0)*p.office
+
+# determine if office worker by age group
+ids.office <- NA
+ids.age <- NA
+for (i in 1:10) {
+  ids.age <- NA
+  vec.office <- NA
+  ids.office.i <- NA
+
+  ids.age <- which(age.grp == i)
+  vec.office <- which(rbinom(length(ids.age), 1, o.age[i]) == 1)
+  ids.office.i <- ids.age[vec.office]
+  ifelse(i==1,
+         ids.office <- ids.office.i,
+         ids.office <- c(ids.office,ids.office.i))
+}
+
+non.office <- rep(NA, n)
+all.ids <- 1:n
+non.office <- ifelse(all.ids %in% ids.office,0,1)
+
+table(age.grp,non.office)
+
+# Initialize the network
+nw <- network_initialize(n)
+nw <- set_vertex_attribute(nw, "age", age)
+nw <- set_vertex_attribute(nw, "age.grp", age.grp)
+nw <- set_vertex_attribute(nw, "non.office", non.office)
+
+## Within household network ----------------------------------------------------
 nw.loc <- "Home"
 
 # Mean degree from corp mix data
@@ -231,14 +293,37 @@ dx.hh.mix <- dx.hh.sum %>%
 #                                                        MCMC.burnin.max = 1.5e5))
 
 
-## Within office network
+## Within office network -------------------------------------------------------
+nw.loc <- "Work"
+
+# Mean degree from corp mix data
 md.oo <- md %>%
-  filter(location == "Work") %>%
+  filter(location == nw.loc) %>%
   select(md) %>%
   as.numeric()
-target.stats.oo <- md.oo * n/2
 
-formation.oo <- ~edges
+edges.oo <- md.oo * n/2
+
+# Number of edges per age group for nodefactor()
+# note this only includes age groups 20-60+
+md.oo.ag <- cm2 %>%
+  filter(location == nw.loc) %>%
+  select(total_degree) %>%
+  as_vector() %>%
+  as.numeric()
+# adding 0 md for other age groups (not in office network)
+md.oo.ag <- c(0,0,md.oo.ag,0,0,0)
+
+nf.oo.ag <- md.oo.ag * age.grp.num
+
+# Proportion within-group mixing for nodematch()
+match.oo.ag <- md.match$match[md.match$location == nw.loc]
+
+nm.oo.ag <- edges.oo * match.oo.ag
+
+target.stats.oo <- c(edges.oo,nf.oo.ag[3:6],nm.oo.ag)
+
+formation.oo <- ~edges + nodefactor("age.grp", levels = 3:6) + nodematch("age.grp", diff = F)
 
 coef.diss.oo <- dissolution_coefs(dissolution = ~offset(edges), duration = 1e5)
 
@@ -246,13 +331,42 @@ est.oo <- netest(nw, formation.oo, target.stats.oo, coef.diss.oo,
                  set.control.ergm = control.ergm(MCMLE.maxit = 500))
 summary(est.oo)
 
-dx.oo <- netdx(est.oo, nsims = 25, ncores = 5, nsteps = 1000, dynamic = TRUE,
-               set.control.ergm = control.simulate.formula(MCMC.burnin = 1e6))
+dx.oo <- netdx(est.oo, nsims = 1, ncores = 1, nsteps = 1000, dynamic = TRUE,
+               set.control.ergm = control.simulate.formula(MCMC.burnin = 1e6),
+               nwstats.formula = ~edges + nodefactor("age.grp",levels = NULL) + nodematch("age.grp",diff = F),
+               keep.tedgelist = TRUE)
 
 print(dx.oo)
 
+# generate network summary statistics
+dx.oo.sum <- as.data.frame(dx.oo) %>%
+  rename(head = "tail", tail = "head") %>%
+  add_row(as.data.frame(dx.oo)) %>%
+  select(tail,head) %>%
+  left_join(id.age, by = c("head" = "vertex.names")) %>%
+  rename(head.age = age.grp) %>%
+  left_join(id.age, by = c("tail" = "vertex.names")) %>%
+  rename(tail.age = age.grp) %>%
+  left_join(num.age, by = c("head.age" = "age.grp")) %>%
+  group_by(head.age,tail.age,num.participants) %>%
+  tally(name = "num.contacts") %>%
+  ungroup() %>%
+  group_by(head.age,num.participants) %>%
+  mutate(total.contacts = sum(num.contacts)) %>%
+  mutate(age.degree = num.contacts/num.participants,
+         total.degree = total.contacts/num.participants)
 
-## Community network
+dx.oo.match <- dx.oo.sum %>%
+  filter(head.age == tail.age) %>%
+  mutate(prop.match =  age.degree/total.degree)
+
+dx.oo.mix <- dx.oo.sum %>%
+  ungroup() %>%
+  select(head.age,tail.age,age.degree) %>%
+  pivot_wider(values_from = "age.degree",names_from = "tail.age")
+
+
+## Community network -----------------------------------------------------------
 md.cc <- md %>%
   filter(location == "Community") %>%
   select(md) %>%
@@ -280,212 +394,4 @@ saveRDS(est.simple, file = "data/input/est.simple.rds")
 
 
 
-# # Varying Parameters (Table 3) --------------------------------------------
-#
-# n.sectors <- 10
-# prop.within.sector.post <- 0.98
-# n.sectors.pass <- NULL  # If NULL, only within-cabin pass/pass mixing
-#
-#
-# # Network Setup -----------------------------------------------------------
-#
-# n.crew <- 1045
-# n.pass <- 2666
-# n <- n.crew + n.pass
-#
-# n.rooms <- 1337
-# n.pass.per.room <- n.pass/n.rooms
-# n.pass.per.room
-#
-# pass.ids <- 1:n.pass
-#
-# room.ids <- 1:n.rooms
-# room.ids.pass <- apportion_lr(n.pass, room.ids, rep(1/n.rooms, n.rooms))
-# table(room.ids.pass)
-#
-# type.attr <- rep(c("p", "c"), times = c(n.pass, n.crew))
-#
-# crew.ids <- which(type.attr == "c")
-# crew.ids
-# room.ids
-#
-# # n.sectors <- 10
-# room.sectors <- apportion_lr(length(room.ids), 1:n.sectors,
-#                              rep(1/n.sectors, n.sectors))
-# # head(data.frame(room.ids, room.sectors), 200)
-# df.match <- data.frame(room.ids, room.sectors)
-#
-# sector <- rep(NA, n)
-# for (id in pass.ids) {
-#   sector[id] <- df.match[df.match$room.ids == room.ids.pass[id], "room.sectors"]
-# }
-# sector[pass.ids]
-#
-# room.sectors.c <- apportion_lr(length(crew.ids), 1:n.sectors,
-#                                rep(1/n.sectors, n.sectors), shuffled = TRUE)
-# sector[crew.ids] <- room.sectors.c
-# sector[crew.ids]
-# sector
-#
-# table(sector, type.attr)
-#
-# # median age for crew was 36 (IQR:29-43) and
-# # the median age of the passengers was 69 (IQR: 62-73)
-# ages.pass <- round(rnorm(n.pass, 69, 6), 1)
-# summary(ages.pass)
-# table(ages.pass)
-# ages.crew <- pmax(round(rnorm(n.crew, 36, 10), 1), 18)
-# summary(ages.crew)
-# table(ages.crew)
-#
-# age <- rep(0, n)
-# age[type.attr == "p"] <- ages.pass
-# age[type.attr == "c"] <- ages.crew
-# summary(age)
-#
-# # Initialize the network
-# nw <- network.initialize(n, directed = FALSE)
-# nw <- set.vertex.attribute(nw, "type", type.attr)
-# nw <- set.vertex.attribute(nw, "pass.room", room.ids.pass, pass.ids)
-# nw <- set.vertex.attribute(nw, "age", age)
-# nw <- set.vertex.attribute(nw, "sector", sector)
-#
-#
-# # Model 1. Pass/Pass Contacts ---------------------------------------------
-#
-# ## 1a. Pre-Lockdown Model
-# md.pre <- 5
-# edges.pre <- n.pass * md.pre/2
-# target.stats1.pre <- c(edges.pre, edges.pre/md.pre)
-#
-# formation1.pre <- ~edges +
-#                    nodematch("pass.room") +
-#                    offset(nodefactor("type", levels = -2))
-#
-# coef.diss1 <- dissolution_coefs(dissolution = ~offset(edges), duration = 1)
-# est1.pre <- netest(nw, formation1.pre, target.stats1.pre, coef.diss1, coef.form = -Inf,
-#                    set.control.ergm = control.ergm(MCMLE.maxit = 500))
-# summary(est1.pre)
-#
-# mcmc.diagnostics(est1.pre$fit)
-# dx1.pre <- netdx(est1.pre, nsims = 1e4, dynamic = FALSE,
-#                  nwstats.formula = ~edges + nodefactor("type", levels = NULL),
-#                  set.control.ergm = control.simulate.ergm(MCMC.burnin = 1e6))
-# print(dx1.pre)
-#
-#
-# ## 1b. Post-Lockdown Model: 20% of contact rate, all within cabin
-# md.post <- 1
-# edges.post <- n.pass * md.post/2
-# target.stats1.post <- c(edges.post, edges.post, edges.post/md.post)
-#
-# formation1.post <- ~edges +
-#                     nodematch("sector") +
-#                     nodematch("pass.room") +
-#                     offset(nodefactor("type", levels = -2))
-#
-# est1.post <- netest(nw, formation1.post, target.stats1.post, coef.diss1, coef.form = -Inf,
-#                     set.control.ergm = control.ergm(MCMLE.maxit = 500))
-# summary(est1.post)
-#
-# mcmc.diagnostics(est1.post$fit)
-# dx1.post <- netdx(est1.post, nsims = 1e4, dynamic = FALSE,
-#                   nwstats.formula = ~edges + nodefactor("type", levels = NULL) +
-#                                      nodematch("sector", diff = FALSE) +
-#                                      nodematch("pass.room", diff = FALSE),
-#                   set.control.ergm = control.simulate.ergm(MCMC.burnin = 1e6))
-# print(dx1.post)
-#
-#
-#
-#
-# # Model 2: Crew/Crew Contacts ---------------------------------------------
-#
-# ## 2a. Pre-Lockdown Model
-# md.pre <- 10
-# edges.pre <- n.crew * md.pre/2
-# prop.within.sector.pre <- 0.50
-# target.stats2.pre <- c(edges.pre, edges.pre*prop.within.sector.pre)
-#
-# formation2.pre <- ~edges +
-#                    nodematch("sector") +
-#                    offset(nodefactor("type", levels = -1))
-# coef.diss2 <- dissolution_coefs(dissolution = ~offset(edges), duration = 1)
-#
-# est2.pre <- netest(nw, formation2.pre, target.stats2.pre, coef.diss2, coef.form = -Inf,
-#                    set.control.ergm = control.ergm(MCMLE.maxit = 500))
-# summary(est2.pre)
-#
-# mcmc.diagnostics(est2.pre$fit)
-# dx2.pre <- netdx(est2.pre, nsims = 1e4, dynamic = FALSE,
-#                   nwstats.formula = ~edges + nodefactor("type", levels = NULL),
-#                   set.control.ergm = control.simulate.ergm(MCMC.burnin = 1e6))
-# print(dx2.pre)
-#
-#
-# ## 2b. Post-Lockdown Model
-# md.post <- 2
-# edges.post <- n.crew * md.post/2
-# target.stats2.post <- c(edges.post, edges.post*prop.within.sector.post)
-#
-# formation2.post <- ~edges +
-#                     nodematch("sector") +
-#                     offset(nodefactor("type", levels = -1))
-#
-# est2.post <- netest(nw, formation2.post, target.stats2.post, coef.diss2, coef.form = -Inf,
-#                     set.control.ergm = control.ergm(MCMLE.maxit = 500))
-# summary(est2.post)
-#
-# mcmc.diagnostics(est2.post$fit)
-# dx2.post <- netdx(est2.post, nsims = 1e4, dynamic = FALSE,
-#                   nwstats.formula = ~edges + nodefactor("type", levels = NULL),
-#                   set.control.ergm = control.simulate.ergm(MCMC.burnin = 1e6))
-# print(dx2.post)
-#
-#
-# # Model 3: Crew/Pass Contacts ---------------------------------------------
-#
-# ## 3a. Pre-Lockdown Model
-# md.pre <- 8
-# edges.pre <- md.pre * n.rooms
-# target.stats3.pre <- c(edges.pre, 0)
-#
-# formation3.pre <- ~edges + nodematch("type")
-# coef.diss3 <- dissolution_coefs(dissolution = ~offset(edges), duration = 1)
-#
-# est3.pre <- netest(nw, formation3.pre, target.stats3.pre, coef.diss3,
-#                    set.control.ergm = control.ergm(MCMLE.maxit = 500))
-# summary(est3.pre)
-#
-# mcmc.diagnostics(est3.pre$fit)
-# dx3.pre <- netdx(est3.pre, nsims = 1e4, dynamic = FALSE,
-#                  nwstats.formula = ~edges + nodemix("type", levels = NULL) +
-#                                     nodematch("sector"))
-# print(dx3.pre)
-#
-#
-# ## 3b. Post-Lockdown Model
-# edges.post <- 3*n.rooms
-# target.stats3 <- c(edges.post, edges.post*prop.within.sector.post, 0)
-#
-# formation3.post <- ~edges + nodematch("sector") + nodematch("type")
-#
-# est3.post <- netest(nw, formation3.post, target.stats3, coef.diss3,
-#                     set.control.ergm = control.ergm(MCMLE.maxit = 500))
-# summary(est3.post)
-#
-# mcmc.diagnostics(est3.post$fit)
-# dx3.post <- netdx(est3.post, nsims = 1e4, dynamic = FALSE,
-#                   nwstats.formula = ~edges + nodemix("type", levels = NULL))
-# print(dx3.post)
-#
-#
-# # Save Data ---------------------------------------------------------------
-#
-# # Pre-Lockdown
-# est.pre <- list(est1.pre, est2.pre, est3.pre)
-# saveRDS(est.pre, file = "est/est.pre.rds")
-#
-# # Post-Lockdown
-# est.post <- list(est1.post, est2.post, est3.post)
-# saveRDS(est.post, file = "est/est.post.base.rds")
+
