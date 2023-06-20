@@ -160,6 +160,9 @@ non.office <- rep(NA, n)
 all.ids <- 1:n
 non.office <- ifelse(all.ids %in% ids.office,0,1)
 
+n.other <- sum(non.office)
+n.work <- n-n.other
+
 table(age.grp,non.office)
 
 # Initialize the network
@@ -167,130 +170,6 @@ nw <- network_initialize(n)
 nw <- set_vertex_attribute(nw, "age", age)
 nw <- set_vertex_attribute(nw, "age.grp", age.grp)
 nw <- set_vertex_attribute(nw, "non.office", non.office)
-
-## Within household network ----------------------------------------------------
-nw.loc <- "Home"
-
-# Mean degree from corp mix data
-md.hh <- md %>%
-  filter(location == nw.loc) %>%
-  select(md) %>%
-  as.numeric()
-
-# Weighted mean degree
-md.hh.age <- cm2 %>%
-  filter(location == nw.loc & age != "70s") %>%
-  pull(total_degree)
-# add polymod data for missing age groups
-md.hh.age <- c(1.36,1.14,md.hh.age,0.63,0.68,0.65)
-# multiply by weights
-w <- age.grp.num/sum(age.grp.num)
-md.hh2 <- sum(md.hh.age * w)
-
-edges.hh <- md.hh * n/2
-
-# Number of edges per age group for nodefactor()
-# note this only includes age groups 20-60+
-md.hh.ag <- cm2 %>%
-  filter(location == nw.loc) %>%
-  select(total_degree) %>%
-  as_vector() %>%
-  as.numeric()
-# adding missing md for other age groups for now
-md.hh.ag <- c(NA,NA,md.hh.ag,NA,NA)
-
-nf.hh.ag <- md.hh.ag * age.grp.num
-
-# Proportion within-group mixing for nodematch()
-match.hh.ag <- md.match$match[md.match$location == nw.loc]
-
-nm.hh.ag <- edges.hh * match.hh.ag
-
-formation.hh <- ~edges + nodefactor("age.grp", levels = 3:7) + nodematch("age.grp", diff = F)
-# formation.hh <- ~edges + nodefactor("age.grp", levels = 3:7)
-# test keeping/dropping nodefactor levels
-
-target.stats.hh <- c(edges.hh, nf.hh.ag[3:7], nm.hh.ag)
-# target.stats.hh <- c(edges.hh, nf.hh.ag[3:7])
-
-coef.diss.hh <- dissolution_coefs(dissolution = ~offset(edges), duration = 1e6)
-
-est.hh <- netest(nw, formation.hh, target.stats.hh, coef.diss.hh,
-                 set.control.ergm = control.ergm(MCMLE.maxit = 500))
-summary(est.hh)
-
-# est <- netest(nw, formation, target.stats, coef.diss, edapprox = TRUE,
-#               set.control.ergm = control.ergm(MCMC.burnin=1e7, MCMC.interval=1e7,
-#                                               MCMC.samplesize = 20000,
-#                                               init.MPLE.samplesize = 1e8,
-#                                               SAN.control = control.san(SAN.nsteps = 1e8)))
-
-dx.hh <- netdx(est.hh, nsims = 1, ncores = 1, nsteps = 1000, dynamic = TRUE,
-               set.control.ergm = control.simulate.formula(MCMC.burnin = 1e6),
-               nwstats.formula = ~edges + nodefactor("age.grp",levels = NULL) + nodematch("age.grp",diff = T) +
-                 nodemix("age.grp",levels2 = NULL), keep.tedgelist = TRUE)
-print(dx.hh)
-
-#list of edges over time steps
-#tail and head are positional ids, could look at ages for these
-#can calculate my own statistics from this
-as.data.frame(dx.hh)
-
-# pull positional ids and corresponding age groups
-vertex.names <- get_vertex_attribute(nw, "vertex.names")
-age.grp <- get_vertex_attribute(nw, "age.grp")
-id.age <- as.data.frame(cbind(vertex.names,age.grp))
-num.age <- id.age %>%
-  group_by(age.grp) %>%
-  tally(name = "num.participants")
-
-# generate network summary statistics
-dx.hh.sum <- as.data.frame(dx.hh) %>%
-  select(tail,head) %>%
-  left_join(id.age, by = c("head" = "vertex.names")) %>%
-  rename(head.age = age.grp) %>%
-  left_join(id.age, by = c("tail" = "vertex.names")) %>%
-  rename(tail.age = age.grp) %>%
-  left_join(num.age, by = c("head.age" = "age.grp")) %>%
-  group_by(head.age,tail.age,num.participants) %>%
-  tally(name = "num.contacts") %>%
-  ungroup() %>%
-  group_by(head.age,num.participants) %>%
-  mutate(total.contacts = sum(num.contacts)) %>%
-  mutate(age.degree = num.contacts/num.participants,
-         total.degree = total.contacts/num.participants)
-
-# second version with one row for each head AND tail contact
-dx.hh.sum <- as.data.frame(dx.hh) %>%
-  rename(head = "tail", tail = "head") %>%
-  add_row(as.data.frame(dx.hh)) %>%
-  select(tail,head) %>%
-  left_join(id.age, by = c("head" = "vertex.names")) %>%
-  rename(head.age = age.grp) %>%
-  left_join(id.age, by = c("tail" = "vertex.names")) %>%
-  rename(tail.age = age.grp) %>%
-  left_join(num.age, by = c("head.age" = "age.grp")) %>%
-  group_by(head.age,tail.age,num.participants) %>%
-  tally(name = "num.contacts") %>%
-  ungroup() %>%
-  group_by(head.age,num.participants) %>%
-  mutate(total.contacts = sum(num.contacts)) %>%
-  mutate(age.degree = num.contacts/num.participants,
-         total.degree = total.contacts/num.participants)
-
-dx.hh.match <- dx.hh.sum %>%
-  filter(head.age == tail.age) %>%
-  mutate(prop.match =  age.degree/total.degree)
-
-dx.hh.mix <- dx.hh.sum %>%
-  ungroup() %>%
-  select(head.age,tail.age,age.degree) %>%
-  pivot_wider(values_from = "age.degree",names_from = "tail.age")
-
-# dx <- netdx(est, nsims = 1, nsteps = 1000, keep.tedgelist = TRUE,
-#             set.control.ergm = control.simulate.stergm(MCMC.init.maxchanges = 1e8,
-#                                                        MCMC.burnin.min = 1.5e5,
-#                                                        MCMC.burnin.max = 1.5e5))
 
 
 ## Within office network -------------------------------------------------------
@@ -302,7 +181,7 @@ md.oo <- md %>%
   select(md) %>%
   as.numeric()
 
-edges.oo <- md.oo * n/2
+edges.oo <- md.oo * n.work/2
 
 # Number of edges per age group for nodefactor()
 # note this only includes age groups 20-60+
@@ -311,10 +190,11 @@ md.oo.ag <- cm2 %>%
   select(total_degree) %>%
   as_vector() %>%
   as.numeric()
-# adding 0 md for other age groups (not in office network)
+# adding 0 md for other age groups (not in CorpMix data)
 md.oo.ag <- c(0,0,md.oo.ag,0,0,0)
+age.grp.work <- c(0,0,as.numeric(table(age.grp[non.office==0])),0)
 
-nf.oo.ag <- md.oo.ag * age.grp.num
+nf.oo.ag <- md.oo.ag * age.grp.work
 
 # Proportion within-group mixing for nodematch()
 match.oo.ag <- md.match$match[md.match$location == nw.loc]
@@ -323,31 +203,45 @@ nm.oo.ag <- edges.oo * match.oo.ag
 
 target.stats.oo <- c(edges.oo,nf.oo.ag[3:6],nm.oo.ag)
 
-formation.oo <- ~edges + nodefactor("age.grp", levels = 3:6) + nodematch("age.grp", diff = F)
+formation.oo <- ~edges +
+                nodefactor("age.grp", levels = 3:6) +
+                nodematch("age.grp", diff = F) +
+                offset(nodefactor("non.office", levels = -1))
 
 coef.diss.oo <- dissolution_coefs(dissolution = ~offset(edges), duration = 1e5)
 
-est.oo <- netest(nw, formation.oo, target.stats.oo, coef.diss.oo,
+est.oo <- netest(nw, formation.oo, target.stats.oo, coef.diss.oo, coef.form = -Inf,
                  set.control.ergm = control.ergm(MCMLE.maxit = 500))
 summary(est.oo)
 
 dx.oo <- netdx(est.oo, nsims = 1, ncores = 1, nsteps = 1000, dynamic = TRUE,
                set.control.ergm = control.simulate.formula(MCMC.burnin = 1e6),
-               nwstats.formula = ~edges + nodefactor("age.grp",levels = NULL) + nodematch("age.grp",diff = F),
+               nwstats.formula = ~edges + nodefactor("age.grp",levels = NULL) +
+                 nodematch("age.grp",diff = F) + nodefactor("non.office",levels = NULL),
                keep.tedgelist = TRUE)
 
 print(dx.oo)
+
+# pull positional ids and corresponding age groups
+vertex.names <- get_vertex_attribute(nw, "vertex.names")
+age.grp <- get_vertex_attribute(nw, "age.grp")
+non.office <- get_vertex_attribute(nw, "non.office")
+df <- as.data.frame(cbind(vertex.names,age.grp,non.office))
+df.num <- df %>%
+  group_by(age.grp,non.office) %>%
+  tally(name = "num.participants")
 
 # generate network summary statistics
 dx.oo.sum <- as.data.frame(dx.oo) %>%
   rename(head = "tail", tail = "head") %>%
   add_row(as.data.frame(dx.oo)) %>%
   select(tail,head) %>%
-  left_join(id.age, by = c("head" = "vertex.names")) %>%
+  left_join(df, by = c("head" = "vertex.names")) %>%
   rename(head.age = age.grp) %>%
-  left_join(id.age, by = c("tail" = "vertex.names")) %>%
+  left_join(df, by = c("tail" = "vertex.names")) %>%
   rename(tail.age = age.grp) %>%
-  left_join(num.age, by = c("head.age" = "age.grp")) %>%
+  left_join(df.num %>% filter(non.office == 0),
+            by = c("head.age" = "age.grp")) %>%
   group_by(head.age,tail.age,num.participants) %>%
   tally(name = "num.contacts") %>%
   ungroup() %>%
