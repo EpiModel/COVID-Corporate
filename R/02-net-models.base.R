@@ -12,7 +12,7 @@ library("dplyr")
 
 # load CorpMix round 5 contact data----------------------------------------
 
-# 'raw' round 4 mixing data
+# 'raw' round 5 mixing data
 cm <- readRDS("data/input/rd5_mean_degree.rds")
 
 # 'balanced' round 5 mixing matrix
@@ -59,30 +59,18 @@ md.match <- cm2 %>%
   mutate(match = within_age_edges/total_degree)
 
 # load POLYMOD data -------------------------------------------------------
-
+library(socialmixr)
 data("polymod")
-contact_matrix(polymod, age.limits = c(0,10,20,30,40,50,60,70,80,90,100),
-               filter = list(cnt_home=1, duration_multi=c(3,4,5)))
-
-# home contactas > 15 mins
-poly.home <- contact_matrix(polymod, age.limits = c(0,10,20,30,40,50,60,70,80,90,100),
-               filter = list(cnt_home=1, duration_multi=c(3,4,5)))$matrix
-rowSums(poly.home)
-
-# home contacts all durations
-poly.home.all <- contact_matrix(polymod, age.limits = c(0,10,20,30,40,50,60,70,80,90,100),
-                            filter = list(cnt_home=1))$matrix
-rowSums(poly.home.all)
 
 # contacts outside the home > 15 mins
 poly.nothome <- contact_matrix(polymod, age.limits = c(0,10,20,30,40,50,60,70,80,90,100),
                             filter = list(cnt_home=0, duration_multi=c(3,4,5)))$matrix
 rowSums(poly.nothome)
 
-# contacts outside the home all durations
-poly.nothome.all <- contact_matrix(polymod, age.limits = c(0,10,20,30,40,50,60,70,80,90,100),
-                               filter = list(cnt_home=0))$matrix
-rowSums(poly.nothome.all)
+# # contacts outside the home all durations
+# poly.nothome.all <- contact_matrix(polymod, age.limits = c(0,10,20,30,40,50,60,70,80,90,100),
+#                                filter = list(cnt_home=0))$matrix
+# rowSums(poly.nothome.all)
 
 
 # Set network ------------------------------------------------------------------
@@ -261,13 +249,37 @@ dx.oo.mix <- dx.oo.sum %>%
 
 
 ## Community network -----------------------------------------------------------
-md.cc <- md %>%
+
+# mean degree for non-office workers
+md.cc.other <- sum(as.numeric(table(age.grp[non.office==1])) *
+                     as.numeric(rowSums(poly.nothome)))/n.other
+
+# mean degree for office workers
+md.cc.work <- md %>%
   filter(location == "Community") %>%
   select(md) %>%
   as.numeric()
-target.stats.cc <- md.cc * n/2
 
-formation.cc <- ~edges
+# total edges
+edges.cc <- (md.cc.other * n.other + md.cc.work * n.work)/2
+
+# contacts per age group, using POLYMOD mean degree
+md.cc.ag <- as.numeric(rowSums(poly.nothome))
+nf.cc.ag <- md.cc.ag * age.grp.num
+
+# within age-group mixing, using POLYMOD data
+match.cc.other <- as.numeric(diag(poly.nothome/rowSums(poly.nothome)))
+nm.cc <- (nf.cc.ag[1:7]/2) * match.cc.other[1:7]
+
+target.stats.cc <- c(edges.cc,
+                     md.cc.work * n.work, #community contacts among office workers
+                     #nf.cc.ag,
+                     nm.cc)
+
+formation.cc <- ~edges +
+                nodefactor("non.office", levels = 1) +
+                #nodefactor("age.grp", levels = 1:5) +
+                nodematch("age.grp", diff = TRUE, levels = 1:7)
 
 coef.diss.cc <- dissolution_coefs(dissolution = ~offset(edges), duration = 1)
 
@@ -275,15 +287,22 @@ est.cc <- netest(nw, formation.cc, target.stats.cc, coef.diss.cc,
                  set.control.ergm = control.ergm(MCMLE.maxit = 500))
 summary(est.cc)
 
-dx.cc <- netdx(est.cc, nsims = 1000, dynamic = FALSE,
-               set.control.ergm = control.simulate.formula(MCMC.burnin = 1e6))
+dx.cc <- netdx(est.cc, nsims = 1, ncores = 1, nsteps = 1000, dynamic = FALSE,
+               set.control.ergm = control.simulate.formula(MCMC.burnin = 1e6),
+               nwstats.formula = ~edges + nodefactor("age.grp",levels = NULL) +
+                 nodematch("age.grp",diff = T) + nodefactor("non.office",levels = NULL),
+               keep.tedgelist = TRUE)
+
 print(dx.cc)
 
-est.hh <- trim_netest(est.hh)
+
+
+## Save Network ----------------------------------------------------------------
+
 est.oo <- trim_netest(est.oo)
 est.cc <- trim_netest(est.cc)
 
-est.simple <- list(est.hh, est.oo, est.cc)
+est.simple <- list(est.oo, est.cc)
 saveRDS(est.simple, file = "data/input/est.simple.rds")
 
 
