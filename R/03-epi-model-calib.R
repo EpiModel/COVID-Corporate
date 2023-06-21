@@ -10,13 +10,15 @@
 library("EpiModelCOVID")
 
 
-# Read in fitted network models
-est <- readRDS("data/input/est.simple.rds")
+# # Read in fitted network models
+# est <- readRDS("data/input/est.simple.rds")
+
+source("R/02b-household-assign.R")
+source("R/01-epi-params.R")
 
 # Model parameters
-source("R/01-epi-params.R")
 param <- param.net(inf.prob = c(0.11, 0.11, 0.11),
-                   act.rate = c(5, 1, 1),
+                   act.rate = c(1, 1, 5),
                    inf.prob.inter.rr = c(0.6, 0.6, 0.6),
                    inf.prob.inter.time = c(Inf, Inf, Inf),
                    act.rate.inter.rr = c(1, 1, 1),
@@ -25,7 +27,7 @@ param <- param.net(inf.prob = c(0.11, 0.11, 0.11),
                    inf.prob.mask.rr = 0.3,
 
                    iso.prob = 0.8,
-                   notif.prob = 0.3,
+                   notif.prob = c(0.5,0.3,0.9), #is this assigning one per network??
 
                    act.rate.dx.inter.rr = 0.1,
                    act.rate.dx.inter.time = Inf,
@@ -69,7 +71,9 @@ param <- param.net(inf.prob = c(0.11, 0.11, 0.11),
                    a.rate = mean(mr_vec),
                    arrival.age = 0,
                    mort.rates = mr_vec,
-                   mort.dis.mult = 180)
+                   mort.dis.mult = 180,
+
+                   hh.pairs = hhPairs)
 
 # Initial conditions
 init <- init.net(e.num = 100)
