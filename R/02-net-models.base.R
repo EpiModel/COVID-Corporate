@@ -263,9 +263,23 @@ md.cc.work <- md %>%
 # total edges
 edges.cc <- (md.cc.other * n.other + md.cc.work * n.work)/2
 
-# contacts per age group, using POLYMOD mean degree
-md.cc.ag <- as.numeric(rowSums(poly.nothome))
-nf.cc.ag <- md.cc.ag * age.grp.num
+# contacts per age group for workers
+# note this only includes age groups 20-60+
+md.cc.ag.work <- cm2 %>%
+  filter(location == "Community") %>%
+  select(total_degree) %>%
+  as_vector() %>%
+  as.numeric()
+# adding md for other age groups (not in CorpMix data)
+md.cc.ag.work <- c(0,0,md.cc.ag.work,1.7,1.7,0)
+nf.cc.work <- md.cc.ag.work * age.grp.work
+
+# contacts per age group for others
+md.cc.other <- as.numeric(rowSums(poly.nothome))
+nf.cc.other <- md.cc.other * (age.grp.num-age.grp.work)
+
+# total contacts per age group
+nf.cc.ag <- nf.cc.work + nf.cc.other
 
 # within age-group mixing, using POLYMOD data
 match.cc.other <- as.numeric(diag(poly.nothome/rowSums(poly.nothome)))
