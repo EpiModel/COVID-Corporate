@@ -9,11 +9,9 @@
 
 library("EpiModelCOVID")
 library("dplyr")
+library("tidyr")
 
 # load CorpMix round 5 contact data----------------------------------------
-
-# 'raw' round 5 mixing data
-cm <- readRDS("data/input/rd5_mean_degree.rds")
 
 # 'balanced' round 5 mixing matrix
 cm2 <- readRDS("data/input/rd5_matrix.rds") %>%
@@ -23,33 +21,7 @@ cm2 <- readRDS("data/input/rd5_matrix.rds") %>%
 cm.prop <- readRDS("data/input/rd5_matrix_prop.rds") %>%
   ungroup()
 
-# total mean degree by location using raw data
-md <- cm %>%
-  group_by(location,p_age,n_participants) %>%
-  summarise(n_contacts = sum(n_contacts)) %>%
-  ungroup() %>%
-  group_by(location) %>%
-  summarise(n_contacts = sum(n_contacts),
-            n_participants = sum(n_participants)) %>%
-  mutate(md = (n_contacts/n_participants)/2)
-
-# md.age <- cm %>%
-#   group_by(location,p_age,n_participants) %>%
-#   mutate(n_contacts = sum(n_contacts)) %>%
-#   select(location,p_age,n_participants,n_contacts,total_degree) %>%
-#   distinct() %>%
-#   ungroup()
-
 # proportion within age group mixing by location
-md.match.raw <- cm %>%
-  filter(as.character(p_age) == as.character(contact_age)) %>%
-  group_by(location) %>%
-  summarise(n_contacts = sum(n_contacts),
-            n_participants = sum(n_participants)) %>%
-  mutate(md.match = (n_contacts/n_participants)/2) %>%
-  left_join(md,by = "location") %>%
-  mutate(match = md.match/md)
-
 md.match <- cm2 %>%
   mutate(within_age_edges = total_degree*prop_match) %>%
   select(location,age,total_degree,within_age_edges) %>%
@@ -161,11 +133,10 @@ nw <- set_vertex_attribute(nw, "non.office", non.office)
 
 
 ## Within office network -------------------------------------------------------
-nw.loc <- "Work"
 
 # Mean degree from corp mix data
 md.oo <- md %>%
-  filter(location == nw.loc) %>%
+  filter(location == "Work") %>%
   select(md) %>%
   as.numeric()
 
@@ -174,9 +145,9 @@ edges.oo <- md.oo * n.work/2
 # Number of edges per age group for nodefactor()
 # note this only includes age groups 20-60+
 md.oo.ag <- cm2 %>%
-  filter(location == nw.loc) %>%
+  filter(location == "Work") %>%
   select(total_degree) %>%
-  as_vector() %>%
+  pull(total_degree) %>%
   as.numeric()
 # adding 0 md for other age groups (not in CorpMix data)
 md.oo.ag <- c(0,0,md.oo.ag,0,0,0)
@@ -268,7 +239,7 @@ edges.cc <- (md.cc.other * n.other + md.cc.work * n.work)/2
 md.cc.ag.work <- cm2 %>%
   filter(location == "Community") %>%
   select(total_degree) %>%
-  as_vector() %>%
+  pull(total_degree) %>%
   as.numeric()
 # adding md for other age groups (not in CorpMix data)
 md.cc.ag.work <- c(0,0,md.cc.ag.work,1.7,1.7,0)
@@ -317,6 +288,7 @@ est.oo <- trim_netest(est.oo)
 est.cc <- trim_netest(est.cc)
 
 est.simple <- list(est.oo, est.cc)
+rm(list=setdiff(ls(), c("est.oo", "est.cc", "est.simple")))
 saveRDS(est.simple, file = "data/input/est.simple.rds")
 
 
