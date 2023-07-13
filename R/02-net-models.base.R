@@ -13,6 +13,9 @@ library("tidyr")
 
 # load CorpMix round 5 contact data----------------------------------------
 
+# 'raw' round 5 mixing data
+cm <- readRDS("data/input/rd5_mean_degree.rds")
+
 # 'balanced' round 5 mixing matrix
 cm2 <- readRDS("data/input/rd5_matrix.rds") %>%
   ungroup()
@@ -20,6 +23,16 @@ cm2 <- readRDS("data/input/rd5_matrix.rds") %>%
 # round 5 mixing matrix with proportions in each cell
 cm.prop <- readRDS("data/input/rd5_matrix_prop.rds") %>%
   ungroup()
+
+# total mean degree by location using raw data
+md <- cm %>%
+  group_by(location,p_age,n_participants) %>%
+  summarise(n_contacts = sum(n_contacts)) %>%
+  ungroup() %>%
+  group_by(location) %>%
+  summarise(n_contacts = sum(n_contacts),
+            n_participants = sum(n_participants)) %>%
+  mutate(md = (n_contacts/n_participants)/2)
 
 # proportion within age group mixing by location
 md.match <- cm2 %>%
@@ -46,7 +59,7 @@ rowSums(poly.nothome)
 
 
 # Set network ------------------------------------------------------------------
-n <- 10000
+n <- 100000
 
 # Initialize age - from http://wonder.cdc.gov/bridged-race-v2020.html
 # From Karina's model
@@ -156,7 +169,7 @@ age.grp.work <- c(0,0,as.numeric(table(age.grp[non.office==0])),0)
 nf.oo.ag <- md.oo.ag * age.grp.work
 
 # Proportion within-group mixing for nodematch()
-match.oo.ag <- md.match$match[md.match$location == nw.loc]
+match.oo.ag <- md.match$match[md.match$location == "Work"]
 
 nm.oo.ag <- edges.oo * match.oo.ag
 
