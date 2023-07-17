@@ -112,5 +112,5 @@ hhPairs <- merge(persons.by.hh, persons.by.hh, by = "hh")
 hhPairs <- subset(hhPairs, (ids.x < ids.y))
 hhPairs <- hhPairs[, c(2, 4)]
 names(hhPairs) <- c(".head", ".tail")
-rm(list=setdiff(ls(), c("est", "hhPairs")))
+# rm(list=setdiff(ls(), c("est", "hhPairs")))
 
