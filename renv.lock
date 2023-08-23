@@ -1,6 +1,6 @@
 {
   "R": {
-    "Version": "4.2.2",
+    "Version": "4.3.1",
     "Repositories": [
       {
         "Name": "CRAN",
@@ -67,7 +67,7 @@
       "RemoteSha": "46147a924768aa7036726687df2fa7fc706766b4",
       "RemoteHost": "api.github.com",
       "Remotes": "github::statnet/EpiModel@main",
-      "Hash": "94fcd9888abde8c81f5f114c47ec4523",
+      "Hash": "e263ae65cdec9a564530c9ce296f6394",
       "Requirements": [
         "EpiModel",
         "ergm",
@@ -131,6 +131,16 @@
       "Repository": "CRAN",
       "Hash": "e749cae40fa9ef469b6050959517453c",
       "Requirements": []
+    },
+    "RcppArmadillo": {
+      "Package": "RcppArmadillo",
+      "Version": "0.12.6.1.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "0df0f73e8b5620605e09f2324a800754",
+      "Requirements": [
+        "Rcpp"
+      ]
     },
     "Rdpack": {
       "Package": "Rdpack",
@@ -563,9 +573,14 @@
     "ergm": {
       "Package": "ergm",
       "Version": "4.4.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "cd2fb07fc8bf578b1d2b00460ea7d148",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "ergm",
+      "RemoteUsername": "statnet",
+      "RemoteRef": "4.4.0",
+      "RemoteSha": "0c0f6ab81b02729b9eeb0e436a9ec5458c988b13",
+      "Hash": "56927bd7a02ce18bf26f90a104721fd6",
       "Requirements": [
         "MASS",
         "Matrix",
@@ -712,6 +727,20 @@
         "rlang",
         "rstudioapi",
         "withr"
+      ]
+    },
+    "gbp": {
+      "Package": "gbp",
+      "Version": "0.1.0.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "625b3980ff9ceaa7e504255736ea2056",
+      "Requirements": [
+        "Rcpp",
+        "RcppArmadillo",
+        "data.table",
+        "magrittr",
+        "rgl"
       ]
     },
     "gdtools": {
@@ -949,6 +978,20 @@
         "ellipsis",
         "fastmap",
         "rlang"
+      ]
+    },
+    "htmlwidgets": {
+      "Package": "htmlwidgets",
+      "Version": "1.6.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "a865aa85bcb2697f47505bfd70422471",
+      "Requirements": [
+        "htmltools",
+        "jsonlite",
+        "knitr",
+        "rmarkdown",
+        "yaml"
       ]
     },
     "httpcode": {
@@ -1288,6 +1331,19 @@
       "Hash": "51e9efa3a8edbb798f923d91a5e16917",
       "Requirements": []
     },
+    "patchwork": {
+      "Package": "patchwork",
+      "Version": "1.1.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "c5754106c02e8e019941100c81149431",
+      "Requirements": [
+        "cli",
+        "ggplot2",
+        "gtable",
+        "rlang"
+      ]
+    },
     "pillar": {
       "Package": "pillar",
       "Version": "1.8.1",
@@ -1510,12 +1566,29 @@
         "withr"
       ]
     },
-    "rlang": {
-      "Package": "rlang",
-      "Version": "1.0.6",
+    "rgl": {
+      "Package": "rgl",
+      "Version": "1.2.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "4ed1f8336c8d52c3e750adcdc57228a7",
+      "Hash": "e15c700c2670dfed2d997e5d275fcd07",
+      "Requirements": [
+        "R6",
+        "base64enc",
+        "htmltools",
+        "htmlwidgets",
+        "jsonlite",
+        "knitr",
+        "magrittr",
+        "mime"
+      ]
+    },
+    "rlang": {
+      "Package": "rlang",
+      "Version": "1.1.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "dc079ccd156cde8647360f473c1fa718",
       "Requirements": []
     },
     "rle": {
@@ -1702,9 +1775,14 @@
     "statnet.common": {
       "Package": "statnet.common",
       "Version": "4.8.0",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "6ba17cc9f5d1abe60467ac9d4be04d0f",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "statnet.common",
+      "RemoteUsername": "statnet",
+      "RemoteRef": "4.8.0",
+      "RemoteSha": "e0a5d778dfd108ee40c7325ae2978e7a860b91dc",
+      "Hash": "1ca24075fb126d716d3ab894a062ab3f",
       "Requirements": [
         "coda"
       ]
@@ -1754,9 +1832,14 @@
     "tergm": {
       "Package": "tergm",
       "Version": "4.1.1",
-      "Source": "Repository",
-      "Repository": "CRAN",
-      "Hash": "d53e468a32725c1431d15cd8e8d08262",
+      "Source": "GitHub",
+      "RemoteType": "github",
+      "RemoteHost": "api.github.com",
+      "RemoteRepo": "tergm",
+      "RemoteUsername": "statnet",
+      "RemoteRef": "4.1.1",
+      "RemoteSha": "b22171c843f230768506e7006fabf1a7feaa8481",
+      "Hash": "729ac4865d4a19f173eb9953766e3189",
       "Requirements": [
         "MASS",
         "coda",

@@ -40,3 +40,5 @@ vignettes/*.pdf
 .DS_Store
 renv/
 data/input/est.*
+
+hpc_scenarios.R
