@@ -27,15 +27,15 @@
     },
     "EpiModel": {
       "Package": "EpiModel",
-      "Version": "2.3.2",
+      "Version": "2.4.0",
       "Source": "GitHub",
       "RemoteType": "github",
-      "RemoteUsername": "EpiModel",
-      "RemoteRepo": "EpiModel",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "c41ae3616d60f85ced628e9ea3a2e6dfe6472a6c",
       "RemoteHost": "api.github.com",
-      "Hash": "9a3a9e9b5cedb8367eaa16a7461b3327",
+      "RemoteRepo": "EpiModel",
+      "RemoteUsername": "EpiModel",
+      "RemoteRef": "HEAD",
+      "RemoteSha": "1daa9d11ea59ec838e55b47e1356c700d44021d6",
+      "Hash": "62d10a3eda50739419b8f59d1002e0d0",
       "Requirements": [
         "RColorBrewer",
         "Rcpp",
@@ -44,12 +44,15 @@
         "deSolve",
         "doParallel",
         "dplyr",
+        "egor",
         "ergm",
+        "ergm.ego",
         "foreach",
         "ggplot2",
         "lazyeval",
         "network",
         "networkDynamic",
+        "networkLite",
         "rlang",
         "statnet.common",
         "tergm",
@@ -59,19 +62,16 @@
     "EpiModelCOVID": {
       "Package": "EpiModelCOVID",
       "Version": "1.2.0",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteUsername": "EpiModel",
-      "RemoteRepo": "EpiModelCOVID",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "46147a924768aa7036726687df2fa7fc706766b4",
-      "RemoteHost": "api.github.com",
-      "Remotes": "github::statnet/EpiModel@main",
-      "Hash": "e263ae65cdec9a564530c9ce296f6394",
+      "Source": "Local",
+      "RemoteType": "local",
+      "RemoteUrl": "C:\\Users\\mgarc48\\git\\EpiModelCOVID_1.2.0.tar.gz",
+      "Hash": "0a7e3883c54c999d6a96e65acc0bfe4a",
       "Requirements": [
         "EpiModel",
         "ergm",
         "network",
+        "networkLite",
+        "statnet.common",
         "tergm"
       ]
     },
@@ -523,10 +523,10 @@
     },
     "dplyr": {
       "Package": "dplyr",
-      "Version": "1.1.0",
+      "Version": "1.1.2",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "d3c34618017e7ae252d46d79a1b9ec32",
+      "Hash": "dea6970ff715ca541c387de363ff405e",
       "Requirements": [
         "R6",
         "cli",
@@ -560,6 +560,23 @@
         "vctrs"
       ]
     },
+    "egor": {
+      "Package": "egor",
+      "Version": "1.23.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "c14fb0de8fa6ef20e3443418167ff337",
+      "Requirements": [
+        "dplyr",
+        "pillar",
+        "purrr",
+        "rlang",
+        "srvyr",
+        "tibble",
+        "tidygraph",
+        "tidyr"
+      ]
+    },
     "ellipsis": {
       "Package": "ellipsis",
       "Version": "0.3.2",
@@ -572,15 +589,10 @@
     },
     "ergm": {
       "Package": "ergm",
-      "Version": "4.4.0",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "ergm",
-      "RemoteUsername": "statnet",
-      "RemoteRef": "4.4.0",
-      "RemoteSha": "0c0f6ab81b02729b9eeb0e436a9ec5458c988b13",
-      "Hash": "56927bd7a02ce18bf26f90a104721fd6",
+      "Version": "4.5.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "4802262e0d3c76041ae5b6a029557386",
       "Requirements": [
         "MASS",
         "Matrix",
@@ -599,6 +611,43 @@
         "stringr",
         "tibble",
         "trust"
+      ]
+    },
+    "ergm.ego": {
+      "Package": "ergm.ego",
+      "Version": "1.1.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "8d8fdcc6bfb63d47c768d7a195713dd6",
+      "Requirements": [
+        "RColorBrewer",
+        "dplyr",
+        "egor",
+        "ergm",
+        "network",
+        "purrr",
+        "statnet.common",
+        "survey",
+        "tibble"
+      ]
+    },
+    "ergm.multi": {
+      "Package": "ergm.multi",
+      "Version": "0.2.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "7a2bb59a3918ff77d122e83e6eaa8943",
+      "Requirements": [
+        "Matrix",
+        "Rdpack",
+        "ergm",
+        "glue",
+        "network",
+        "purrr",
+        "rlang",
+        "rle",
+        "statnet.common",
+        "tibble"
       ]
     },
     "evaluate": {
@@ -1040,6 +1089,22 @@
         "uuid"
       ]
     },
+    "igraph": {
+      "Package": "igraph",
+      "Version": "1.5.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "80401cb5ec513e8ddc56764d03f63669",
+      "Requirements": [
+        "Matrix",
+        "cli",
+        "cpp11",
+        "lifecycle",
+        "magrittr",
+        "pkgconfig",
+        "rlang"
+      ]
+    },
     "isoband": {
       "Package": "isoband",
       "Version": "0.2.7",
@@ -1225,6 +1290,26 @@
       "Hash": "18e9c28c1d3ca1560ce30658b22ce104",
       "Requirements": []
     },
+    "minqa": {
+      "Package": "minqa",
+      "Version": "1.2.5",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "587ce77fd3c7bada7eadb2d18b62930d",
+      "Requirements": [
+        "Rcpp"
+      ]
+    },
+    "mitools": {
+      "Package": "mitools",
+      "Version": "2.4",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "a4b659bd0528226724d55034f11ed7cb",
+      "Requirements": [
+        "DBI"
+      ]
+    },
     "modelr": {
       "Package": "modelr",
       "Version": "0.1.10",
@@ -1266,13 +1351,27 @@
     },
     "networkDynamic": {
       "Package": "networkDynamic",
-      "Version": "0.11.2",
+      "Version": "0.11.3",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "800563b69b9dfe96c1aea8cada5ede1c",
+      "Hash": "dbf1329acd23d51a62c59dea6e3c5e58",
       "Requirements": [
         "network",
+        "networkLite",
         "statnet.common"
+      ]
+    },
+    "networkLite": {
+      "Package": "networkLite",
+      "Version": "1.0.5",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "76b24ec935f6557644870eda3c0c24df",
+      "Requirements": [
+        "dplyr",
+        "network",
+        "statnet.common",
+        "tibble"
       ]
     },
     "nlme": {
@@ -1284,6 +1383,14 @@
       "Requirements": [
         "lattice"
       ]
+    },
+    "numDeriv": {
+      "Package": "numDeriv",
+      "Version": "2016.8-1.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "df58958f293b166e4ab885ebcad90e02",
+      "Requirements": []
     },
     "oai": {
       "Package": "oai",
@@ -1346,10 +1453,10 @@
     },
     "pillar": {
       "Package": "pillar",
-      "Version": "1.8.1",
+      "Version": "1.9.0",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "f2316df30902c81729ae9de95ad5a608",
+      "Hash": "15da5a8412f317beeee6175fbc76f4bb",
       "Requirements": [
         "cli",
         "fansi",
@@ -1772,17 +1879,29 @@
         "dotCall64"
       ]
     },
+    "srvyr": {
+      "Package": "srvyr",
+      "Version": "1.2.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "9388d659c3f4b7a93be210ebaaba8cf1",
+      "Requirements": [
+        "dplyr",
+        "magrittr",
+        "rlang",
+        "survey",
+        "tibble",
+        "tidyr",
+        "tidyselect",
+        "vctrs"
+      ]
+    },
     "statnet.common": {
       "Package": "statnet.common",
-      "Version": "4.8.0",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "statnet.common",
-      "RemoteUsername": "statnet",
-      "RemoteRef": "4.8.0",
-      "RemoteSha": "e0a5d778dfd108ee40c7325ae2978e7a860b91dc",
-      "Hash": "1ca24075fb126d716d3ab894a062ab3f",
+      "Version": "4.9.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "be35aebf512f7b31de12200d5c3d1d67",
       "Requirements": [
         "coda"
       ]
@@ -1811,6 +1930,31 @@
         "vctrs"
       ]
     },
+    "survey": {
+      "Package": "survey",
+      "Version": "4.2-1",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "03195177db81a992f22361f8f54852f4",
+      "Requirements": [
+        "Matrix",
+        "lattice",
+        "minqa",
+        "mitools",
+        "numDeriv",
+        "survival"
+      ]
+    },
+    "survival": {
+      "Package": "survival",
+      "Version": "3.5-5",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "d683341b1fa2e8d817efde27d6e6d35b",
+      "Requirements": [
+        "Matrix"
+      ]
+    },
     "sys": {
       "Package": "sys",
       "Version": "3.4.1",
@@ -1831,19 +1975,15 @@
     },
     "tergm": {
       "Package": "tergm",
-      "Version": "4.1.1",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "tergm",
-      "RemoteUsername": "statnet",
-      "RemoteRef": "4.1.1",
-      "RemoteSha": "b22171c843f230768506e7006fabf1a7feaa8481",
-      "Hash": "729ac4865d4a19f173eb9953766e3189",
+      "Version": "4.2.0",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "49f1958da2a787ab5dfc833676a0b450",
       "Requirements": [
         "MASS",
         "coda",
         "ergm",
+        "ergm.multi",
         "network",
         "networkDynamic",
         "nlme",
@@ -1854,10 +1994,10 @@
     },
     "tibble": {
       "Package": "tibble",
-      "Version": "3.1.8",
+      "Version": "3.2.1",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "56b6934ef0f8c68225949a8672fe1a8f",
+      "Hash": "a84e2cc86d07289b3b6f5069df7a004c",
       "Requirements": [
         "fansi",
         "lifecycle",
@@ -1866,6 +2006,25 @@
         "pkgconfig",
         "rlang",
         "vctrs"
+      ]
+    },
+    "tidygraph": {
+      "Package": "tidygraph",
+      "Version": "1.2.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "0fc97a52b4b32a0b4a3de4c5241348e2",
+      "Requirements": [
+        "R6",
+        "cli",
+        "cpp11",
+        "dplyr",
+        "igraph",
+        "magrittr",
+        "pillar",
+        "rlang",
+        "tibble",
+        "tidyr"
       ]
     },
     "tidyr": {
@@ -2019,10 +2178,10 @@
     },
     "vctrs": {
       "Package": "vctrs",
-      "Version": "0.5.2",
+      "Version": "0.6.3",
       "Source": "Repository",
       "Repository": "CRAN",
-      "Hash": "e4ffa94ceed5f124d429a5a5f0f5b378",
+      "Hash": "d0ef2856b83dc33ea6e255caf6229ee2",
       "Requirements": [
         "cli",
         "glue",
