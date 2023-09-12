@@ -114,3 +114,5 @@ hhPairs <- hhPairs[, c(2, 4)]
 names(hhPairs) <- c(".head", ".tail")
 # rm(list=setdiff(ls(), c("est", "hhPairs")))
 
+saveRDS(est, file = "data/input/est_hh.rds")
+saveRDS(hhPairs, file = "data/input/hhPairs.rds")
