@@ -7,6 +7,15 @@ suppressWarnings(suppressMessages(library(dplyr)))
 suppressWarnings(suppressMessages(library(patchwork)))
 suppressWarnings(suppressMessages(library(EpiModelCOVID)))
 
+# num.sim <- 128
+num.sim <- 32
+sim.no <- 1011
+
+for (i in seq(1012,1019,1)) {
+  num.sim <- 32
+  sim.no <- i
+
+
 times <- data.frame(DayNum = c(608, 577, 546, 516, 485, 455, 424, 396, 365, 334,
                                304, 273, 243, 212, 181, 151, 120, 90, 59, 31),
                     Month = c("Aug-22", "Jul-22", "Jun-22", "May-22", "Apr-22",
@@ -68,11 +77,9 @@ merge_simfiles <- function(simno, indir = "data/", vars = NULL,  truncate.at = N
   return(out)
 }
 
-baseline_sims <- merge_simfiles(1000, indir = "data/output/no-targeting-sims", truncate.at = 181, verbose = TRUE)
-baseline_sims$param$hosp.nudge.prob
-baseline_sims$param$bt.nudge.prob
+baseline_sims <- merge_simfiles(sim.no, indir = "data/output/calib-9-24-23", truncate.at = 181, verbose = TRUE)
 
-num.sim <- 128
+
 
 # Cases -------------------------------------------------------------------
 
@@ -197,10 +204,13 @@ f3 <- ggplot(data = death_all_runs, aes(x = ROW, y = minResult)) +
 
 combined <- f1 + f2 + f3 & theme(legend.position = "bottom")
 combined + plot_layout(ncol = 1, guides = "collect")
-ggsave("Figure1.tiff", dpi=300, compression = 'lzw', width = 3000, height = 2400, units = "px")
+ggsave(paste0("calibration figures/Figure1_",sim.no,".tiff"),
+       dpi=300, compression = 'lzw', width = 3000, height = 2400, units = "px")
 
 
 # Vaccine Coverage --------------------------------------------------------
+source("R/00-calib-targets.R")
+
 for (i in 1:num.sim) {
   vax_cov <- data.frame(cov.vax1.0to4 = baseline_sims[["epi"]][["cov_vax1_0to4"]][, i],
                         cov.vax1.5to17 = baseline_sims[["epi"]][["cov_vax1_5to17"]][, i],
@@ -457,6 +467,8 @@ v5 <- ggplot(data = vax_all_runs_5, aes(x = ROW, y = mean.vax1.65p)) +
 
 combined <- v1 + v2 + v3 + v4 + v5
 combined + plot_layout(ncol = 3)
-ggsave("Figure2.tiff", dpi=300, compression = 'lzw', width = 3000, height = 2400, units = "px")
+ggsave(paste0("calibration figures/Figure2_",sim.no,".tiff"),
+       dpi=300, compression = 'lzw', width = 3000, height = 2400, units = "px")
 rm(list=setdiff(ls(), c("est", "vax_targets", "mr_vec", "baseline_sims", "merge_simfiles")))
 
+}
