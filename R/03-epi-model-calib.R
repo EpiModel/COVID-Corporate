@@ -92,6 +92,16 @@ param <- param.net(inf.prob = c(0.5 ,0.5, 0.5),
                    vax2.rr.hosp = 0.02,
                    vax3.rr.hosp = 0.07,
                    vax4.rr.hosp = 0.07,
+
+                   vax1.boost = c(0.02,0.10,0.37,0.37,0.66),
+                   vax2.boost = c(0.00,0.06,0.24,0.24,0.47),
+                   vax3.boost = c(0.00,0.02,0.10,0.22,0.16),
+                   vax4.boost = c(0.00,0.00,0.00,0.02,0.06),
+                   vax1.boost.start = 180 + c(30*18,30*5,30*3,30*3,30*2),
+                   vax2.boost.start = 180 + c(30*18,30*5,30*3,30*3,30*2),
+                   vax3.boost.start = 180 + c(Inf,30*13,30*11,30*11,30*9),
+                   vax4.boost.start = 180 + c(Inf,Inf,Inf,30*16,30*16),
+
                    half.life = 80,
 
                    a.rate = mean(mr_vec),
@@ -107,7 +117,7 @@ init <- init.net(e.num = 1600)
 # Control settings
 # pkgload::load_all("~/git/EpiModelCOVID")
 pkgload::load_all("C:/Users/mgarc48/git/EpiModelCOVID")
-control <- control.net(nsteps = 50,
+control <- control.net(nsteps = 250,
                        #steps = 180 + 608,
                        nsims = 1,
                        ncores = 1,
