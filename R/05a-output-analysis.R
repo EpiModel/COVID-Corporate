@@ -58,10 +58,11 @@ merge_simfiles <- function(simno, indir = "data/", vars = NULL,  truncate.at = N
   return(out)
 }
 
-# Tables: Load and merge files -------------------------------------------------
-
 baseline_sims <- merge_simfiles(base.sim, indir = my.dir,
                                 truncate.at = 181, verbose = TRUE)
+
+# Tables: Load and merge files -------------------------------------------------
+
 scenario1 <- merge_simfiles(base.sim + 1, indir = my.dir,
                             vars = NULL,  truncate.at = 181, verbose = TRUE)
 scenario2 <- merge_simfiles(base.sim + 2, indir = my.dir,
@@ -76,12 +77,21 @@ scenario6 <- merge_simfiles(base.sim + 6, indir = my.dir,
                             vars = NULL,  truncate.at = 181, verbose = TRUE)
 scenario7 <- merge_simfiles(base.sim + 7, indir = my.dir,
                             vars = NULL,  truncate.at = 181, verbose = TRUE)
+scenario8 <- merge_simfiles(base.sim + 8, indir = my.dir,
+                            vars = NULL,  truncate.at = 181, verbose = TRUE)
+scenario9 <- merge_simfiles(base.sim + 9, indir = my.dir,
+                            vars = NULL,  truncate.at = 181, verbose = TRUE)
+scenario10 <- merge_simfiles(base.sim + 10, indir = my.dir,
+                            vars = NULL,  truncate.at = 181, verbose = TRUE)
 
 
 # Table shells -----------------------------------------------------------------
 
 scenarios = c("Baseline",
               "Max isolation",
+              "Max work notification",
+              "Max community notification",
+              "Max home notification",
               "Max isolation + work notif.",
               "Max isolation + community notif.",
               "Max isolation + home notif.",
@@ -92,13 +102,22 @@ scenarios = c("Baseline",
 table2 <- data.frame(scenario = scenarios,
                      IsoMild = NA, IsoSevere = NA,
                      PostIsoMask = NA, ExpMask = NA,
-                     IsoEnd = NA)
+                     IsoEnd = NA,
+                     IsoMildWork = NA, IsoSevereWork = NA,
+                     PostIsoMaskWork = NA, ExpMaskWork = NA,
+                     IsoEndWork = NA)
 
 table3 <- data.frame(scenario = scenarios,
-                     CInc = NA, IncAverted = NA, PctAverted = NA, AvertedPerIso = NA)
+                     CInc = NA, IncAverted = NA, PctAverted = NA,
+                     AvertedPerIso = NA,
+                     CIncWork = NA, IncAvertedWork = NA, PctAvertedWork = NA,
+                     AvertedPerIsoWork = NA)
 
 table4 <- data.frame(scenario = scenarios,
-                     CDeaths = NA, DeathsAverted = NA, PctAverted = NA, AvertedPerIso = NA)
+                     CDeaths = NA, DeathsAverted = NA, PctAverted = NA,
+                     AvertedPerIso = NA,
+                     CDeathsWork = NA, DeathsAvertedWork = NA, PctAvertedWork = NA,
+                     AvertedPerIsoWork = NA)
 
 # Table fill functions ---------------------------------------------------------
 table2_fill <- function(sim, rownum, table2) {
@@ -114,17 +133,37 @@ table2_fill <- function(sim, rownum, table2) {
   iso4_stats <- quantile(iso.expmask / pds * 100000, probs = c(.25, 0.5, .75))
   iso5_stats <- quantile(iso.end / pds * 100000, probs = c(.25, 0.5, .75))
 
+  iso.mild.w <- colSums(sim$epi$iso1.flow.w)
+  iso.severe.w <- colSums(sim$epi$iso2.flow.w)
+  iso.postmask.w <- colSums(sim$epi$iso3.flow.w)
+  iso.expmask.w <- colSums(sim$epi$iso4.flow.w)
+  iso.end.w <- colSums(sim$epi$isoend.flow.w)
+  pds.w <- colSums(sim$epi$num.w)
+  iso1_stats.w <- quantile(iso.mild.w / pds.w * 100000, probs = c(.25, 0.5, .75))
+  iso2_stats.w <- quantile(iso.severe.w / pds.w * 100000, probs = c(.25, 0.5, .75))
+  iso3_stats.w <- quantile(iso.postmask.w / pds.w * 100000, probs = c(.25, 0.5, .75))
+  iso4_stats.w <- quantile(iso.expmask.w / pds.w * 100000, probs = c(.25, 0.5, .75))
+  iso5_stats.w <- quantile(iso.end.w / pds.w * 100000, probs = c(.25, 0.5, .75))
+
   table2[rownum, 2] <- paste0(round(iso1_stats[2], 1), " (", round(iso1_stats[1], 1), ", ", round(iso1_stats[3], 1), ")")
   table2[rownum, 3] <- paste0(round(iso2_stats[2], 1), " (", round(iso2_stats[1], 1), ", ", round(iso2_stats[3], 1), ")")
   table2[rownum, 4] <- paste0(round(iso3_stats[2], 1), " (", round(iso3_stats[1], 1), ", ", round(iso3_stats[3], 1), ")")
   table2[rownum, 5] <- paste0(round(iso4_stats[2], 1), " (", round(iso4_stats[1], 1), ", ", round(iso4_stats[3], 1), ")")
   table2[rownum, 6] <- paste0(round(iso5_stats[2], 1), " (", round(iso5_stats[1], 1), ", ", round(iso5_stats[3], 1), ")")
+  table2[rownum, 7] <- paste0(round(iso1_stats.w[2], 1), " (", round(iso1_stats.w[1], 1), ", ", round(iso1_stats.w[3], 1), ")")
+  table2[rownum, 8] <- paste0(round(iso2_stats.w[2], 1), " (", round(iso2_stats.w[1], 1), ", ", round(iso2_stats.w[3], 1), ")")
+  table2[rownum, 9] <- paste0(round(iso3_stats.w[2], 1), " (", round(iso3_stats.w[1], 1), ", ", round(iso3_stats.w[3], 1), ")")
+  table2[rownum, 10] <- paste0(round(iso4_stats.w[2], 1), " (", round(iso4_stats.w[1], 1), ", ", round(iso4_stats.w[3], 1), ")")
+  table2[rownum, 11] <- paste0(round(iso5_stats.w[2], 1), " (", round(iso5_stats.w[1], 1), ", ", round(iso5_stats.w[3], 1), ")")
 
   return(table2)
 }
 
 
-table3_fill <- function(sim, rownum, table3, ref_inf_rate = NA, ref_inf_count = NA, ref_iso = NA){
+table3_fill <- function(sim, rownum, table3,
+                        ref_inf_rate = NA, ref_inf_rate_w = NA,
+                        ref_inf_count = NA, ref_inf_count_w = NA,
+                        ref_iso = NA, ref_iso_w = NA){
   inc <- colSums(sim$epi$se.flow)
   pd <- colSums(sim$epi$num)
   inc_rate <- inc / pd * 100000
@@ -144,7 +183,7 @@ table3_fill <- function(sim, rownum, table3, ref_inf_rate = NA, ref_inf_count = 
 
     table3[rownum, 4] <- paste0(pct_averted.2, " (", pct_averted.3, ", ", pct_averted.1, ")")
 
-    total_iso <- colSums(sim$epi$iso1.flow) + colSums(sim$epi$iso4.flow)
+    total_iso <- colSums(sim$epi$iso1.flow)
     addtl_iso <- total_iso - ref_iso
     total_inf <- colSums(sim$epi$se.flow)
     total_inf_averted <- ref_inf_count - total_inf
@@ -155,10 +194,44 @@ table3_fill <- function(sim, rownum, table3, ref_inf_rate = NA, ref_inf_count = 
     table3[rownum, 5] <- paste0(averted_per_iso[2], " (", averted_per_iso[1], ", ", averted_per_iso[3], ")")
   }
 
+  inc.w <- colSums(sim$epi$se.flow.l1)
+  pd.w <- colSums(sim$epi$num.w)
+  inc_rate.w <- inc.w / pd.w * 100000
+  inc_stats.w <- quantile(inc_rate.w, probs = c(.25, 0.5, .75))
+  table3[rownum, 6] <- paste0(round(inc_stats.w[2], 1), " (", round(inc_stats.w[1], 1), ", ", round(inc_stats.w[3], 1), ")")
+
+  if (!is.na(ref_inf_rate_w)){
+    inf_averted.1.w <- round(ref_inf_rate_w - inc_stats.w[1], 1)
+    inf_averted.2.w <- round(ref_inf_rate_w - inc_stats.w[2], 1)
+    inf_averted.3.w <- round(ref_inf_rate_w - inc_stats.w[3], 1)
+
+    table3[rownum, 7] <- paste0(inf_averted.2.w, " (", inf_averted.3.w, ", ", inf_averted.1.w, ")")
+
+    pct_averted.1.w <- round((ref_inf_rate_w - inc_stats.w[1]) / ref_inf_rate_w, 3) * 100
+    pct_averted.2.w <- round((ref_inf_rate_w - inc_stats.w[2]) / ref_inf_rate_w, 3) * 100
+    pct_averted.3.w <- round((ref_inf_rate_w - inc_stats.w[3]) / ref_inf_rate_w, 3) * 100
+
+    table3[rownum, 8] <- paste0(pct_averted.2.w, " (", pct_averted.3.w, ", ", pct_averted.1.w, ")")
+
+    total_iso.w <- colSums(sim$epi$iso1.flow.w)
+    addtl_iso.w <- total_iso.w - ref_iso_w
+    total_inf.w <- colSums(sim$epi$se.flow.l1)
+    total_inf_averted.w <- ref_inf_count_w - total_inf.w
+    averted_per_iso.w <- total_inf_averted.w / addtl_iso.w
+
+    averted_per_iso.w <- round(quantile(averted_per_iso.w, probs = c(.25, 0.5, .75)), 1)
+
+    table3[rownum, 9] <- paste0(averted_per_iso.w[2], " (", averted_per_iso.w[1], ", ", averted_per_iso.w[3], ")")
+  }
+
   return(table3)
 }
 
-table4_fill <- function(sim, rownum, table4, ref_death_rate = NA, ref_death_count = NA, ref_iso = NA){
+table4_fill <- function(sim, rownum, table4,
+                        ref_death_rate = NA, ref_death_rate_w = NA,
+                        ref_death_count = NA, ref_death_count_w = NA,
+                        ref_iso = NA, ref_iso_w = NA){
+
   deaths <- colSums(sim$epi$d.h.flow)
   pds <- colSums(sim$epi$num)
   death_rates <- deaths / pds * 100000
@@ -178,7 +251,7 @@ table4_fill <- function(sim, rownum, table4, ref_death_rate = NA, ref_death_coun
 
     table4[rownum, 4] <- paste0(pct_averted.2, " (", pct_averted.3, ", ", pct_averted.1, ")")
 
-    total_iso <- colSums(sim$epi$iso1.flow) + colSums(sim$epi$iso4.flow)
+    total_iso <- colSums(sim$epi$iso1.flow)
     addtl_iso <- total_iso - ref_iso
     total_deaths <- colSums(sim$epi$d.h.flow)
     total_deaths_averted <- ref_death_count - total_deaths
@@ -188,6 +261,37 @@ table4_fill <- function(sim, rownum, table4, ref_death_rate = NA, ref_death_coun
 
     table4[rownum, 5] <- paste0(averted_per_iso[2], " (", averted_per_iso[1], ", ", averted_per_iso[3], ")")
   }
+
+  deaths.w <- colSums(sim$epi$d.h.flow.w)
+  pds.w <- colSums(sim$epi$num.w)
+  death_rates.w <- deaths.w / pds.w * 100000
+  death_stats.w <- quantile(death_rates.w, probs = c(.25, 0.5, .75))
+  table4[rownum, 2] <- paste0(round(death_stats.w[2], 3), " (", round(death_stats.w[1], 3), ", ", round(death_stats.w[3], 3), ")")
+
+  if (!is.na(ref_death_rate_w_w)){
+    deaths_averted.1.w <- round(ref_death_rate_w - death_stats.w[1], 3)
+    deaths_averted.2.w <- round(ref_death_rate_w - death_stats.w[2], 3)
+    deaths_averted.3.w <- round(ref_death_rate_w - death_stats.w[3], 3)
+
+    table4[rownum, 3] <- paste0(deaths_averted.2.w, " (", deaths_averted.3.w, ", ", deaths_averted.1.w, ")")
+
+    pct_averted.1.w <- round((ref_death_rate_w - death_stats.w[1]) / ref_death_rate_w, 3) * 100
+    pct_averted.2.w <- round((ref_death_rate_w - death_stats.w[2]) / ref_death_rate_w, 3) * 100
+    pct_averted.3.w <- round((ref_death_rate_w - death_stats.w[3]) / ref_death_rate_w, 3) * 100
+
+    table4[rownum, 4] <- paste0(pct_averted.2.w, " (", pct_averted.3.w, ", ", pct_averted.1.w, ")")
+
+    total_iso.w <- colSums(sim$epi$iso1.flow.w)
+    addtl_iso.w <- total_iso.w - ref_iso_w
+    total_deaths.w <- colSums(sim$epi$d.h.flow.w)
+    total_deaths_averted.w <- ref_death_count_w - total_deaths.w
+    averted_per_iso.w <- total_deaths_averted.w / addtl_iso.w
+
+    averted_per_iso.w <- round(quantile(averted_per_iso.w, probs = c(.25, 0.5, .75)), 1)
+
+    table4[rownum, 5] <- paste0(averted_per_iso.w[2], " (", averted_per_iso.w[1], ", ", averted_per_iso.w[3], ")")
+  }
+
   return(table4)
 }
 
@@ -198,44 +302,73 @@ ref_inf_count <- quantile(colSums(baseline_sims$epi$se.flow), probs = 0.5)
 ref_case_rate <- quantile(colSums(baseline_sims$epi$ipic.flow) / colSums(baseline_sims$epi$num) * 100000, probs = 0.5)
 ref_death_rate <- quantile(colSums(baseline_sims$epi$d.h.flow) / colSums(baseline_sims$epi$num) * 100000, probs = 0.5)
 ref_death_count <- quantile(colSums(baseline_sims$epi$d.h.flow), probs = 0.5)
-ref_iso <- median(colSums(baseline_sims$epi$iso1.flow) + colSums(baseline_sims$epi$iso4.flow))
+ref_iso <- median(colSums(baseline_sims$epi$iso1.flow))
+
+# reference values among office workers
+ref_inf_rate_w <- quantile(colSums(baseline_sims$epi$se.flow.l1) / colSums(baseline_sims$epi$num.w) * 100000, probs = 0.5)
+ref_inf_count_w <- quantile(colSums(baseline_sims$epi$se.flow.l1), probs = 0.5)
+ref_case_rate_w <- quantile(colSums(baseline_sims$epi$ipic.flow.w) / colSums(baseline_sims$epi$num.w) * 100000, probs = 0.5)
+ref_death_rate_w <- quantile(colSums(baseline_sims$epi$d.h.flow.w) / colSums(baseline_sims$epi$num.w) * 100000, probs = 0.5)
+ref_death_count_w <- quantile(colSums(baseline_sims$epi$d.h.flow.w), probs = 0.5)
+ref_iso_w <- median(colSums(baseline_sims$epi$iso1.flow.w))
 
 # Table 2
 table2 <- table2_fill(baseline_sims,1,table2)
-for (i in seq(1,7)) {
+for (i in seq(1,10)) {
   table2 <- table2_fill(eval(parse(text = paste0("scenario", i))),1+i,table2)
 }
 
 # Table 3
 
 table3 <- table3_fill(baseline_sims, 1, table3,
-                      ref_inf_rate = ref_inf_rate, ref_inf_count = ref_inf_count,
-                      ref_iso = ref_iso)
-for (i in seq(1,7)) {
+                      ref_inf_rate = ref_inf_rate,
+                      ref_inf_rate_w = ref_inf_rate_w,
+                      ref_inf_count = ref_inf_count,
+                      ref_inf_count_w = ref_inf_count_w,
+                      ref_iso = ref_iso,
+                      ref_iso_w = ref_iso_w)
+for (i in seq(1,10)) {
   table3 <- table3_fill(eval(parse(text = paste0("scenario", i))),1+i,table3,
-                        ref_inf_rate = ref_inf_rate, ref_inf_count = ref_inf_count,
-                        ref_iso = ref_iso)
+                        ref_inf_rate = ref_inf_rate,
+                        ref_inf_rate_w = ref_inf_rate_w,
+                        ref_inf_count = ref_inf_count,
+                        ref_inf_count_w = ref_inf_count_w,
+                        ref_iso = ref_iso,
+                        ref_iso_w = ref_iso_w)
 }
 
 # Table 4
 table4 <- table4_fill(baseline_sims, 1, table4,
-                      ref_death_rate = ref_death_rate, ref_death_count = ref_death_count,
-                      ref_iso = ref_iso)
-for (i in seq(1,7)) {
+                      ref_death_rate = ref_death_rate,
+                      ref_death_rate_w = ref_death_rate_w,
+                      ref_death_count = ref_death_count,
+                      ref_death_count_w = ref_death_count_w,
+                      ref_iso = ref_iso,
+                      ref_iso_w = ref_iso_w)
+for (i in seq(1,10)) {
   table4 <- table3_fill(eval(parse(text = paste0("scenario", i))),1+i,table4,
-                        ref_inf_rate = ref_inf_rate, ref_inf_count = ref_inf_count,
-                        ref_iso = ref_iso)
+                        ref_death_rate = ref_death_rate,
+                        ref_death_rate_w = ref_death_rate_w,
+                        ref_death_count = ref_death_count,
+                        ref_death_count_w = ref_death_count_w,
+                        ref_iso = ref_iso,
+                        ref_iso_w = ref_iso_w)
 }
 
 # Contour Plots: Load and merge files ------------------------------------------
 
 ##Isolation prob vs work notification prob
-cInc <- data.frame(iso.prob = rep(NA, 100), work.notif.prob = rep(NA, 100), cInc = rep(NA, 100))
-cDeaths <- data.frame(iso.prob = rep(NA, 100), work.notif.prob = rep(NA, 100), cDeaths = rep(NA, 100))
-cIso <- data.frame(iso.prob = rep(NA, 100), work.notif.prob = rep(NA, 100), cIso = rep(NA, 100))
-cCases <- data.frame(iso.prob = rep(NA, 100), work.notif.prob = rep(NA, 100), cCases = rep(NA, 100))
+cInc <- data.frame(iso.prob = rep(NA, 121), work.notif.prob = rep(NA, 121), cInc = rep(NA, 121))
+cDeaths <- data.frame(iso.prob = rep(NA, 121), work.notif.prob = rep(NA, 121), cDeaths = rep(NA, 121))
+cIso <- data.frame(iso.prob = rep(NA, 121), work.notif.prob = rep(NA, 121), cIso = rep(NA, 121))
+cCases <- data.frame(iso.prob = rep(NA, 121), work.notif.prob = rep(NA, 121), cCases = rep(NA, 121))
 
-for (i in 6000:6099) {
+cIncWork <- data.frame(iso.prob = rep(NA, 121), work.notif.prob = rep(NA, 121), cInc = rep(NA, 121))
+cDeathsWork <- data.frame(iso.prob = rep(NA, 121), work.notif.prob = rep(NA, 121), cDeaths = rep(NA, 121))
+cIsoWork <- data.frame(iso.prob = rep(NA, 121), work.notif.prob = rep(NA, 121), cIso = rep(NA, 121))
+cCasesWork <- data.frame(iso.prob = rep(NA, 121), work.notif.prob = rep(NA, 121), cCases = rep(NA, 121))
+
+for (i in 6000:6120) {
 
   print(i)
 
@@ -246,13 +379,23 @@ for (i in 6000:6099) {
 
   scenario.cInc <- median(colSums(temp$epi$se.flow) / colSums(temp$epi$num) * 100000)
   scenario.cDeaths <- median(colSums(temp$epi$d.h.flow) / colSums(temp$epi$num) * 100000)
-  scenario.cIso <- median(colSums(baseline_sims$epi$iso1.flow) + colSums(baseline_sims$epi$iso4.flow))
+  scenario.cIso <- median(colSums(temp$epi$iso1.flow))
   scenario.cCases <- median(colSums(temp$epi$ipic.flow) / colSums(temp$epi$num) * 100000)
+
+  scenario.cIncWork <- median(colSums(temp$epi$se.flow.l1) / colSums(temp$epi$num.w) * 100000)
+  scenario.cDeathsWork <- median(colSums(temp$epi$d.h.flow.w) / colSums(temp$epi$num.w) * 100000)
+  scenario.cIsoWork <- median(colSums(temp$epi$iso1.flow.w))
+  scenario.cCasesWork <- median(colSums(temp$epi$ipic.flow.w) / colSums(temp$epi$num.w) * 100000)
 
   cInc[(i - 5999), ] <- c(scale.1, scale.2, scenario.cInc)
   cDeaths[(i - 5999), ] <- c(scale.1, scale.2, scenario.cDeaths)
   cIso[(i - 5999), ] <- c(scale.1, scale.2, scenario.cIso)
   cCases[(i - 5999), ] <- c(scale.1, scale.2, scenario.cCases)
+
+  cIncWork[(i - 5999), ] <- c(scale.1, scale.2, scenario.cIncWork)
+  cDeathsWork[(i - 5999), ] <- c(scale.1, scale.2, scenario.cDeathsWork)
+  cIsoWork[(i - 5999), ] <- c(scale.1, scale.2, scenario.cIsoWork)
+  cCasesWork[(i - 5999), ] <- c(scale.1, scale.2, scenario.cCasesWork)
 
   remove(temp)
 }
@@ -281,6 +424,23 @@ g_inc_cont <- ggplot(cInc, aes(iso.prob, work.notif.prob)) +
         legend.text = element_text(size = rel(1.2))) +
   coord_fixed()
 
+# Plot cases - Office Workers
+minval.iw <- floor(min(cIncWork$cIncWork))
+maxval.iw <- ceiling(max(cIncWork$cIncWork))
+g_inc_cont_w <- ggplot(cIncWork, aes(iso.prob, work.notif.prob)) +
+  geom_raster(aes(fill = cIncWork), interpolate = TRUE) +
+  geom_contour(aes(z = cIncWork), col = "white", alpha = 0.5, lwd = 0.5) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Isolation Probability", y = "Notification Probability at Work") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.iw, maxval.iw), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
 # Plot deaths
 minval.d <- min(cDeaths$cDeaths)
 maxval.d <- max(cDeaths$cDeaths)
@@ -299,7 +459,25 @@ g_death_cont <- ggplot(cDeaths, aes(iso.prob, work.notif.prob)) +
         legend.text = element_text(size = rel(1.2))) +
   coord_fixed()
 
-# Plot doses
+# Plot deaths - Office Workers
+minval.dw <- min(cDeathsWork$cDeathsWork)
+maxval.dw <- max(cDeathsWork$cDeathsWork)
+g_death_cont_w <- ggplot(cDeathsWork, aes(iso.prob, work.notif.prob)) +
+  geom_raster(aes(fill = cDeathsWork), interpolate = TRUE) +
+  geom_contour(aes(z = cDeathsWork), col = "white", alpha = 0.5, lwd = 0.5) +
+  #geom_text_contour(aes(z = cDeathsWork), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Isolation Probability", y = "Notification Probability at Work") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.dw, maxval.dw), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+# Plot isolation
 minval.v <- min(cIso$cIso)
 maxval.v <- max(cIso$cIso)
 g_iso_cont <- ggplot(cIso, aes(iso.prob, work.notif.prob)) +
@@ -317,9 +495,30 @@ g_iso_cont <- ggplot(cIso, aes(iso.prob, work.notif.prob)) +
         legend.text = element_text(size = rel(1.2))) +
   coord_fixed()
 
-combined1 <- g_iso_cont + plot_annotation(tag_levels = list(c("A")), title = "Total Persons Entering Isolation")
-combined2 <- g_inc_cont + plot_annotation(tag_levels = list(c("B")), title = "Infections per 100'000 Person-Days")
-combined3 <- g_death_cont + plot_annotation(tag_levels = list(c("C")), title = "Deaths per 100'000 Person-Days")
+# Plot isolation - Office Workers
+minval.vw <- min(cIsoWork$cIsoWork)
+maxval.vw <- max(cIsoWork$cIsoWork)
+g_iso_cont_w <- ggplot(cIsoWork, aes(iso.prob, work.notif.prob)) +
+  geom_raster(aes(fill = cIsoWork), interpolate = TRUE) +
+  geom_contour(aes(z = cIsoWork), col = "white", alpha = 0.5, lwd = 0.5) +
+  #geom_text_contour(aes(z = cIsoWork), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Isolation Probability", y = "Notification Probability at Work") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.vw, maxval.vw), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+combined1 <- g_iso_cont + g_iso_cont_w +
+  plot_annotation(tag_levels = list(c("A1", "A2")), title = "Total Persons Entering Isolation")
+combined2 <- g_inc_cont + g_inc_cont_w +
+  plot_annotation(tag_levels = list(c("B1", "B2")), title = "Infections per 100'000 Person-Days")
+combined3 <- g_death_cont + g_death_cont_w +
+  plot_annotation(tag_levels = list(c("C1", "C2")), title = "Deaths per 100'000 Person-Days")
 
 wrap_elements(combined1) / wrap_elements(combined2) / wrap_elements(combined3)
 
