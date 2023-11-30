@@ -40,6 +40,51 @@ iso.vars <- list(
   inf.prob.mask = c(rep(0.3,9), 0, 0)
 )
 
+iso.vars <- list(
+  iso.prob.x =    c(0,0.1,0.2,0.25,0.3,0.4,0.5,0.58,0.6,0.7,0.75,0.8,0.9,0.1,
+                    rep(0.58,11),
+                    rep(0.58,11),
+                    rep(0.58,11),
+                    rep(0.58,11),
+                    rep(0.58,11),
+                    0,1,0.75,0.75,0.75,0.75),
+  notif.work =    c(rep(0.5,14),
+                    seq(0,1,length.out=11),
+                    rep(0.5,11),
+                    rep(0.5,11),
+                    rep(0.5,11),
+                    rep(0.5,11),
+                    0,1,0.75,0.5,0.5,0.5),
+  notif.com =     c(rep(0.1,14),
+                    rep(0.1,11),
+                    seq(0,1,length.out=11),
+                    rep(0.1,11),
+                    rep(0.1,11),
+                    rep(0.1,11),
+                    0,1,0.1,0.1,0.1,0.1),
+  notif.home =    c(rep(0.9,14),
+                    rep(0.9,11),
+                    rep(0.9,11),
+                    seq(0,1,length.out=11),
+                    rep(0.9,11),
+                    rep(0.9,11),
+                    0,1,0.9,0.9,0.9,0.9),
+  act.rate.iso =  c(rep(0.3,14),
+                    rep(0.3,11),
+                    rep(0.3,11),
+                    rep(0.3,11),
+                    seq(0,1,length.out=11),
+                    rep(0.3,11),
+                    0,1,0.3,0.1,0.3,0.1),
+  inf.prob.mask = c(rep(0.3,14),
+                    rep(0.3,11),
+                    rep(0.3,11),
+                    rep(0.3,11),
+                    rep(0.3,11),
+                    seq(0,1,length.out=11),
+                    0,1,0.3,0.3,0.1,0.1)
+)
+
 # then that list gets passed into this sbatch_function
 EpiModelHPC::sbatch_master(
   vars = iso.vars, # the list above

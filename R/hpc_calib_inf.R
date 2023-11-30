@@ -100,21 +100,23 @@ mr_vec <- rep(mr_pp_pd, times = age_spans)
 # hhPairs <- readRDS("hhPairs.rds")
 
 # Model parameters
-pull_env_vars(num.vars = c("boost.start1","boost.start2",
+pull_env_vars(num.vars = c("inf.p",
+                           "boost.start1","boost.start2",
                            "boost.stop1","boost.stop2",
                            "inf.add1","inf.add2",
-                           "supp.start1","supp.start2","supp.start3",
-                           "supp.stop1","supp.stop2","supp.stop3",
-                           "inf.sub1","inf.sub2","inf.sub3",
+                           "supp.start1","supp.start2","supp.start3","supp.start4",
+                           "supp.stop1","supp.stop2","supp.stop3","supp.stop4",
+                           "inf.sub1","inf.sub2","inf.sub3","inf.sub4",
                            "hosp.b.mult","hosp.b.start","hosp.b.stop",
-                           "hosp.s.mult","hosp.s.start","hosp.s.stop"))
-param <- param.net(inf.prob = c(0.5,0.5,0.5),
+                           "hosp.s.mult","hosp.s.start","hosp.s.stop",
+                           "hosp.div","mort.mult"))
+param <- param.net(inf.prob = c(inf.p,inf.p,inf.p),
                    inf.add = c(inf.add1, inf.add2), # calibrated
-                   inf.sub = c(inf.sub1, inf.sub2, inf.sub3),
+                   inf.sub = c(inf.sub1, inf.sub2, inf.sub3, inf.sub4),
                    inf.boost.start = 180 + c(boost.start1, boost.start2), # calibrated
                    inf.boost.stop = 180 + c(boost.stop1, boost.stop2), # calibrated
-                   inf.supp.start =  180 + c(supp.start1, supp.start2, supp.start3), # calibrated
-                   inf.supp.stop = 180 + c(supp.stop1, supp.stop2, supp.stop3), # calibrated
+                   inf.supp.start =  180 + c(supp.start1, supp.start2, supp.start3, supp.start4), # calibrated
+                   inf.supp.stop = 180 + c(supp.stop1, supp.stop2, supp.stop3, supp.stop4), # calibrated
 
                    act.rate = c(1, 1, 5),
                    inf.prob.inter.rr = c(0.6, 0.6, 0.6),
@@ -136,7 +138,7 @@ param <- param.net(inf.prob = c(0.5,0.5,0.5),
                    act.rate.iso.inter.rr = 0.3,
 
                    prop.clinical = c(0.573, 0.642, 0.760, 0.800, 0.813, 0.814, 0.769, 0.723, 0.666), # by decade of age
-                   prop.hospit = c(0.060, 0.063, 0.081, 0.154, 0.207, 0.268, 0.357, 0.465, 0.539) / 10, # by decade of age
+                   prop.hospit = c(0.060, 0.063, 0.081, 0.154, 0.207, 0.268, 0.357, 0.465, 0.539) / c(hosp.div), # by decade of age
 
                    hosp.boost.mult = c(hosp.b.mult),
                    hosp.boost.start = c(hosp.b.start),
@@ -196,7 +198,7 @@ param <- param.net(inf.prob = c(0.5,0.5,0.5),
                    a.rate = mean(mr_vec),
                    arrival.age = 0,
                    mort.rates = mr_vec,
-                   mort.dis.mult = 180 * 10,
+                   mort.dis.mult = c(mort.mult),
 
                    hh.pairs = hhPairs)
 
