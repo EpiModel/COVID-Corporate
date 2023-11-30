@@ -9,6 +9,7 @@ suppressWarnings(suppressMessages(library(EpiModelCOVID)))
 # Set baseline simulation number and directory ---------------------------------
 base.sim <- 5000
 my.dir <- "data/output/prelim-results"
+s.num <- 10 # number of scenarios, excluding reference scenario
 
 # Function to merge sim files (same as in 04-calib-figures) --------------------
 merge_simfiles <- function(simno, indir = "data/", vars = NULL,  truncate.at = NULL, verbose = TRUE) {
@@ -58,58 +59,43 @@ merge_simfiles <- function(simno, indir = "data/", vars = NULL,  truncate.at = N
   return(out)
 }
 
+# Tables: FOR NEW OUTPUT Merge & save files ------------------------------------
+
 baseline_sims <- merge_simfiles(base.sim, indir = my.dir,
                                 truncate.at = 181, verbose = TRUE)
-
-# Tables: Load and merge files -------------------------------------------------
-
 scenario0 <- baseline_sims
-scenario1 <- merge_simfiles(base.sim + 1, indir = my.dir,
-                            vars = NULL,  truncate.at = 181, verbose = TRUE)
-scenario2 <- merge_simfiles(base.sim + 2, indir = my.dir,
-                            vars = NULL,  truncate.at = 181, verbose = TRUE)
-scenario3 <- merge_simfiles(base.sim + 3, indir = my.dir,
-                            vars = NULL,  truncate.at = 181, verbose = TRUE)
-scenario4 <- merge_simfiles(base.sim + 4, indir = my.dir,
-                            vars = NULL,  truncate.at = 181, verbose = TRUE)
-scenario5 <- merge_simfiles(base.sim + 5, indir = my.dir,
-                            vars = NULL,  truncate.at = 181, verbose = TRUE)
-scenario6 <- merge_simfiles(base.sim + 6, indir = my.dir,
-                            vars = NULL,  truncate.at = 181, verbose = TRUE)
-scenario7 <- merge_simfiles(base.sim + 7, indir = my.dir,
-                            vars = NULL,  truncate.at = 181, verbose = TRUE)
-scenario8 <- merge_simfiles(base.sim + 8, indir = my.dir,
-                            vars = NULL,  truncate.at = 181, verbose = TRUE)
-scenario9 <- merge_simfiles(base.sim + 9, indir = my.dir,
-                            vars = NULL,  truncate.at = 181, verbose = TRUE)
-scenario10 <- merge_simfiles(base.sim + 10, indir = my.dir,
-                            vars = NULL,  truncate.at = 181, verbose = TRUE)
 
-saveRDS(scenario0, file = here::here("data","output","formatted-data","scenario0.rds"))
-saveRDS(scenario1, file = here::here("data","output","formatted-data","scenario1.rds"))
-saveRDS(scenario2, file = here::here("data","output","formatted-data","scenario2.rds"))
-saveRDS(scenario3, file = here::here("data","output","formatted-data","scenario3.rds"))
-saveRDS(scenario4, file = here::here("data","output","formatted-data","scenario4.rds"))
-saveRDS(scenario5, file = here::here("data","output","formatted-data","scenario5.rds"))
-saveRDS(scenario6, file = here::here("data","output","formatted-data","scenario6.rds"))
-saveRDS(scenario7, file = here::here("data","output","formatted-data","scenario7.rds"))
-saveRDS(scenario8, file = here::here("data","output","formatted-data","scenario8.rds"))
-saveRDS(scenario9, file = here::here("data","output","formatted-data","scenario9.rds"))
-saveRDS(scenario10, file = here::here("data","output","formatted-data","scenario10.rds"))
+for (i in 1:s.num) {
+  scenario_list[[i]] <- merge_simfiles(base.sim + i, indir = my.dir,
+                                    vars = NULL,  truncate.at = 181, verbose = TRUE)
+
+}
+
+saveRDS(scenario_list, file = here::here("data","output","formatted-data",
+                                      "scenario_list.rds"))
+
+# Tables: FOR EXISTING OUTPUT Load files ---------------------------------------
+
+scenario_list <- readRDS(here::here("data","output","formatted-data",
+                                "scenario_list.rds"))
+
+baseline_sims <- scenario0
 
 # Table shells -----------------------------------------------------------------
 
-scenarios = c("Baseline",
-              "Max isolation",
-              "Max work notification",
-              "Max community notification",
-              "Max home notification",
-              "Max isolation + work notif.",
-              "Max isolation + community notif.",
-              "Max isolation + home notif.",
-              "Perfect isolation",
-              "Perfect masking",
-              "Perfect isolation + masking")
+## Need to edit
+# scenarios = c("Baseline",
+#               "Max isolation",
+#               "Max work notification",
+#               "Max community notification",
+#               "Max home notification",
+#               "Max isolation + work notif.",
+#               "Max isolation + community notif.",
+#               "Max isolation + home notif.",
+#               "Perfect isolation",
+#               "Perfect masking",
+#               "Perfect isolation + masking")
+scenarios = seq(0,s.num)
 
 table2 <- data.frame(scenario = scenarios,
                      IsoMild = NA, IsoSevere = NA,
@@ -314,7 +300,7 @@ table4_fill <- function(sim, rownum, table4,
   #   table4[rownum, 5] <- paste0(averted_per_iso.w[2], " (", averted_per_iso.w[1], ", ", averted_per_iso.w[3], ")")
   # }
   #
-  # return(table4)
+  return(table4)
 }
 
 table5_fill <- function(sim, rownum, table5,
@@ -406,8 +392,8 @@ ref_iso_w <- median(colSums(baseline_sims$epi$iso1.flow.w))
 
 # Table 2
 table2 <- table2_fill(baseline_sims,1,table2)
-for (i in seq(1,10)) {
-  table2 <- table2_fill(eval(parse(text = paste0("scenario", i))),1+i,table2)
+for (i in seq(1,s.num)) {
+  table2 <- table2_fill(scenario_list[[i]],1+i,table2)
 }
 
 # Table 3
@@ -418,8 +404,8 @@ table3 <- table3_fill(baseline_sims, 1, table3,
                       ref_inf_count_w = ref_inf_count_w,
                       ref_iso = ref_iso,
                       ref_iso_w = ref_iso_w)
-for (i in seq(1,10)) {
-  table3 <- table3_fill(eval(parse(text = paste0("scenario", i))),1+i,table3,
+for (i in seq(1,s.num)) {
+  table3 <- table3_fill(scenario_list[[i]],1+i,table3,
                         ref_inf_rate = ref_inf_rate,
                         ref_inf_rate_w = ref_inf_rate_w,
                         ref_inf_count = ref_inf_count,
@@ -431,19 +417,23 @@ for (i in seq(1,10)) {
 # Table 4
 table4 <- table4_fill(baseline_sims, 1, table4,
                       ref_death_rate = ref_death_rate,
-                      ref_death_rate_w = ref_death_rate_w,
+                      # ref_death_rate_w = ref_death_rate_w,
                       ref_death_count = ref_death_count,
-                      ref_death_count_w = ref_death_count_w,
-                      ref_iso = ref_iso,
-                      ref_iso_w = ref_iso_w)
-for (i in seq(1,10)) {
-  table4 <- table3_fill(eval(parse(text = paste0("scenario", i))),1+i,table4,
+                      # ref_death_count_w = ref_death_count_w,
+                      ref_iso = ref_iso
+                      # ,
+                      # ref_iso_w = ref_iso_w
+                      )
+for (i in seq(1,s.num)) {
+  table4 <- table4_fill(scenario_list[[i]],1+i,table4,
                         ref_death_rate = ref_death_rate,
-                        ref_death_rate_w = ref_death_rate_w,
+                        # ref_death_rate_w = ref_death_rate_w,
                         ref_death_count = ref_death_count,
-                        ref_death_count_w = ref_death_count_w,
-                        ref_iso = ref_iso,
-                        ref_iso_w = ref_iso_w)
+                        # ref_death_count_w = ref_death_count_w,
+                        ref_iso = ref_iso
+                        # ,
+                        # ref_iso_w = ref_iso_w
+                        )
 }
 
 # Table 5
@@ -454,8 +444,8 @@ table5 <- table5_fill(baseline_sims, 1, table5,
                       ref_case_count_w = ref_case_count_w,
                       ref_iso = ref_iso,
                       ref_iso_w = ref_iso_w)
-for (i in seq(1,10)) {
-  table5 <- table5_fill(eval(parse(text = paste0("scenario", i))),1+i,table5,
+for (i in seq(1,s.num)) {
+  table5 <- table5_fill(scenario_list[[i]],1+i,table5,
                         ref_case_rate = ref_case_rate,
                         ref_case_rate_w = ref_case_rate_w,
                         ref_case_count = ref_case_count,
@@ -463,6 +453,27 @@ for (i in seq(1,10)) {
                         ref_iso = ref_iso,
                         ref_iso_w = ref_iso_w)
 }
+
+library(openxlsx)
+
+# Create an Excel workbook
+wb <- createWorkbook()
+
+# Add data frames to different sheets
+addWorksheet(wb, "Table2")
+writeData(wb, sheet = 1, x = table2)
+
+addWorksheet(wb, "Table3")
+writeData(wb, sheet = 2, x = table3)
+
+# addWorksheet(wb, "Table4")
+# writeData(wb, sheet = 3, x = table4)
+
+addWorksheet(wb, "Table5")
+writeData(wb, sheet = 3, x = table5)
+
+# Save the workbook to a file
+saveWorkbook(wb, here::here("results","prelim-tables.xlsx"))
 
 # Ratio Plot: Cases to Isolated ------------------------------------------------
 
@@ -507,9 +518,9 @@ d.ratio <- data.frame(time = NA,
                       med.sum = NA, p25.sum = NA, p75.sum = NA,
                       scenario = i)
 
-for (i in seq(0,10,1)) {
+for (i in seq(0,s.num,1)) {
 
-  temp <- ratio.plot(eval(parse(text = paste0("scenario", i))),i)
+  temp <- ratio.plot(scenario_list[[i]],i)
 
   d.ratio <- d.ratio %>%
     add_row(temp) %>%
@@ -521,7 +532,7 @@ for (i in seq(0,10,1)) {
 
 d.ratio <- d.ratio %>%
   mutate(scenario2 = factor(scenario,
-                            levels = seq(0,10),
+                            levels = seq(0,s.num),
                             labels = c("Baseline",
                                        "Max isolation",
                                        "Max work notification",
