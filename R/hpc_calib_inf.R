@@ -138,14 +138,14 @@ param <- param.net(inf.prob = c(inf.p,inf.p,inf.p),
                    act.rate.iso.inter.rr = 0.3,
 
                    prop.clinical = c(0.573, 0.642, 0.760, 0.800, 0.813, 0.814, 0.769, 0.723, 0.666), # by decade of age
-                   prop.hospit = c(0.060, 0.063, 0.081, 0.154, 0.207, 0.268, 0.357, 0.465, 0.539) / c(hosp.div), # by decade of age
+                   prop.hospit = c(0.060, 0.063, 0.081, 0.154, 0.207, 0.268, 0.357, 0.465, 0.539) / hosp.div, # by decade of age
 
-                   hosp.boost.mult = c(hosp.b.mult),
-                   hosp.boost.start = c(hosp.b.start),
-                   hosp.boost.stop = c(hosp.b.stop),
-                   hosp.supp.mult = c(hosp.s.mult),
-                   hosp.supp.start = c(hosp.s.start),
-                   hosp.supp.stop = c(hosp.s.stop),
+                   hosp.boost.mult = hosp.b.mult,
+                   hosp.boost.start = hosp.b.start,
+                   hosp.boost.stop = hosp.b.stop,
+                   hosp.supp.mult = hosp.s.mult,
+                   hosp.supp.start = hosp.s.start,
+                   hosp.supp.stop = hosp.s.stop,
 
                    ea.rate = 1 / 5.5, # from https://academic.oup.com/cid/article/74/9/1678/6359063 (duration of latent period)
                    ar.rate = 1/5.0,

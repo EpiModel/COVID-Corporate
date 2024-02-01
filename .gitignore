@@ -41,4 +41,10 @@ vignettes/*.pdf
 renv/
 data/input/est.*
 
-hpc_scenarios.R
+sim.*
+*.tiff
+
+master.sh
+master_vax_calib.sh
+
+data/output/formatted-data/*

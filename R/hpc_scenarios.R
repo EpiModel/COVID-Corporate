@@ -104,13 +104,13 @@ pull_env_vars(num.vars = c("iso.prob.x",
                            "notif.work","notif.com","notif.home",
                            "act.rate.iso",
                            "inf.prob.mask"))
-param <- param.net(inf.prob = c(0.5,0.5,0.5),
-                   inf.add = c(0.15, 0.35), # calibrated
-                   inf.sub = c(0.2, 0.2, 0.2),
-                   inf.boost.start = 180 + c(-60, 335), # calibrated
+param <- param.net(inf.prob = c(0.38,0.38,0.38),
+                   inf.add = c(0.45, 0.10), # calibrated
+                   inf.sub = c(0.22, 0.3, 0.23, 0.12),
+                   inf.boost.start = 180 + c(-60, 325), # calibrated
                    inf.boost.stop = 180 + c(15, 396), # calibrated
-                   inf.supp.start =  180 + c(16, 258, 397), # calibrated
-                   inf.supp.stop = 180 + c(180, 334, Inf), # calibrated
+                   inf.supp.start =  180 + c(30, 250, 397, 486), # calibrated
+                   inf.supp.stop = 180 + c(165, 324, 485, 608), # calibrated
 
                    act.rate = c(1, 1, 5),
                    inf.prob.inter.rr = c(0.6, 0.6, 0.6),
@@ -136,12 +136,12 @@ param <- param.net(inf.prob = c(0.5,0.5,0.5),
                    prop.clinical = c(0.573, 0.642, 0.760, 0.800, 0.813, 0.814, 0.769, 0.723, 0.666), # by decade of age
                    prop.hospit = c(0.060, 0.063, 0.081, 0.154, 0.207, 0.268, 0.357, 0.465, 0.539) / 10, # by decade of age
 
-                   hosp.boost.mult = 2.25,
-                   hosp.boost.start = 378,
-                   hosp.boost.stop = 423,
-                   hosp.supp.mult = 0.75,
-                   hosp.supp.start = 546,
-                   hosp.supp.stop = 604,
+                   hosp.boost.mult = 5,
+                   hosp.boost.start = 180+31,
+                   hosp.boost.stop = 180+334,
+                   hosp.supp.mult = 1,
+                   hosp.supp.start = 180+334,
+                   hosp.supp.stop = 180+516,
 
                    ea.rate = 1 / 5.5, # from https://academic.oup.com/cid/article/74/9/1678/6359063 (duration of latent period)
                    ar.rate = 1/5.0,
