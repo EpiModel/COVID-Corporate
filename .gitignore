@@ -48,3 +48,4 @@ master.sh
 master_vax_calib.sh
 
 data/output/formatted-data/*
+data/output/results/*

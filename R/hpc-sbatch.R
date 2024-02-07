@@ -23,6 +23,7 @@ EpiModelHPC::sbatch_master(
   simno.start = 6000, # to name each parameter set, a starting number for your runs
   nsims = 32, # number of total simulations per parameter set (32 is fine for testing now)
   ncores = 32, # number of cores per parameter set simulation
+  narray = 4,
   append = TRUE, # If TRUE, you can write more parameter set lines at the bottom of an existing master.sh file
   mem = "0", # Good default for memory use
   walltime = "1:00:00", # Good default for run time
@@ -75,14 +76,14 @@ iso.vars <- list(
                     rep(0.3,11),
                     seq(0,1,length.out=11),
                     rep(0.3,11),
-                    0,1,0.3,0.1,0.3,0.1),
+                    1,0,0.3,0.1,0.3,0.1),
   inf.prob.mask = c(rep(0.3,14),
                     rep(0.3,11),
                     rep(0.3,11),
                     rep(0.3,11),
                     rep(0.3,11),
                     seq(0,1,length.out=11),
-                    0,1,0.3,0.3,0.1,0.1)
+                    1,0,0.3,0.3,0.1,0.1)
 )
 
 # then that list gets passed into this sbatch_function
@@ -94,6 +95,7 @@ EpiModelHPC::sbatch_master(
   simno.start = 5000, # to name each parameter set, a starting number for your runs
   nsims = 32, # number of total simulations per parameter set (32 is fine for testing now)
   ncores = 32, # number of cores per parameter set simulation
+  narray = 4,
   append = TRUE, # If TRUE, you can write more parameter set lines at the bottom of an existing master.sh file
   mem = "0", # Good default for memory use
   walltime = "1:00:00", # Good default for run time
