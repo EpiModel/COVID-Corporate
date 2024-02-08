@@ -86,9 +86,8 @@ saveRDS(scenario_list, file = here::here("processed_sims",
                                          "scenario_list.rds"))
 
 
-# Contour Plots: Load and merge files ------------------------------------------
+# Contour Plots: Isolation prob vs work notification prob ----------------------
 
-##Isolation prob vs work notification prob
 cInc <- data.frame(iso.prob = rep(NA, 121), work.notif.prob = rep(NA, 121), cInc = rep(NA, 121))
 cDeaths <- data.frame(iso.prob = rep(NA, 121), work.notif.prob = rep(NA, 121), cDeaths = rep(NA, 121))
 cIso <- data.frame(iso.prob = rep(NA, 121), work.notif.prob = rep(NA, 121), cIso = rep(NA, 121))
@@ -114,7 +113,7 @@ for (i in 6000:6120) {
   scenario.cCases <- median(colSums(temp$epi$ipic.flow) / colSums(temp$epi$num) * 100000)
 
   scenario.cIncWork <- median(colSums(temp$epi$se.flow.l1) / colSums(temp$epi$num.w) * 100000)
-  # scenario.cDeathsWork <- median(colSums(temp$epi$d.h.flow.w) / colSums(temp$epi$num.w) * 100000)
+  scenario.cDeathsWork <- median(colSums(temp$epi$d.h.flow.w) / colSums(temp$epi$num.w) * 100000)
   scenario.cIsoWork <- median(colSums(temp$epi$iso1.flow.w))
   scenario.cCasesWork <- median(colSums(temp$epi$ipic.flow.w) / colSums(temp$epi$num.w) * 100000)
 
@@ -124,7 +123,7 @@ for (i in 6000:6120) {
   cCases[(i - 5999), ] <- c(scale.1, scale.2, scenario.cCases)
 
   cIncWork[(i - 5999), ] <- c(scale.1, scale.2, scenario.cIncWork)
-  # cDeathsWork[(i - 5999), ] <- c(scale.1, scale.2, scenario.cDeathsWork)
+  cDeathsWork[(i - 5999), ] <- c(scale.1, scale.2, scenario.cDeathsWork)
   cIsoWork[(i - 5999), ] <- c(scale.1, scale.2, scenario.cIsoWork)
   cCasesWork[(i - 5999), ] <- c(scale.1, scale.2, scenario.cCasesWork)
 
@@ -136,6 +135,59 @@ saveRDS(cDeaths, file = here::here("processed_sims","cDeaths.rds"))
 saveRDS(cIso, file = here::here("processed_sims","cIso.rds"))
 saveRDS(cCases, file = here::here("processed_sims","cCases.rds"))
 saveRDS(cIncWork, file = here::here("processed_sims","cIncWork.rds"))
-# saveRDS(cDeathsWork, file = here::here("processed_sims","cDeathsWork.rds"))
+saveRDS(cDeathsWork, file = here::here("processed_sims","cDeathsWork.rds"))
 saveRDS(cIsoWork, file = here::here("processed_sims","cIsoWork.rds"))
 saveRDS(cCasesWork, file = here::here("processed_sims","cCasesWork.rds"))
+
+# Contour Plots: Isolation prob vs iso act rate --------------------------------
+
+cInc2 <- data.frame(iso.prob = rep(NA, 121), act.rate.iso = rep(NA, 121), cInc = rep(NA, 121))
+cDeaths2 <- data.frame(iso.prob = rep(NA, 121), act.rate.iso = rep(NA, 121), cDeaths = rep(NA, 121))
+cIso2 <- data.frame(iso.prob = rep(NA, 121), act.rate.iso = rep(NA, 121), cIso = rep(NA, 121))
+cCases2 <- data.frame(iso.prob = rep(NA, 121), act.rate.iso = rep(NA, 121), cCases = rep(NA, 121))
+
+cIncWork2 <- data.frame(iso.prob = rep(NA, 121), act.rate.iso = rep(NA, 121), cInc = rep(NA, 121))
+cDeathsWork2 <- data.frame(iso.prob = rep(NA, 121), act.rate.iso = rep(NA, 121), cDeaths = rep(NA, 121))
+cIsoWork2 <- data.frame(iso.prob = rep(NA, 121), act.rate.iso = rep(NA, 121), cIso = rep(NA, 121))
+cCasesWork2 <- data.frame(iso.prob = rep(NA, 121), act.rate.iso = rep(NA, 121), cCases = rep(NA, 121))
+
+for (i in 7000:7120) {
+
+  print(i)
+
+  temp <- merge_simfiles(i, indir = my.dir, vars = NULL,  truncate.at = 181, verbose = TRUE)
+
+  scale.1 <- temp$param$iso.prob
+  scale.2 <- temp$param$act.rate.iso.inter.rr
+
+  scenario.cInc <- median(colSums(temp$epi$se.flow) / colSums(temp$epi$num) * 100000)
+  scenario.cDeaths <- median(colSums(temp$epi$d.h.flow) / colSums(temp$epi$num) * 100000)
+  scenario.cIso <- median(colSums(temp$epi$iso1.flow))
+  scenario.cCases <- median(colSums(temp$epi$ipic.flow) / colSums(temp$epi$num) * 100000)
+
+  scenario.cIncWork <- median(colSums(temp$epi$se.flow.l1) / colSums(temp$epi$num.w) * 100000)
+  scenario.cDeathsWork <- median(colSums(temp$epi$d.h.flow.w) / colSums(temp$epi$num.w) * 100000)
+  scenario.cIsoWork <- median(colSums(temp$epi$iso1.flow.w))
+  scenario.cCasesWork <- median(colSums(temp$epi$ipic.flow.w) / colSums(temp$epi$num.w) * 100000)
+
+  cInc2[(i - 6999), ] <- c(scale.1, scale.2, scenario.cInc)
+  cDeaths2[(i - 6999), ] <- c(scale.1, scale.2, scenario.cDeaths)
+  cIso2[(i - 6999), ] <- c(scale.1, scale.2, scenario.cIso)
+  cCases2[(i - 6999), ] <- c(scale.1, scale.2, scenario.cCases)
+
+  cIncWork2[(i - 6999), ] <- c(scale.1, scale.2, scenario.cIncWork)
+  cDeathsWork2[(i - 6999), ] <- c(scale.1, scale.2, scenario.cDeathsWork)
+  cIsoWork2[(i - 6999), ] <- c(scale.1, scale.2, scenario.cIsoWork)
+  cCasesWork2[(i - 6999), ] <- c(scale.1, scale.2, scenario.cCasesWork)
+
+  remove(temp)
+}
+
+saveRDS(cInc2, file = here::here("processed_sims","cInc2.rds"))
+saveRDS(cDeaths2, file = here::here("processed_sims","cDeaths2.rds"))
+saveRDS(cIso2, file = here::here("processed_sims","cIso2.rds"))
+saveRDS(cCases2, file = here::here("processed_sims","cCases2.rds"))
+saveRDS(cIncWork2, file = here::here("processed_sims","cIncWork2.rds"))
+saveRDS(cDeathsWork2, file = here::here("processed_sims","cDeathsWork2.rds"))
+saveRDS(cIsoWork2, file = here::here("processed_sims","cIsoWork2.rds"))
+saveRDS(cCasesWork2, file = here::here("processed_sims","cCasesWork2.rds"))
