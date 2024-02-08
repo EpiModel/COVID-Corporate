@@ -8,7 +8,7 @@ library(future.apply)
 # Set baseline simulation number and directory ---------------------------------
 base.sim <- 5000
 my.dir <- "sims/"
-s.num <- 74 # number of scenarios, excluding reference scenario
+s.num <- 69 # number of scenarios, excluding reference scenario
 
 # Function to merge sim files (same as in 04-calib-figures) --------------------
 merge_simfiles <- function(simno, indir = "sims/", vars = NULL,  truncate.at = NULL, verbose = TRUE) {
@@ -60,7 +60,7 @@ merge_simfiles <- function(simno, indir = "sims/", vars = NULL,  truncate.at = N
 
 # Tables: FOR NEW OUTPUT Merge & save files ------------------------------------
 
-baseline_sims <- merge_simfiles(2321, indir = "ref_sim/",
+baseline_sims <- merge_simfiles(base.sim, indir = "ref_sim/",
                                 truncate.at = 181, verbose = TRUE)
 # scenario0 <- baseline_sims
 

@@ -20,7 +20,7 @@ suppressMessages({
 # Set baseline simulation number and directory ---------------------------------
 base.sim <- 5000
 my.dir <- "sims/"
-s.num <- 74 # number of scenarios
+s.num <- 69 # number of scenarios
 
 # Tables: FOR EXISTING OUTPUT Load files ---------------------------------------
 
@@ -46,7 +46,7 @@ baseline_sims <- readRDS(here::here("processed_sims",
 #               "Perfect isolation",
 #               "Perfect masking",
 #               "Perfect isolation + masking")
-scenarios = seq(0,s.num+1)
+scenarios = seq(0,s.num)
 
 table2 <- data.frame(scenario = scenarios,
                      IsoMild = NA, IsoSevere = NA,
@@ -184,12 +184,11 @@ table3_fill <- function(sim, rownum, table3,
 
 table4_fill <- function(sim, rownum, table4,
                         ref_death_rate = NA,
-                        # ref_death_rate_w = NA,
+                        ref_death_rate_w = NA,
                         ref_death_count = NA,
-                        # ref_death_count_w = NA,
-                        ref_iso = NA
-                        # ref_iso_w = NA
-){
+                        ref_death_count_w = NA,
+                        ref_iso = NA,
+                        ref_iso_w = NA){
 
   deaths <- colSums(sim$epi$d.h.flow)
   pds <- colSums(sim$epi$num)
@@ -221,35 +220,35 @@ table4_fill <- function(sim, rownum, table4,
     table4[rownum, 5] <- paste0(averted_per_iso[2], " (", averted_per_iso[1], ", ", averted_per_iso[3], ")")
   }
 
-  # deaths.w <- colSums(sim$epi$d.h.flow.w)
-  # pds.w <- colSums(sim$epi$num.w)
-  # death_rates.w <- deaths.w / pds.w * 100000
-  # death_stats.w <- quantile(death_rates.w, probs = c(.25, 0.5, .75))
-  # table4[rownum, 2] <- paste0(round(death_stats.w[2], 3), " (", round(death_stats.w[1], 3), ", ", round(death_stats.w[3], 3), ")")
-  #
-  # if (!is.na(ref_death_rate_w_w)){
-  #   deaths_averted.1.w <- round(ref_death_rate_w - death_stats.w[1], 3)
-  #   deaths_averted.2.w <- round(ref_death_rate_w - death_stats.w[2], 3)
-  #   deaths_averted.3.w <- round(ref_death_rate_w - death_stats.w[3], 3)
-  #
-  #   table4[rownum, 3] <- paste0(deaths_averted.2.w, " (", deaths_averted.3.w, ", ", deaths_averted.1.w, ")")
-  #
-  #   pct_averted.1.w <- round((ref_death_rate_w - death_stats.w[1]) / ref_death_rate_w, 3) * 100
-  #   pct_averted.2.w <- round((ref_death_rate_w - death_stats.w[2]) / ref_death_rate_w, 3) * 100
-  #   pct_averted.3.w <- round((ref_death_rate_w - death_stats.w[3]) / ref_death_rate_w, 3) * 100
-  #
-  #   table4[rownum, 4] <- paste0(pct_averted.2.w, " (", pct_averted.3.w, ", ", pct_averted.1.w, ")")
-  #
-  #   total_iso.w <- colSums(sim$epi$iso1.flow.w)
-  #   addtl_iso.w <- total_iso.w - ref_iso_w
-  #   total_deaths.w <- colSums(sim$epi$d.h.flow.w)
-  #   total_deaths_averted.w <- ref_death_count_w - total_deaths.w
-  #   averted_per_iso.w <- total_deaths_averted.w / addtl_iso.w
-  #
-  #   averted_per_iso.w <- round(quantile(averted_per_iso.w, probs = c(.25, 0.5, .75)), 1)
-  #
-  #   table4[rownum, 5] <- paste0(averted_per_iso.w[2], " (", averted_per_iso.w[1], ", ", averted_per_iso.w[3], ")")
-  # }
+  deaths.w <- colSums(sim$epi$d.h.flow.w)
+  pds.w <- colSums(sim$epi$num.w)
+  death_rates.w <- deaths.w / pds.w * 100000
+  death_stats.w <- quantile(death_rates.w, probs = c(.25, 0.5, .75))
+  table4[rownum, 2] <- paste0(round(death_stats.w[2], 3), " (", round(death_stats.w[1], 3), ", ", round(death_stats.w[3], 3), ")")
+
+  if (!is.na(ref_death_rate_w_w)){
+    deaths_averted.1.w <- round(ref_death_rate_w - death_stats.w[1], 3)
+    deaths_averted.2.w <- round(ref_death_rate_w - death_stats.w[2], 3)
+    deaths_averted.3.w <- round(ref_death_rate_w - death_stats.w[3], 3)
+
+    table4[rownum, 3] <- paste0(deaths_averted.2.w, " (", deaths_averted.3.w, ", ", deaths_averted.1.w, ")")
+
+    pct_averted.1.w <- round((ref_death_rate_w - death_stats.w[1]) / ref_death_rate_w, 3) * 100
+    pct_averted.2.w <- round((ref_death_rate_w - death_stats.w[2]) / ref_death_rate_w, 3) * 100
+    pct_averted.3.w <- round((ref_death_rate_w - death_stats.w[3]) / ref_death_rate_w, 3) * 100
+
+    table4[rownum, 4] <- paste0(pct_averted.2.w, " (", pct_averted.3.w, ", ", pct_averted.1.w, ")")
+
+    total_iso.w <- colSums(sim$epi$iso1.flow.w)
+    addtl_iso.w <- total_iso.w - ref_iso_w
+    total_deaths.w <- colSums(sim$epi$d.h.flow.w)
+    total_deaths_averted.w <- ref_death_count_w - total_deaths.w
+    averted_per_iso.w <- total_deaths_averted.w / addtl_iso.w
+
+    averted_per_iso.w <- round(quantile(averted_per_iso.w, probs = c(.25, 0.5, .75)), 1)
+
+    table4[rownum, 5] <- paste0(averted_per_iso.w[2], " (", averted_per_iso.w[1], ", ", averted_per_iso.w[3], ")")
+  }
 
   return(table4)
 }
@@ -336,27 +335,26 @@ ref_inf_rate_w <- quantile(colSums(baseline_sims$epi$se.flow.l1) / colSums(basel
 ref_inf_count_w <- quantile(colSums(baseline_sims$epi$se.flow.l1), probs = 0.5)
 ref_case_rate_w <- quantile(colSums(baseline_sims$epi$ipic.flow.w) / colSums(baseline_sims$epi$num.w) * 100000, probs = 0.5)
 ref_case_count_w <- quantile(colSums(baseline_sims$epi$ipic.flow.w), probs = 0.5)
-## would need to add these to death module
-# ref_death_rate_w <- quantile(colSums(baseline_sims$epi$d.h.flow.w) / colSums(baseline_sims$epi$num.w) * 100000, probs = 0.5)
-# ref_death_count_w <- quantile(colSums(baseline_sims$epi$d.h.flow.w), probs = 0.5)
+ref_death_rate_w <- quantile(colSums(baseline_sims$epi$d.h.flow.w) / colSums(baseline_sims$epi$num.w) * 100000, probs = 0.5)
+ref_death_count_w <- quantile(colSums(baseline_sims$epi$d.h.flow.w), probs = 0.5)
 ref_iso_w <- median(colSums(baseline_sims$epi$iso1.flow.w))
 
 # Table 2
-table2 <- table2_fill(baseline_sims,1,table2)
+# table2 <- table2_fill(baseline_sims,1,table2)
 for (i in seq(1,s.num+1)) {
-  table2 <- table2_fill(scenario_list[[i]],1+i,table2)
+  table2 <- table2_fill(scenario_list[[i]],i,table2)
 }
 
 # Table 3
-table3 <- table3_fill(baseline_sims, 1, table3,
-                      ref_inf_rate = ref_inf_rate,
-                      ref_inf_rate_w = ref_inf_rate_w,
-                      ref_inf_count = ref_inf_count,
-                      ref_inf_count_w = ref_inf_count_w,
-                      ref_iso = ref_iso,
-                      ref_iso_w = ref_iso_w)
+# table3 <- table3_fill(baseline_sims, 1, table3,
+#                       ref_inf_rate = ref_inf_rate,
+#                       ref_inf_rate_w = ref_inf_rate_w,
+#                       ref_inf_count = ref_inf_count,
+#                       ref_inf_count_w = ref_inf_count_w,
+#                       ref_iso = ref_iso,
+#                       ref_iso_w = ref_iso_w)
 for (i in seq(1,s.num+1)) {
-  table3 <- table3_fill(scenario_list[[i]],1+i,table3,
+  table3 <- table3_fill(scenario_list[[i]],1,table3,
                         ref_inf_rate = ref_inf_rate,
                         ref_inf_rate_w = ref_inf_rate_w,
                         ref_inf_count = ref_inf_count,
@@ -366,37 +364,36 @@ for (i in seq(1,s.num+1)) {
 }
 
 # Table 4
-table4 <- table4_fill(baseline_sims, 1, table4,
-                      ref_death_rate = ref_death_rate,
-                      # ref_death_rate_w = ref_death_rate_w,
-                      ref_death_count = ref_death_count,
-                      # ref_death_count_w = ref_death_count_w,
-                      ref_iso = ref_iso
-                      # ,
-                      # ref_iso_w = ref_iso_w
-)
+# table4 <- table4_fill(baseline_sims, 1, table4,
+#                       ref_death_rate = ref_death_rate,
+#                       # ref_death_rate_w = ref_death_rate_w,
+#                       ref_death_count = ref_death_count,
+#                       # ref_death_count_w = ref_death_count_w,
+#                       ref_iso = ref_iso
+#                       # ,
+#                       # ref_iso_w = ref_iso_w
+# )
 for (i in seq(1,s.num+1)) {
-  table4 <- table4_fill(scenario_list[[i]],1+i,table4,
+  table4 <- table4_fill(scenario_list[[i]],1,table4,
                         ref_death_rate = ref_death_rate,
-                        # ref_death_rate_w = ref_death_rate_w,
+                        ref_death_rate_w = ref_death_rate_w,
                         ref_death_count = ref_death_count,
-                        # ref_death_count_w = ref_death_count_w,
-                        ref_iso = ref_iso
-                        # ,
-                        # ref_iso_w = ref_iso_w
+                        ref_death_count_w = ref_death_count_w,
+                        ref_iso = ref_iso,
+                        ref_iso_w = ref_iso_w
   )
 }
 
 # Table 5
-table5 <- table5_fill(baseline_sims, 1, table5,
-                      ref_case_rate = ref_case_rate,
-                      ref_case_rate_w = ref_case_rate_w,
-                      ref_case_count = ref_case_count,
-                      ref_case_count_w = ref_case_count_w,
-                      ref_iso = ref_iso,
-                      ref_iso_w = ref_iso_w)
+# table5 <- table5_fill(baseline_sims, 1, table5,
+#                       ref_case_rate = ref_case_rate,
+#                       ref_case_rate_w = ref_case_rate_w,
+#                       ref_case_count = ref_case_count,
+#                       ref_case_count_w = ref_case_count_w,
+#                       ref_iso = ref_iso,
+#                       ref_iso_w = ref_iso_w)
 for (i in seq(1,s.num+1)) {
-  table5 <- table5_fill(scenario_list[[i]],1+i,table5,
+  table5 <- table5_fill(scenario_list[[i]],1,table5,
                         ref_case_rate = ref_case_rate,
                         ref_case_rate_w = ref_case_rate_w,
                         ref_case_count = ref_case_count,
