@@ -1,14 +1,21 @@
 # Load libraries ---------------------------------------------------------------
-pacman::p_load(ggplot2,
-               tidyverse,
-               tidyr,
-               dplyr,
-               patchwork,
-               EpiModelCOVID,
-               openxlsx,
-               viridis,
-               metR,
-               patchwork)
+# pacman::p_load(ggplot2,
+#                tidyverse,
+#                tidyr,
+#                dplyr,
+#                patchwork,
+#                EpiModelCOVID,
+#                openxlsx)
+
+suppressMessages({
+  library("tidyverse")
+  library("patchwork")
+  library("tidyr")
+  library("dplyr")
+  library("ggplot2")
+  library("EpiModelCOVID")
+  library("openxlsx")
+})
 
 # Set baseline simulation number and directory ---------------------------------
 base.sim <- 5000
@@ -336,7 +343,7 @@ ref_iso_w <- median(colSums(baseline_sims$epi$iso1.flow.w))
 
 # Table 2
 table2 <- table2_fill(baseline_sims,1,table2)
-for (i in seq(1,s.num)) {
+for (i in seq(1,s.num+1)) {
   table2 <- table2_fill(scenario_list[[i]],1+i,table2)
 }
 
@@ -348,7 +355,7 @@ table3 <- table3_fill(baseline_sims, 1, table3,
                       ref_inf_count_w = ref_inf_count_w,
                       ref_iso = ref_iso,
                       ref_iso_w = ref_iso_w)
-for (i in seq(1,s.num)) {
+for (i in seq(1,s.num+1)) {
   table3 <- table3_fill(scenario_list[[i]],1+i,table3,
                         ref_inf_rate = ref_inf_rate,
                         ref_inf_rate_w = ref_inf_rate_w,
@@ -368,7 +375,7 @@ table4 <- table4_fill(baseline_sims, 1, table4,
                       # ,
                       # ref_iso_w = ref_iso_w
 )
-for (i in seq(1,s.num)) {
+for (i in seq(1,s.num+1)) {
   table4 <- table4_fill(scenario_list[[i]],1+i,table4,
                         ref_death_rate = ref_death_rate,
                         # ref_death_rate_w = ref_death_rate_w,
@@ -388,7 +395,7 @@ table5 <- table5_fill(baseline_sims, 1, table5,
                       ref_case_count_w = ref_case_count_w,
                       ref_iso = ref_iso,
                       ref_iso_w = ref_iso_w)
-for (i in seq(0,s.num)) {
+for (i in seq(1,s.num+1)) {
   table5 <- table5_fill(scenario_list[[i]],1+i,table5,
                         ref_case_rate = ref_case_rate,
                         ref_case_rate_w = ref_case_rate_w,
@@ -413,7 +420,7 @@ addWorksheet(wb, "Table4")
 writeData(wb, sheet = 3, x = table4)
 
 addWorksheet(wb, "Table5")
-writeData(wb, sheet = 3, x = table5)
+writeData(wb, sheet = 4, x = table5)
 
 # Save the workbook to a file
 saveWorkbook(wb, here::here("tbl_fig","result-tables.xlsx"))
@@ -433,21 +440,21 @@ ratio.plot <- function(sim,i) {
   df <- as.data.frame(sim) %>%
     ungroup() %>%
     group_by(time) %>%
-    summarise(med.case = median(totCase),
-              p25.case = quantile(totCase, probs = 0.25),
-              p75.case = quantile(totCase, probs = 0.75),
-              med.iso = median(totIso),
-              p25.iso = quantile(totIso, probs = 0.25),
-              p75.iso = quantile(totIso, probs = 0.75),
-              med.mask = median(totMask),
-              p25.mask = quantile(totMask, probs = 0.25),
-              p75.mask = quantile(totMask, probs = 0.75),
-              med.ratio = median(CaseIsoRatio),
-              p25.ratio = quantile(CaseIsoRatio, probs = 0.25),
-              p75.ratio = quantile(CaseIsoRatio, probs = 0.75),
-              med.sum = median(CaseIsoSum),
-              p25.sum = quantile(CaseIsoSum, probs = 0.25),
-              p75.sum = quantile(CaseIsoSum, probs = 0.75)) %>%
+    summarise(med.case = median(totCase, na.rm = TRUE),
+              p25.case = quantile(totCase, probs = 0.25, na.rm = TRUE),
+              p75.case = quantile(totCase, probs = 0.75, na.rm = TRUE),
+              med.iso = median(totIso, na.rm = TRUE),
+              p25.iso = quantile(totIso, probs = 0.25, na.rm = TRUE),
+              p75.iso = quantile(totIso, probs = 0.75, na.rm = TRUE),
+              med.mask = median(totMask, na.rm = TRUE),
+              p25.mask = quantile(totMask, probs = 0.25, na.rm = TRUE),
+              p75.mask = quantile(totMask, probs = 0.75, na.rm = TRUE),
+              med.ratio = median(CaseIsoRatio, na.rm = TRUE),
+              p25.ratio = quantile(CaseIsoRatio, probs = 0.25, na.rm = TRUE),
+              p75.ratio = quantile(CaseIsoRatio, probs = 0.75, na.rm = TRUE),
+              med.sum = median(CaseIsoSum, na.rm = TRUE),
+              p25.sum = quantile(CaseIsoSum, probs = 0.25, na.rm = TRUE),
+              p75.sum = quantile(CaseIsoSum, probs = 0.75, na.rm = TRUE)) %>%
     mutate(scenario = i)
 
   return(df)
@@ -461,7 +468,7 @@ d.ratio <- data.frame(time = NA,
                       med.sum = NA, p25.sum = NA, p75.sum = NA,
                       scenario = i)
 
-for (i in seq(0,s.num,1)) {
+for (i in seq(1,s.num+1,1)) {
 
   temp <- ratio.plot(scenario_list[[i]],i)
 
@@ -475,200 +482,7 @@ for (i in seq(0,s.num,1)) {
 
 d.ratio <- d.ratio %>%
   mutate(scenario2 = factor(scenario,
-                            levels = seq(0,s.num),
-                            labels = c("Baseline",
-                                       "Max isolation",
-                                       "Max work notification",
-                                       "Max community notification",
-                                       "Max home notification",
-                                       "Max isolation + work notif.",
-                                       "Max isolation + community notif.",
-                                       "Max isolation + home notif.",
-                                       "Perfect isolation",
-                                       "Perfect masking",
-                                       "Perfect isolation + masking")))
+                            levels = seq(0,s.num)))
 
-p.ratio <- ggplot(d.ratio, aes(x = time, y = med.ratio))+
-  geom_line(aes(y = med.ratio, color = scenario2, group = scenario2)) +
-  # scale_x_continuous(expand = c(0,0),
-  #                    limits = c(1, 20),
-  #                    breaks = c(1, 4, 7, 10, 13, 16, 19),
-  #                    labels = c("1" = "Jan 21", "4" = "Apr 21", "7" = "Jul 21",
-  #                               "10" = "Oct 21", "13" = "Jan 22", "16" = "Apr 22",
-  #                               "19" = "Jul 22")) +
-  # scale_y_continuous(expand = c(0, 0), lim = c(0, 26500)) +
-  labs(x = "Time",
-       y = "Number cases/Number in isolation",
-       color = "Scenario") +
-  guides(color = "none")+
-  ggtitle("Ratio of clinical cases to persons in isolation") + theme_classic()
+saveRDS(d.ratio, file = here::here("tbl_fig","ratio_df.rds"))
 
-p.sum <- ggplot(d.ratio, aes(x = time, y = med.sum))+
-  geom_line(aes(y = med.sum, color = scenario2, group = scenario2)) +
-  labs(x = "Time",
-       y = "Sum of cases and persons in isolation",
-       color = "Scenario") +
-  guides(color = "none")+
-  ggtitle("Total number of people ill or in isolation") + theme_classic()
-
-p.cases <- ggplot(d.ratio, aes(x = time, y = med.case))+
-  geom_line(aes(y = med.case, color = scenario2, group = scenario2)) +
-  labs(x = "Time",
-       y = "Number of cases",
-       color = "Scenario") +
-  guides(color = "none")+
-  ggtitle("Total number of people ill") + theme_classic()
-
-p.iso <- ggplot(d.ratio, aes(x = time, y = med.iso))+
-  geom_line(aes(y = med.iso, color = scenario2, group = scenario2)) +
-  labs(x = "Time",
-       y = "Number of persons in isolation",
-       color = "Scenario") +
-  guides(color = "none")+
-  ggtitle("Total number of people in isolation") + theme_classic()
-
-p.mask <- ggplot(d.ratio, aes(x = time, y = med.mask))+
-  geom_line(aes(y = med.mask, color = scenario2, group = scenario2)) +
-  labs(x = "Time",
-       y = "Number of persons masked",
-       color = "Scenario") +
-  ggtitle("Total number of people masked") + theme_classic()
-
-(p.ratio | p.sum) / (p.cases | p.iso) / p.mask
-
-ggsave(here::here("tbl_fig","Figure4.tiff"),
-       width = 20, height = 12, units = "in", dpi=300, compression = 'lzw')
-
-
-################################################################################
-# Load contour plot data -------------------------------------------------------
-
-cInc <- readRDS(here::here("processed_sims","cInc.rds"))
-cDeaths <- readRDS(here::here("processed_sims","cDeaths.rds"))
-cIso <- readRDS(here::here("processed_sims","cIso.rds"))
-cCases <- readRDS(here::here("processed_sims","cCases.rds"))
-cIncWork <- readRDS(here::here("processed_sims","cIncWork.rds"))
-# cDeathsWork <- readRDS(here::here("processed_sims","cDeathsWork.rds"))
-cIsoWork <- readRDS(here::here("processed_sims","cIsoWork.rds"))
-cCasesWork <- readRDS(here::here("processed_sims","cCasesWork.rds"))
-
-# Contour Plots: Plots ---------------------------------------------------------
-
-# Plot cases
-minval.i <- floor(min(cInc$cInc))
-maxval.i <- ceiling(max(cInc$cInc))
-g_inc_cont <- ggplot(cInc, aes(iso.prob, work.notif.prob)) +
-  geom_raster(aes(fill = cInc), interpolate = TRUE) +
-  geom_contour(aes(z = cInc), col = "white", alpha = 0.5, lwd = 0.5) +
-  theme_minimal() +
-  scale_y_continuous(expand = c(0, 0)) +
-  scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Isolation Probability", y = "Notification Probability at Work") +
-  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
-                     name = "", limits = c(minval.i, maxval.i), guide = "none") +
-  theme(axis.text = element_text(size = rel(1.2)),
-        axis.title = element_text(size = rel(1.2)),
-        legend.text = element_text(size = rel(1.2))) +
-  coord_fixed()
-
-# Plot cases - Office Workers
-minval.iw <- floor(min(cIncWork$cInc))
-maxval.iw <- ceiling(max(cIncWork$cInc))
-g_inc_cont_w <- ggplot(cIncWork, aes(iso.prob, work.notif.prob)) +
-  geom_raster(aes(fill = cInc), interpolate = TRUE) +
-  geom_contour(aes(z = cInc), col = "white", alpha = 0.5, lwd = 0.5) +
-  theme_minimal() +
-  scale_y_continuous(expand = c(0, 0)) +
-  scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Isolation Probability", y = "Notification Probability at Work") +
-  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
-                     name = "", limits = c(minval.iw, maxval.iw), guide = "none") +
-  theme(axis.text = element_text(size = rel(1.2)),
-        axis.title = element_text(size = rel(1.2)),
-        legend.text = element_text(size = rel(1.2))) +
-  coord_fixed()
-
-# Plot deaths
-minval.d <- min(cDeaths$cDeaths)
-maxval.d <- max(cDeaths$cDeaths)
-g_death_cont <- ggplot(cDeaths, aes(iso.prob, work.notif.prob)) +
-  geom_raster(aes(fill = cDeaths), interpolate = TRUE) +
-  geom_contour(aes(z = cDeaths), col = "white", alpha = 0.5, lwd = 0.5) +
-  #geom_text_contour(aes(z = cDeaths), stroke = 0.1) +
-  theme_minimal() +
-  scale_y_continuous(expand = c(0, 0)) +
-  scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Isolation Probability", y = "Notification Probability at Work") +
-  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
-                     name = "", limits = c(minval.d, maxval.d), guide = "none") +
-  theme(axis.text = element_text(size = rel(1.2)),
-        axis.title = element_text(size = rel(1.2)),
-        legend.text = element_text(size = rel(1.2))) +
-  coord_fixed()
-
-# Plot deaths - Office Workers
-minval.dw <- min(cDeathsWork$cDeathsWork)
-maxval.dw <- max(cDeathsWork$cDeathsWork)
-g_death_cont_w <- ggplot(cDeathsWork, aes(iso.prob, work.notif.prob)) +
-  geom_raster(aes(fill = cDeathsWork), interpolate = TRUE) +
-  geom_contour(aes(z = cDeathsWork), col = "white", alpha = 0.5, lwd = 0.5) +
-  #geom_text_contour(aes(z = cDeathsWork), stroke = 0.1) +
-  theme_minimal() +
-  scale_y_continuous(expand = c(0, 0)) +
-  scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Isolation Probability", y = "Notification Probability at Work") +
-  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
-                     name = "", limits = c(minval.dw, maxval.dw), guide = "none") +
-  theme(axis.text = element_text(size = rel(1.2)),
-        axis.title = element_text(size = rel(1.2)),
-        legend.text = element_text(size = rel(1.2))) +
-  coord_fixed()
-
-# Plot isolation
-minval.v <- min(cIso$cIso)
-maxval.v <- max(cIso$cIso)
-g_iso_cont <- ggplot(cIso, aes(iso.prob, work.notif.prob)) +
-  geom_raster(aes(fill = cIso), interpolate = TRUE) +
-  geom_contour(aes(z = cIso), col = "white", alpha = 0.5, lwd = 0.5) +
-  #geom_text_contour(aes(z = cIso), stroke = 0.1) +
-  theme_minimal() +
-  scale_y_continuous(expand = c(0, 0)) +
-  scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Isolation Probability", y = "Notification Probability at Work") +
-  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
-                     name = "", limits = c(minval.v, maxval.v), guide = "none") +
-  theme(axis.text = element_text(size = rel(1.2)),
-        axis.title = element_text(size = rel(1.2)),
-        legend.text = element_text(size = rel(1.2))) +
-  coord_fixed()
-
-# Plot isolation - Office Workers
-minval.vw <- min(cIsoWork$cIso)
-maxval.vw <- max(cIsoWork$cIso)
-g_iso_cont_w <- ggplot(cIsoWork, aes(iso.prob, work.notif.prob)) +
-  geom_raster(aes(fill = cIso), interpolate = TRUE) +
-  geom_contour(aes(z = cIso), col = "white", alpha = 0.5, lwd = 0.5) +
-  #geom_text_contour(aes(z = cIsoWork), stroke = 0.1) +
-  theme_minimal() +
-  scale_y_continuous(expand = c(0, 0)) +
-  scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Isolation Probability", y = "Notification Probability at Work") +
-  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
-                     name = "", limits = c(minval.vw, maxval.vw), guide = "none") +
-  theme(axis.text = element_text(size = rel(1.2)),
-        axis.title = element_text(size = rel(1.2)),
-        legend.text = element_text(size = rel(1.2))) +
-  coord_fixed()
-
-combined1 <- g_iso_cont + g_iso_cont_w +
-  plot_annotation(tag_levels = list(c("A1", "A2")), title = "Total Persons Entering Isolation")
-combined2 <- g_inc_cont + g_inc_cont_w +
-  plot_annotation(tag_levels = list(c("B1", "B2")), title = "Infections per 100'000 Person-Days")
-combined3 <- g_death_cont +
-  # g_death_cont_w +
-  plot_annotation(tag_levels = list(c("C")), title = "Deaths per 100'000 Person-Days")
-
-wrap_elements(combined1) / wrap_elements(combined2) / wrap_elements(combined3)
-
-ggsave(here::here("tbl_fig","Figure3.tiff"),
-       width = 12, height = 12, units = "in", dpi=300, compression = 'lzw')
