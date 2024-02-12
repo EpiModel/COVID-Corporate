@@ -142,41 +142,49 @@ table3_fill <- function(sim, rownum, table3,
     addtl_iso <- total_iso - ref_iso
     total_inf <- colSums(sim$epi$se.flow)
     total_inf_averted <- ref_inf_count - total_inf
-    averted_per_iso <- total_inf_averted / addtl_iso
 
+    averted_per_iso <- total_inf_averted / addtl_iso
     averted_per_iso <- round(quantile(averted_per_iso, probs = c(.25, 0.5, .75)), 1)
 
+    nnt <- attl_iso/total_inf_averted
+    nnt <- round(quantile(nnt, probs = c(.25, 0.5, .75)), 1)
+
     table3[rownum, 5] <- paste0(averted_per_iso[2], " (", averted_per_iso[1], ", ", averted_per_iso[3], ")")
+    table3[rownum, 6] <- paste0(nnt[2], " (", nnt[1], ", ", nnt[3], ")")
   }
 
   inc.w <- colSums(sim$epi$se.flow.l1)
   pd.w <- colSums(sim$epi$num.w)
   inc_rate.w <- inc.w / pd.w * 100000
   inc_stats.w <- quantile(inc_rate.w, probs = c(.25, 0.5, .75))
-  table3[rownum, 6] <- paste0(round(inc_stats.w[2], 1), " (", round(inc_stats.w[1], 1), ", ", round(inc_stats.w[3], 1), ")")
+  table3[rownum, 7] <- paste0(round(inc_stats.w[2], 1), " (", round(inc_stats.w[1], 1), ", ", round(inc_stats.w[3], 1), ")")
 
   if (!is.na(ref_inf_rate_w)){
     inf_averted.1.w <- round(ref_inf_rate_w - inc_stats.w[1], 1)
     inf_averted.2.w <- round(ref_inf_rate_w - inc_stats.w[2], 1)
     inf_averted.3.w <- round(ref_inf_rate_w - inc_stats.w[3], 1)
 
-    table3[rownum, 7] <- paste0(inf_averted.2.w, " (", inf_averted.3.w, ", ", inf_averted.1.w, ")")
+    table3[rownum, 8] <- paste0(inf_averted.2.w, " (", inf_averted.3.w, ", ", inf_averted.1.w, ")")
 
     pct_averted.1.w <- round((ref_inf_rate_w - inc_stats.w[1]) / ref_inf_rate_w, 3) * 100
     pct_averted.2.w <- round((ref_inf_rate_w - inc_stats.w[2]) / ref_inf_rate_w, 3) * 100
     pct_averted.3.w <- round((ref_inf_rate_w - inc_stats.w[3]) / ref_inf_rate_w, 3) * 100
 
-    table3[rownum, 8] <- paste0(pct_averted.2.w, " (", pct_averted.3.w, ", ", pct_averted.1.w, ")")
+    table3[rownum, 9] <- paste0(pct_averted.2.w, " (", pct_averted.3.w, ", ", pct_averted.1.w, ")")
 
     total_iso.w <- colSums(sim$epi$iso1.flow.w)
     addtl_iso.w <- total_iso.w - ref_iso_w
     total_inf.w <- colSums(sim$epi$se.flow.l1)
     total_inf_averted.w <- ref_inf_count_w - total_inf.w
-    averted_per_iso.w <- total_inf_averted.w / addtl_iso.w
 
+    averted_per_iso.w <- total_inf_averted.w / addtl_iso.w
     averted_per_iso.w <- round(quantile(averted_per_iso.w, probs = c(.25, 0.5, .75)), 1)
 
-    table3[rownum, 9] <- paste0(averted_per_iso.w[2], " (", averted_per_iso.w[1], ", ", averted_per_iso.w[3], ")")
+    nnt.w <- attl_iso.w/total_inf_averted.w
+    nnt.w <- round(quantile(nnt.w, probs = c(.25, 0.5, .75)), 1)
+
+    table3[rownum, 10] <- paste0(averted_per_iso.w[2], " (", averted_per_iso.w[1], ", ", averted_per_iso.w[3], ")")
+    table3[rownum, 11] <- paste0(nnt.w[2], " (", nnt.w[1], ", ", nntnnt.w, ")")
   }
 
   return(table3)
@@ -280,41 +288,49 @@ table5_fill <- function(sim, rownum, table5,
     addtl_iso <- total_iso - ref_iso
     total_inf <- colSums(sim$epi$ipic.flow)
     total_case_averted <- ref_case_count - total_inf
-    averted_per_iso <- total_case_averted / addtl_iso
 
+    averted_per_iso <- total_case_averted / addtl_iso
     averted_per_iso <- round(quantile(averted_per_iso, probs = c(.25, 0.5, .75)), 1)
 
+    nnt <- addl_iso/total_case_averted
+    nnt <- round(quantile(nnt, probs = c(.25, 0.5, .75)), 1)
+
     table5[rownum, 5] <- paste0(averted_per_iso[2], " (", averted_per_iso[1], ", ", averted_per_iso[3], ")")
+    table5[rownum, 6] <- paste0(nnt[2], " (", nnt[1], ", ", nnt[3], ")")
   }
 
   inc.w <- colSums(sim$epi$ipic.flow.w)
   pd.w <- colSums(sim$epi$num.w)
   cinc_rate.w <- inc.w / pd.w * 100000
   cinc_stats.w <- quantile(cinc_rate.w, probs = c(.25, 0.5, .75))
-  table5[rownum, 6] <- paste0(round(cinc_stats.w[2], 1), " (", round(cinc_stats.w[1], 1), ", ", round(cinc_stats.w[3], 1), ")")
+  table5[rownum, 7] <- paste0(round(cinc_stats.w[2], 1), " (", round(cinc_stats.w[1], 1), ", ", round(cinc_stats.w[3], 1), ")")
 
   if (!is.na(ref_case_rate_w)){
     case_averted.1.w <- round(ref_case_rate_w - cinc_stats.w[1], 1)
     case_averted.2.w <- round(ref_case_rate_w - cinc_stats.w[2], 1)
     case_averted.3.w <- round(ref_case_rate_w - cinc_stats.w[3], 1)
 
-    table5[rownum, 7] <- paste0(case_averted.2.w, " (", case_averted.3.w, ", ", case_averted.1.w, ")")
+    table5[rownum, 8] <- paste0(case_averted.2.w, " (", case_averted.3.w, ", ", case_averted.1.w, ")")
 
     pct_averted.1.w <- round((ref_case_rate_w - cinc_stats.w[1]) / ref_case_rate_w, 3) * 100
     pct_averted.2.w <- round((ref_case_rate_w - cinc_stats.w[2]) / ref_case_rate_w, 3) * 100
     pct_averted.3.w <- round((ref_case_rate_w - cinc_stats.w[3]) / ref_case_rate_w, 3) * 100
 
-    table5[rownum, 8] <- paste0(pct_averted.2.w, " (", pct_averted.3.w, ", ", pct_averted.1.w, ")")
+    table5[rownum, 9] <- paste0(pct_averted.2.w, " (", pct_averted.3.w, ", ", pct_averted.1.w, ")")
 
     total_iso.w <- colSums(sim$epi$iso1.flow.w)
     addtl_iso.w <- total_iso.w - ref_iso_w
     total_inf.w <- colSums(sim$epi$ipic.flow.w)
     total_case_averted.w <- ref_case_count_w - total_inf.w
-    averted_per_iso.w <- total_case_averted.w / addtl_iso.w
 
+    averted_per_iso.w <- total_case_averted.w / addtl_iso.w
     averted_per_iso.w <- round(quantile(averted_per_iso.w, probs = c(.25, 0.5, .75)), 1)
 
-    table5[rownum, 9] <- paste0(averted_per_iso.w[2], " (", averted_per_iso.w[1], ", ", averted_per_iso.w[3], ")")
+    nnt.w <- addl_iso.w/total_case_averted.w
+    nnt.w <- round(quantile(nnt.w, probs = c(.25, 0.5, .75)), 1)
+
+    table5[rownum, 10] <- paste0(averted_per_iso.w[2], " (", averted_per_iso.w[1], ", ", averted_per_iso.w[3], ")")
+    table5[rownum, 11] <- paste0(nnt.w[2], " (", nnt.w[1], ", ", nnt.w[3], ")")
   }
 
   return(table5)
@@ -467,7 +483,7 @@ d.ratio <- data.frame(time = NA,
 
 for (i in seq(1,s.num+1,1)) {
 
-  temp <- ratio.plot(scenario_list[[i]],i)
+  temp <- ratio.plot(scenario_list[[i]],i-1)
 
   d.ratio <- d.ratio %>%
     add_row(temp) %>%
@@ -482,4 +498,6 @@ d.ratio <- d.ratio %>%
                             levels = seq(0,s.num)))
 
 saveRDS(d.ratio, file = here::here("tbl_fig","ratio_df.rds"))
+
+# Summary measures by different time periods -----------------------------------
 
