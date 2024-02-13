@@ -10,7 +10,7 @@ suppressWarnings(suppressMessages(library(patchwork)))
 baseline_sims <- readRDS(here::here("data","output","results",
                                    "baseline_sim.rds"))
 
-num.sim <- 250
+num.sim <- 256
 
 times <- data.frame(DayNum = c(608, 577, 546, 516, 485,
                                455, 424, 396, 365, 334,
@@ -420,6 +420,7 @@ combined + plot_layout(ncol = 3)
 ggsave(here::here("results","figures","Figure2.tiff"),
        dpi=300, compression = 'lzw', width = 3000, height = 2400, units = "px")
 
+# Clean up objects in environment ----------------------------------------------
 rm(list=setdiff(ls(), c("baseline_sims")))
 ################################################################################
 
@@ -479,23 +480,24 @@ ggsave(here::here("results","figures","Figure4.tiff"),
        width = 20, height = 12, units = "in", dpi=300, compression = 'lzw')
 
 ################################################################################
-# Load contour plot data -------------------------------------------------------
+# Contour plot libraries -------------------------------------------------------
+library("viridis")
+library("ggplot2")
+library("metR")
+library("patchwork")
+
+# Load contour plot data (iso prob vs work notif) ------------------------------
 
 cInc <- readRDS(here::here("data","output","results","cInc.rds"))
 cDeaths <- readRDS(here::here("data","output","results","cDeaths.rds"))
 cIso <- readRDS(here::here("data","output","results","cIso.rds"))
 cCases <- readRDS(here::here("data","output","results","cCases.rds"))
 cIncWork <- readRDS(here::here("data","output","results","cIncWork.rds"))
-# cDeathsWork <- readRDS(here::here("data","output","results","cDeathsWork.rds"))
+cDeathsWork <- readRDS(here::here("data","output","results","cDeathsWork.rds"))
 cIsoWork <- readRDS(here::here("data","output","results","cIsoWork.rds"))
 cCasesWork <- readRDS(here::here("data","output","results","cCasesWork.rds"))
 
-# Contour Plots: Plots ---------------------------------------------------------
-
-library("viridis")
-library("ggplot2")
-library("metR")
-library("patchwork")
+# Contour Plots: Iso prob vs work notif ----------------------------------------
 
 # Plot cases
 minval.i <- floor(min(cInc$cInc))
@@ -503,6 +505,7 @@ maxval.i <- ceiling(max(cInc$cInc))
 g_inc_cont <- ggplot(cInc, aes(iso.prob, work.notif.prob)) +
   geom_raster(aes(fill = cInc), interpolate = TRUE) +
   geom_contour(aes(z = cInc), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cInc), stroke = 0.1) +
   theme_minimal() +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
@@ -520,6 +523,7 @@ maxval.iw <- ceiling(max(cIncWork$cInc))
 g_inc_cont_w <- ggplot(cIncWork, aes(iso.prob, work.notif.prob)) +
   geom_raster(aes(fill = cInc), interpolate = TRUE) +
   geom_contour(aes(z = cInc), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cInc), stroke = 0.1) +
   theme_minimal() +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
@@ -537,7 +541,7 @@ maxval.d <- max(cDeaths$cDeaths)
 g_death_cont <- ggplot(cDeaths, aes(iso.prob, work.notif.prob)) +
   geom_raster(aes(fill = cDeaths), interpolate = TRUE) +
   geom_contour(aes(z = cDeaths), col = "white", alpha = 0.5, lwd = 0.5) +
-  #geom_text_contour(aes(z = cDeaths), stroke = 0.1) +
+  geom_text_contour(aes(z = cDeaths), stroke = 0.1) +
   theme_minimal() +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
@@ -549,23 +553,23 @@ g_death_cont <- ggplot(cDeaths, aes(iso.prob, work.notif.prob)) +
         legend.text = element_text(size = rel(1.2))) +
   coord_fixed()
 
-# # Plot deaths - Office Workers
-# minval.dw <- min(cDeathsWork$cDeathsWork)
-# maxval.dw <- max(cDeathsWork$cDeathsWork)
-# g_death_cont_w <- ggplot(cDeathsWork, aes(iso.prob, work.notif.prob)) +
-#   geom_raster(aes(fill = cDeathsWork), interpolate = TRUE) +
-#   geom_contour(aes(z = cDeathsWork), col = "white", alpha = 0.5, lwd = 0.5) +
-#   #geom_text_contour(aes(z = cDeathsWork), stroke = 0.1) +
-#   theme_minimal() +
-#   scale_y_continuous(expand = c(0, 0)) +
-#   scale_x_continuous(expand = c(0, 0)) +
-#   labs(x = "Isolation Probability", y = "Notification Probability at Work") +
-#   scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
-#                      name = "", limits = c(minval.dw, maxval.dw), guide = "none") +
-#   theme(axis.text = element_text(size = rel(1.2)),
-#         axis.title = element_text(size = rel(1.2)),
-#         legend.text = element_text(size = rel(1.2))) +
-#   coord_fixed()
+# Plot deaths - Office Workers
+minval.dw <- min(cDeathsWork$cDeaths)
+maxval.dw <- max(cDeathsWork$cDeaths)
+g_death_cont_w <- ggplot(cDeathsWork, aes(iso.prob, work.notif.prob)) +
+  geom_raster(aes(fill = cDeaths), interpolate = TRUE) +
+  geom_contour(aes(z = cDeaths), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cDeaths), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Isolation Probability", y = "Notification Probability at Work") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.dw, maxval.dw), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
 
 # Plot isolation
 minval.v <- min(cIso$cIso)
@@ -573,7 +577,7 @@ maxval.v <- max(cIso$cIso)
 g_iso_cont <- ggplot(cIso, aes(iso.prob, work.notif.prob)) +
   geom_raster(aes(fill = cIso), interpolate = TRUE) +
   geom_contour(aes(z = cIso), col = "white", alpha = 0.5, lwd = 0.5) +
-  #geom_text_contour(aes(z = cIso), stroke = 0.1) +
+  geom_text_contour(aes(z = cIso), stroke = 0.1) +
   theme_minimal() +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
@@ -591,7 +595,7 @@ maxval.vw <- max(cIsoWork$cIso)
 g_iso_cont_w <- ggplot(cIsoWork, aes(iso.prob, work.notif.prob)) +
   geom_raster(aes(fill = cIso), interpolate = TRUE) +
   geom_contour(aes(z = cIso), col = "white", alpha = 0.5, lwd = 0.5) +
-  #geom_text_contour(aes(z = cIsoWork), stroke = 0.1) +
+  geom_text_contour(aes(z = cIso), stroke = 0.1) +
   theme_minimal() +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
@@ -608,10 +612,145 @@ combined1 <- g_iso_cont + g_iso_cont_w +
 combined2 <- g_inc_cont + g_inc_cont_w +
   plot_annotation(tag_levels = list(c("B1", "B2")), title = "Infections per 100'000 Person-Days")
 combined3 <- g_death_cont +
-  # g_death_cont_w +
-  plot_annotation(tag_levels = list(c("C")), title = "Deaths per 100'000 Person-Days")
+  g_death_cont_w +
+  plot_annotation(tag_levels = list(c("C1", "C2")), title = "Deaths per 100'000 Person-Days")
 
 wrap_elements(combined1) / wrap_elements(combined2) / wrap_elements(combined3)
 
 ggsave(here::here("results","figures","Figure3.tiff"),
+       width = 12, height = 12, units = "in", dpi=300, compression = 'lzw')
+
+
+# Load contour plot data (iso prob vs iso act) ---------------------------------
+
+cInc <- readRDS(here::here("data","output","results","cInc2.rds"))
+cDeaths <- readRDS(here::here("data","output","results","cDeaths2.rds"))
+cIso <- readRDS(here::here("data","output","results","cIso2.rds"))
+cCases <- readRDS(here::here("data","output","results","cCases2.rds"))
+cIncWork <- readRDS(here::here("data","output","results","cIncWork2.rds"))
+cDeathsWork <- readRDS(here::here("data","output","results","cDeathsWork2.rds"))
+cIsoWork <- readRDS(here::here("data","output","results","cIsoWork2.rds"))
+cCasesWork <- readRDS(here::here("data","output","results","cCasesWork2.rds"))
+
+# Contour Plots: Iso prob vs iso act -------------------------------------------
+
+# Plot cases
+minval.i <- floor(min(cInc$cInc))
+maxval.i <- ceiling(max(cInc$cInc))
+g_inc_cont <- ggplot(cInc, aes(iso.prob, act.rate.iso)) +
+  geom_raster(aes(fill = cInc), interpolate = TRUE) +
+  geom_contour(aes(z = cInc), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cInc), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Isolation Probability", y = "Change in contact intensity") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.i, maxval.i), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+# Plot cases - Office Workers
+minval.iw <- floor(min(cIncWork$cInc))
+maxval.iw <- ceiling(max(cIncWork$cInc))
+g_inc_cont_w <- ggplot(cIncWork, aes(iso.prob, act.rate.iso)) +
+  geom_raster(aes(fill = cInc), interpolate = TRUE) +
+  geom_contour(aes(z = cInc), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cInc), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Isolation Probability", y = "Change in contact intensity") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.iw, maxval.iw), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+# Plot deaths
+minval.d <- min(cDeaths$cDeaths)
+maxval.d <- max(cDeaths$cDeaths)
+g_death_cont <- ggplot(cDeaths, aes(iso.prob, act.rate.iso)) +
+  geom_raster(aes(fill = cDeaths), interpolate = TRUE) +
+  geom_contour(aes(z = cDeaths), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cDeaths), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Isolation Probability", y = "Change in contact intensity") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.d, maxval.d), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+# Plot deaths - Office Workers
+minval.dw <- min(cDeathsWork$cDeaths)
+maxval.dw <- max(cDeathsWork$cDeaths)
+g_death_cont_w <- ggplot(cDeathsWork, aes(iso.prob, act.rate.iso)) +
+  geom_raster(aes(fill = cDeaths), interpolate = TRUE) +
+  geom_contour(aes(z = cDeaths), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cDeaths), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Isolation Probability", y = "Change in contact intensity") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.dw, maxval.dw), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+# Plot isolation
+minval.v <- min(cIso$cIso)
+maxval.v <- max(cIso$cIso)
+g_iso_cont <- ggplot(cIso, aes(iso.prob, act.rate.iso)) +
+  geom_raster(aes(fill = cIso), interpolate = TRUE) +
+  geom_contour(aes(z = cIso), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cIso), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Isolation Probability", y = "Change in contact intensity") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.v, maxval.v), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+# Plot isolation - Office Workers
+minval.vw <- min(cIsoWork$cIso)
+maxval.vw <- max(cIsoWork$cIso)
+g_iso_cont_w <- ggplot(cIsoWork, aes(iso.prob, act.rate.iso)) +
+  geom_raster(aes(fill = cIso), interpolate = TRUE) +
+  geom_contour(aes(z = cIso), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cIso), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Isolation Probability", y = "Change in contact intensity") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.vw, maxval.vw), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+combined1 <- g_iso_cont + g_iso_cont_w +
+  plot_annotation(tag_levels = list(c("A1", "A2")), title = "Total Persons Entering Isolation")
+combined2 <- g_inc_cont + g_inc_cont_w +
+  plot_annotation(tag_levels = list(c("B1", "B2")), title = "Infections per 100'000 Person-Days")
+combined3 <- g_death_cont +
+  g_death_cont_w +
+  plot_annotation(tag_levels = list(c("C1", "C2")), title = "Deaths per 100'000 Person-Days")
+
+wrap_elements(combined1) / wrap_elements(combined2) / wrap_elements(combined3)
+
+ggsave(here::here("results","figures","Figure3B.tiff"),
        width = 12, height = 12, units = "in", dpi=300, compression = 'lzw')
