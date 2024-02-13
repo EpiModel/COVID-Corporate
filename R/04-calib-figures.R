@@ -12,8 +12,8 @@ num.sim <- 32
 my.dir <- "data/output/calib-11-09-23"
 # my.dir <- "data/output/prelim-results"
 
-for (i in seq(2190,2199,1)) {
-  num.sim <- 32
+for (i in seq(2320,2321,1)) {
+  #num.sim <- 32
   sim.no <- i
 
 

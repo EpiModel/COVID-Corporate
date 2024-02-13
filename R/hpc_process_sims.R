@@ -16,7 +16,8 @@ merge_simfiles <- function(simno, indir = "sims/", vars = NULL,  truncate.at = N
   fn <- list.files(indir, pattern = paste0("sim.*", simno, ".[0-9].rds"), full.names = TRUE)
 
   if (length(fn) == 0) {
-    stop("No files of that simno in the specified indir", call. = FALSE)
+    stop(paste0("No files with simno ",simno," in the specified indir"),
+         call. = FALSE)
   }
 
   for (i in seq_along(fn)) {
@@ -60,7 +61,7 @@ merge_simfiles <- function(simno, indir = "sims/", vars = NULL,  truncate.at = N
 
 # Tables: FOR NEW OUTPUT Merge & save files ------------------------------------
 
-baseline_sims <- merge_simfiles(base.sim, indir = "ref_sim/",
+baseline_sims <- merge_simfiles(base.sim, indir = "sims/",
                                 truncate.at = 181, verbose = TRUE)
 # scenario0 <- baseline_sims
 
