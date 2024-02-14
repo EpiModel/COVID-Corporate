@@ -428,6 +428,15 @@ rm(list=setdiff(ls(), c("baseline_sims")))
 
 d.ratio <- readRDS(here::here("results","ratio_df.rds"))
 
+d.ratio <- d.ratio %>%
+  filter(scenario2 %in% c(0,4,10,13)) %>%
+  mutate(scenario2 = factor(scenario2,
+                            levels = c(0,4,10,13),
+                            labels = c("Reference (58%)",
+                                       "Worse adherence (25%)",
+                                       "Improved adherence (75%)",
+                                       "Perfect adherence (100%)")))
+
 p.ratio <- ggplot(d.ratio, aes(x = time, y = med.ratio))+
   geom_line(aes(y = med.ratio, color = scenario2, group = scenario2)) +
   # scale_x_continuous(expand = c(0,0),
