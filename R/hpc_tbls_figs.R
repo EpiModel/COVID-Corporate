@@ -493,19 +493,104 @@ table5_fill <- function(sim, rownum, table5,
 # Time 3 [305-424]: Nov-21 to Mar-22 (Omicron wave)
 # Time 4 [425-608]: Mar-22 to Aug-22 (endemic)
 
+# table_nnt <- data.frame(scenario = scenarios,
+#                         time1 = NA,
+#                         T1_NNT_Inf = NA, T1_NNT_InfW = NA,
+#                         T1_NNT_Case = NA, T1_NNT_CaseW = NA,
+#                         time2 = NA,
+#                         T2_NNT_Inf = NA, T2_NNT_InfW = NA,
+#                         T2_NNT_Case = NA, T2_NNT_CaseW = NA,
+#                         time3 = NA,
+#                         T3_NNT_Inf = NA, T3_NNT_InfW = NA,
+#                         T3_NNT_Case = NA, T3_NNT_CaseW = NA,
+#                         time4 = NA,
+#                         T4_NNT_Inf = NA, T4_NNT_InfW = NA,
+#                         T4_NNT_Case = NA, T4_NNT_CaseW = NA)
+
 table_nnt <- data.frame(scenario = scenarios,
-                        time1 = NA,
-                        T1_NNT_Inf = NA, T1_NNT_InfW = NA,
-                        T1_NNT_Case = NA, T1_NNT_CaseW = NA,
-                        time2 = NA,
-                        T2_NNT_Inf = NA, T2_NNT_InfW = NA,
-                        T2_NNT_Case = NA, T2_NNT_CaseW = NA,
-                        time3 = NA,
-                        T3_NNT_Inf = NA, T3_NNT_InfW = NA,
-                        T3_NNT_Case = NA, T3_NNT_CaseW = NA,
-                        time4 = NA,
-                        T4_NNT_Inf = NA, T4_NNT_InfW = NA,
-                        T4_NNT_Case = NA, T4_NNT_CaseW = NA)
+                        T1_RefIso = NA, T1_TotalIso = NA,
+                        T1_AddtlIso = NA,
+                        T1_RefIsoW = NA, T1_TotalIsoW = NA,
+                        T1_AddtlIsoW = NA,
+
+                        T1_RefInf = NA, T1_TotalInf = NA,
+                        T1_InfAvert = NA,
+                        T1_NNT_Inf = NA,
+
+                        T1_RefInfW = NA, T1_TotalInfW = NA,
+                        T1_InfAvertW = NA,
+                        T1_NNT_InfW = NA,
+
+                        T1_RefCase = NA, T1_TotalCase = NA,
+                        T1_CaseAvert = NA,
+                        T1_NNT_Case = NA,
+
+                        T1_RefCaseW = NA, T1_TotalCaseW = NA,
+                        T1_CaseAvertW = NA,
+                        T1_NNT_CaseW = NA,
+                        ###
+                        T2_RefIso = NA, T2_TotalIso = NA,
+                        T2_AddtlIso = NA,
+                        T2_RefIsoW = NA, T2_TotalIsoW = NA,
+                        T2_AddtlIsoW = NA,
+
+                        T2_RefInf = NA, T2_TotalInf = NA,
+                        T2_InfAvert = NA,
+                        T2_NNT_Inf = NA,
+
+                        T2_RefInfW = NA, T2_TotalInfW = NA,
+                        T2_InfAvertW = NA,
+                        T2_NNT_InfW = NA,
+
+                        T2_RefCase = NA, T2_TotalCase = NA,
+                        T2_CaseAvert = NA,
+                        T2_NNT_Case = NA,
+
+                        T2_RefCaseW = NA, T2_TotalCaseW = NA,
+                        T2_CaseAvertW = NA,
+                        T2_NNT_CaseW = NA,
+                        ###
+                        T3_RefIso = NA, T3_TotalIso = NA,
+                        T3_AddtlIso = NA,
+                        T3_RefIsoW = NA, T3_TotalIsoW = NA,
+                        T3_AddtlIsoW = NA,
+
+                        T3_RefInf = NA, T3_TotalInf = NA,
+                        T3_InfAvert = NA,
+                        T3_NNT_Inf = NA,
+
+                        T3_RefInfW = NA, T3_TotalInfW = NA,
+                        T3_InfAvertW = NA,
+                        T3_NNT_InfW = NA,
+
+                        T3_RefCase = NA, T3_TotalCase = NA,
+                        T3_CaseAvert = NA,
+                        T3_NNT_Case = NA,
+
+                        T3_RefCaseW = NA, T3_TotalCaseW = NA,
+                        T3_CaseAvertW = NA,
+                        T3_NNT_CaseW = NA,
+                        ###
+                        T4_RefIso = NA, T4_TotalIso = NA,
+                        T4_AddtlIso = NA,
+                        T4_RefIsoW = NA, T4_TotalIsoW = NA,
+                        T4_AddtlIsoW = NA,
+
+                        T4_RefInf = NA, T4_TotalInf = NA,
+                        T4_InfAvert = NA,
+                        T4_NNT_Inf = NA,
+
+                        T4_RefInfW = NA, T4_TotalInfW = NA,
+                        T4_InfAvertW = NA,
+                        T4_NNT_InfW = NA,
+
+                        T4_RefCase = NA, T4_TotalCase = NA,
+                        T4_CaseAvert = NA,
+                        T4_NNT_Case = NA,
+
+                        T4_RefCaseW = NA, T4_TotalCaseW = NA,
+                        T4_CaseAvertW = NA,
+                        T4_NNT_CaseW = NA)
 
 nnt_fill <- function(sim,rownum,table_nnt) {
 
@@ -521,8 +606,8 @@ nnt_fill <- function(sim,rownum,table_nnt) {
   for (i in seq_along(row_ranges)) {
 
     row_range <- row_ranges[[i]]
-    table_nnt[rownum,colnum] <- paste0(row_range[[1]],"-",row_range[[2]])
-    colnum <- colnum + 1
+    # table_nnt[rownum,colnum] <- paste0(row_range[[1]],"-",row_range[[2]])
+    # colnum <- colnum + 1
 
     ## reference scenario values
     ref_iso <- median(colSums(baseline_sims$epi$iso1.flow[row_range[[1]]:row_range[[2]], ]))
@@ -539,51 +624,57 @@ nnt_fill <- function(sim,rownum,table_nnt) {
     total_iso.w <- colSums(sim$epi$iso1.flow.w[row_range[[1]]:row_range[[2]], ])
     addtl_iso.w <- total_iso.w - ref_iso_w
 
+    variables <- list(ref_iso, total_iso, addtl_iso, ref_iso_w, total_iso.w, addtl_iso.w)
+    for (var in variables) {
+      temp <- round(quantile(var, probs = c(.25, 0.5, .75)), 1)
+      table_nnt[rownum, colnum] <- paste0(temp[2], " (",
+                                          temp[1], ", ",
+                                          temp[3], ")")
+      colnum <- colnum + 1
+    }
+
     ## infections
     total_inf <- colSums(sim$epi$se.flow[row_range[[1]]:row_range[[2]], ])
     total_inf_averted <- ref_inf_count - total_inf
 
     nnt.inf <- addtl_iso/total_inf_averted
-    nnt.inf <- round(quantile(nnt.inf, probs = c(.25, 0.5, .75)), 1)
-
-    table_nnt[rownum,colnum] <- paste0(nnt.inf[2], " (",
-                                       nnt.inf[1], ", ",
-                                       nnt.inf[3], ")")
-    colnum <- colnum + 1
 
     total_inf.w <- colSums(sim$epi$se.flow.l1[row_range[[1]]:row_range[[2]], ])
     total_inf_averted.w <- ref_inf_count_w - total_inf.w
 
     nnt.inf.w <- addtl_iso.w/total_inf_averted.w
-    nnt.inf.w <- round(quantile(nnt.inf.w, probs = c(.25, 0.5, .75)), 1)
 
-    table_nnt[rownum,colnum] <- paste0(nnt.inf.w[2], " (",
-                                       nnt.inf.w[1], ", ",
-                                       nnt.inf.w[3], ")")
-    colnum <- colnum + 1
+    variables <- list(ref_inf_count, total_inf, total_inf_averted, nnt.inf,
+                      ref_inf_count_w, total_inf.w, total_inf_averted.w, nnt.inf.w)
+    for (var in variables) {
+      temp <- round(quantile(var, probs = c(.25, 0.5, .75)), 1)
+      table_nnt[rownum, colnum] <- paste0(temp[2], " (",
+                                          temp[1], ", ",
+                                          temp[3], ")")
+      colnum <- colnum + 1
+    }
 
     ## cases
     total_case <- colSums(sim$epi$ipic.flow[row_range[[1]]:row_range[[2]], ])
     total_case_averted <- ref_case_count - total_case
 
     nnt.case <- addtl_iso/total_case_averted
-    nnt.case <- round(quantile(nnt.case, probs = c(.25, 0.5, .75)), 1)
-
-    table_nnt[rownum,colnum] <- paste0(nnt.case[2], " (",
-                                       nnt.case[1], ", ",
-                                       nnt.case[3], ")")
-    colnum <- colnum + 1
 
     total_case.w <- colSums(sim$epi$ipic.flow.w[row_range[[1]]:row_range[[2]], ])
     total_case_averted.w <- ref_case_count_w - total_case.w
 
     nnt.case.w <- addtl_iso.w/total_case_averted.w
-    nnt.case.w <- round(quantile(nnt.case.w, probs = c(.25, 0.5, .75)), 1)
 
-    table_nnt[rownum,colnum] <- paste0(nnt.case.w[2], " (",
-                                       nnt.case.w[1], ", ",
-                                       nnt.case.w[3], ")")
-    colnum <- colnum + 1
+    variables <- list(ref_case_count, total_case, total_case_averted, nnt.case,
+                      ref_case_count_w, total_case.w, total_case_averted.w, nnt.case.w)
+    for (var in variables) {
+      temp <- round(quantile(var, probs = c(.25, 0.5, .75)), 1)
+      table_nnt[rownum, colnum] <- paste0(temp[2], " (",
+                                          temp[1], ", ",
+                                          temp[3], ")")
+      colnum <- colnum + 1
+    }
+
 
   }
 
