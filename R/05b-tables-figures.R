@@ -426,67 +426,104 @@ rm(list=setdiff(ls(), c("baseline_sims")))
 
 # Ratio Plot: Cases to Isolated ------------------------------------------------
 
-d.ratio <- readRDS(here::here("results","ratio_df.rds"))
+d.ratio <- readRDS(here::here("results","ratio_df_8000.rds"))
 
 d.ratio <- d.ratio %>%
-  filter(scenario2 %in% c(0,4,10,13)) %>%
+  filter(scenario2 %in% c(0,2,4,5)) %>%
   mutate(scenario2 = factor(scenario2,
-                            levels = c(0,4,10,13),
+                            levels = c(0,2,4,5),
                             labels = c("Reference (58%)",
                                        "Worse adherence (25%)",
                                        "Improved adherence (75%)",
                                        "Perfect adherence (100%)")))
 
-p.ratio <- ggplot(d.ratio, aes(x = time, y = med.ratio))+
-  geom_line(aes(y = med.ratio, color = scenario2, group = scenario2)) +
-  # scale_x_continuous(expand = c(0,0),
-  #                    limits = c(1, 20),
-  #                    breaks = c(1, 4, 7, 10, 13, 16, 19),
-  #                    labels = c("1" = "Jan 21", "4" = "Apr 21", "7" = "Jul 21",
-  #                               "10" = "Oct 21", "13" = "Jan 22", "16" = "Apr 22",
-  #                               "19" = "Jul 22")) +
-  # scale_y_continuous(expand = c(0, 0), lim = c(0, 26500)) +
-  labs(x = "Time",
-       y = "Number cases/Number in isolation",
-       color = "Scenario") +
-  guides(color = "none")+
-  ggtitle("Ratio of clinical cases to persons in isolation") + theme_classic()
+# Start date
+start_date <- as.Date("2021-01-01")
 
-p.sum <- ggplot(d.ratio, aes(x = time, y = med.sum))+
-  geom_line(aes(y = med.sum, color = scenario2, group = scenario2)) +
-  labs(x = "Time",
+# Convert numeric days to date format by adding to start date
+date_variable <- start_date + d.ratio$time - 1
+
+# Print the converted date variable
+print(date_variable)
+
+d.ratio <- cbind(d.ratio, date_variable)
+
+# Rename the new column
+colnames(d.ratio)[ncol(d.ratio)] <- "date_variable"
+
+
+# p.ratio <- ggplot(d.ratio, aes(x = time, y = med.ratio))+
+#   geom_line(aes(y = med.ratio, color = scenario2, group = scenario2)) +
+#   # scale_x_continuous(expand = c(0,0),
+#   #                    limits = c(1, 20),
+#   #                    breaks = c(1, 4, 7, 10, 13, 16, 19),
+#   #                    labels = c("1" = "Jan 21", "4" = "Apr 21", "7" = "Jul 21",
+#   #                               "10" = "Oct 21", "13" = "Jan 22", "16" = "Apr 22",
+#   #                               "19" = "Jul 22")) +
+#   # scale_y_continuous(expand = c(0, 0), lim = c(0, 26500)) +
+#   labs(x = "Time",
+#        y = "Number cases/Number in isolation",
+#        color = "Scenario") +
+#   guides(color = "none")+
+#   ggtitle("Ratio of clinical cases to persons in isolation") + theme_classic()
+
+p.sum2 <- ggplot(d.ratio, aes(x = date_variable, y = med.sum2))+
+  geom_line(aes(y = med.sum2, color = scenario2, group = scenario2),
+            linewidth = 0.8) +
+  geom_ribbon(aes(ymin = p25.sum2, ymax = p75.sum2, group = scenario2,
+                  fill = scenario2), alpha = 0.1)+
+  scale_x_date(date_breaks = "3 months")+
+  ylim(0,1500)+
+  labs(x = "Date",
        y = "Sum of cases and persons in isolation",
        color = "Scenario") +
-  guides(color = "none")+
+  guides(fill = "none", color = "none")+
   ggtitle("Total number of people ill or in isolation") + theme_classic()
 
-p.cases <- ggplot(d.ratio, aes(x = time, y = med.case))+
-  geom_line(aes(y = med.case, color = scenario2, group = scenario2)) +
-  labs(x = "Time",
+p.cases <- ggplot(d.ratio, aes(x = date_variable, y = med.case))+
+  geom_line(aes(y = med.case, color = scenario2, group = scenario2),
+            linewidth = 0.8) +
+  geom_ribbon(aes(ymin = p25.case, ymax = p75.case, group = scenario2,
+                  fill = scenario2), alpha = 0.1)+
+  scale_x_date(date_breaks = "3 months")+
+  ylim(0,1500)+
+  labs(x = "Date",
        y = "Number of cases",
        color = "Scenario") +
-  guides(color = "none")+
+  guides(fill = "none", color = "none")+
   ggtitle("Total number of people ill") + theme_classic()
 
-p.iso <- ggplot(d.ratio, aes(x = time, y = med.iso))+
-  geom_line(aes(y = med.iso, color = scenario2, group = scenario2)) +
-  labs(x = "Time",
+p.iso <- ggplot(d.ratio, aes(x = date_variable, y = med.iso))+
+  geom_line(aes(y = med.iso, color = scenario2, group = scenario2),
+            linewidth = 0.8) +
+  geom_ribbon(aes(ymin = p25.iso, ymax = p75.iso, group = scenario2,
+                  fill = scenario2), alpha = 0.1)+
+  scale_x_date(date_breaks = "3 months")+
+  ylim(0,1500)+
+  labs(x = "Date",
        y = "Number of persons in isolation",
        color = "Scenario") +
-  guides(color = "none")+
+  guides(fill = "none", color = "none")+
   ggtitle("Total number of people in isolation") + theme_classic()
 
-p.mask <- ggplot(d.ratio, aes(x = time, y = med.mask))+
-  geom_line(aes(y = med.mask, color = scenario2, group = scenario2)) +
-  labs(x = "Time",
+p.mask <- ggplot(d.ratio, aes(x = date_variable, y = med.mask))+
+  geom_line(aes(y = med.mask, color = scenario2, group = scenario2),
+            linewidth = 0.8) +
+  geom_ribbon(aes(ymin = p25.mask, ymax = p75.mask, group = scenario2,
+                  fill = scenario2), alpha = 0.1)+
+  scale_x_date(date_breaks = "3 months")+
+  ylim(0,1500)+
+  labs(x = "Date",
        y = "Number of persons masked",
        color = "Scenario") +
-  ggtitle("Total number of people masked") + theme_classic()
+  guides(fill = "none")+
+  ggtitle("Total number of people masked") + theme_classic()+
+  theme(legend.position = c(0.83,0.8))
 
-(p.ratio | p.sum) / (p.cases | p.iso) / p.mask
+(p.sum2 | p.mask) / (p.cases | p.iso)
 
-ggsave(here::here("results","figures","Figure4.tiff"),
-       width = 20, height = 12, units = "in", dpi=300, compression = 'lzw')
+ggsave(here::here("results","figures","Figure4_2april2024.tiff"),
+       width = 15, height = 6, units = "in", dpi=300, compression = 'lzw')
 
 ################################################################################
 # Contour plot libraries -------------------------------------------------------
@@ -626,7 +663,7 @@ combined3 <- g_death_cont +
 
 wrap_elements(combined1) / wrap_elements(combined2) / wrap_elements(combined3)
 
-ggsave(here::here("results","figures","Figure3.tiff"),
+ggsave(here::here("results","figures","Figure3A.tiff"),
        width = 12, height = 12, units = "in", dpi=300, compression = 'lzw')
 
 

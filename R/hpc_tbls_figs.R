@@ -18,9 +18,9 @@ suppressMessages({
 })
 
 # Set baseline simulation number and directory ---------------------------------
-base.sim <- 5000
+base.sim <- 8000
 my.dir <- "sims/"
-s.num <- 69 # number of scenarios
+s.num <- 5 # number of scenarios
 
 # Tables: FOR EXISTING OUTPUT Load files ---------------------------------------
 
@@ -34,18 +34,6 @@ baseline_sims <- readRDS(here::here("processed_sims",
 
 # Table shells -----------------------------------------------------------------
 
-## Need to edit
-# scenarios = c("Baseline",
-#               "Max isolation",
-#               "Max work notification",
-#               "Max community notification",
-#               "Max home notification",
-#               "Max isolation + work notif.",
-#               "Max isolation + community notif.",
-#               "Max isolation + home notif.",
-#               "Perfect isolation",
-#               "Perfect masking",
-#               "Perfect isolation + masking")
 scenarios = seq(0,s.num)
 
 table2 <- data.frame(scenario = scenarios,
@@ -338,153 +326,158 @@ table5_fill <- function(sim, rownum, table5,
 
 # Fill in tables ---------------------------------------------------------------
 
-# ref_inf_rate <- quantile(colSums(baseline_sims$epi$se.flow) / colSums(baseline_sims$epi$num) * 100000, probs = 0.5)
-# ref_inf_count <- quantile(colSums(baseline_sims$epi$se.flow), probs = 0.5)
-# ref_case_rate <- quantile(colSums(baseline_sims$epi$ipic.flow) / colSums(baseline_sims$epi$num) * 100000, probs = 0.5)
-# ref_case_count <- quantile(colSums(baseline_sims$epi$ipic.flow), probs = 0.5)
-# ref_death_rate <- quantile(colSums(baseline_sims$epi$d.h.flow) / colSums(baseline_sims$epi$num) * 100000, probs = 0.5)
-# ref_death_count <- quantile(colSums(baseline_sims$epi$d.h.flow), probs = 0.5)
-# ref_iso <- median(colSums(baseline_sims$epi$iso1.flow))
-#
-# # reference values among office workers
-# ref_inf_rate_w <- quantile(colSums(baseline_sims$epi$se.flow.l1) / colSums(baseline_sims$epi$num.w) * 100000, probs = 0.5)
-# ref_inf_count_w <- quantile(colSums(baseline_sims$epi$se.flow.l1), probs = 0.5)
-# ref_case_rate_w <- quantile(colSums(baseline_sims$epi$ipic.flow.w) / colSums(baseline_sims$epi$num.w) * 100000, probs = 0.5)
-# ref_case_count_w <- quantile(colSums(baseline_sims$epi$ipic.flow.w), probs = 0.5)
-# ref_death_rate_w <- quantile(colSums(baseline_sims$epi$d.h.flow.w) / colSums(baseline_sims$epi$num.w) * 100000, probs = 0.5)
-# ref_death_count_w <- quantile(colSums(baseline_sims$epi$d.h.flow.w), probs = 0.5)
-# ref_iso_w <- median(colSums(baseline_sims$epi$iso1.flow.w))
-#
-# # Table 2
-# for (i in seq(1,s.num+1)) {
-#   table2 <- table2_fill(scenario_list[[i]],i,table2)
-# }
-#
-# print("Table 2 done!")
-#
-# # Table 3
-# for (i in seq(1,s.num+1)) {
-#   table3 <- table3_fill(scenario_list[[i]],i,table3,
-#                         ref_inf_rate = ref_inf_rate,
-#                         ref_inf_rate_w = ref_inf_rate_w,
-#                         ref_inf_count = ref_inf_count,
-#                         ref_inf_count_w = ref_inf_count_w,
-#                         ref_iso = ref_iso,
-#                         ref_iso_w = ref_iso_w)
-# }
-#
-# print("Table 3 done!")
-#
-# # Table 4
-# for (i in seq(1,s.num+1)) {
-#   table4 <- table4_fill(scenario_list[[i]],i,table4,
-#                         ref_death_rate = ref_death_rate,
-#                         ref_death_rate_w = ref_death_rate_w,
-#                         ref_death_count = ref_death_count,
-#                         ref_death_count_w = ref_death_count_w,
-#                         ref_iso = ref_iso,
-#                         ref_iso_w = ref_iso_w
-#   )
-# }
-#
-# print("Table 4 done!")
-#
-# # Table 5
-# for (i in seq(1,s.num+1)) {
-#   table5 <- table5_fill(scenario_list[[i]],i,table5,
-#                         ref_case_rate = ref_case_rate,
-#                         ref_case_rate_w = ref_case_rate_w,
-#                         ref_case_count = ref_case_count,
-#                         ref_case_count_w = ref_case_count_w,
-#                         ref_iso = ref_iso,
-#                         ref_iso_w = ref_iso_w)
-# }
-#
-# print("Table 5 done!")
-#
-# # Create an Excel workbook
-# wb <- createWorkbook()
-#
-# # Add data frames to different sheets
-# addWorksheet(wb, "Table2")
-# writeData(wb, sheet = 1, x = table2)
-#
-# addWorksheet(wb, "Table3")
-# writeData(wb, sheet = 2, x = table3)
-#
-# addWorksheet(wb, "Table4")
-# writeData(wb, sheet = 3, x = table4)
-#
-# addWorksheet(wb, "Table5")
-# writeData(wb, sheet = 4, x = table5)
-#
-# # Save the workbook to a file
-# saveWorkbook(wb, here::here("tbl_fig","result-tables.xlsx"))
-#
-# print("Excel with tables saved!")
+ref_inf_rate <- quantile(colSums(baseline_sims$epi$se.flow) / colSums(baseline_sims$epi$num) * 100000, probs = 0.5)
+ref_inf_count <- quantile(colSums(baseline_sims$epi$se.flow), probs = 0.5)
+ref_case_rate <- quantile(colSums(baseline_sims$epi$ipic.flow) / colSums(baseline_sims$epi$num) * 100000, probs = 0.5)
+ref_case_count <- quantile(colSums(baseline_sims$epi$ipic.flow), probs = 0.5)
+ref_death_rate <- quantile(colSums(baseline_sims$epi$d.h.flow) / colSums(baseline_sims$epi$num) * 100000, probs = 0.5)
+ref_death_count <- quantile(colSums(baseline_sims$epi$d.h.flow), probs = 0.5)
+ref_iso <- median(colSums(baseline_sims$epi$iso1.flow))
+
+# reference values among office workers
+ref_inf_rate_w <- quantile(colSums(baseline_sims$epi$se.flow.l1) / colSums(baseline_sims$epi$num.w) * 100000, probs = 0.5)
+ref_inf_count_w <- quantile(colSums(baseline_sims$epi$se.flow.l1), probs = 0.5)
+ref_case_rate_w <- quantile(colSums(baseline_sims$epi$ipic.flow.w) / colSums(baseline_sims$epi$num.w) * 100000, probs = 0.5)
+ref_case_count_w <- quantile(colSums(baseline_sims$epi$ipic.flow.w), probs = 0.5)
+ref_death_rate_w <- quantile(colSums(baseline_sims$epi$d.h.flow.w) / colSums(baseline_sims$epi$num.w) * 100000, probs = 0.5)
+ref_death_count_w <- quantile(colSums(baseline_sims$epi$d.h.flow.w), probs = 0.5)
+ref_iso_w <- median(colSums(baseline_sims$epi$iso1.flow.w))
+
+# Table 2
+for (i in seq(1,s.num+1)) {
+  table2 <- table2_fill(scenario_list[[i]],i,table2)
+}
+
+print("Table 2 done!")
+
+# Table 3
+for (i in seq(1,s.num+1)) {
+  table3 <- table3_fill(scenario_list[[i]],i,table3,
+                        ref_inf_rate = ref_inf_rate,
+                        ref_inf_rate_w = ref_inf_rate_w,
+                        ref_inf_count = ref_inf_count,
+                        ref_inf_count_w = ref_inf_count_w,
+                        ref_iso = ref_iso,
+                        ref_iso_w = ref_iso_w)
+}
+
+print("Table 3 done!")
+
+# Table 4
+for (i in seq(1,s.num+1)) {
+  table4 <- table4_fill(scenario_list[[i]],i,table4,
+                        ref_death_rate = ref_death_rate,
+                        ref_death_rate_w = ref_death_rate_w,
+                        ref_death_count = ref_death_count,
+                        ref_death_count_w = ref_death_count_w,
+                        ref_iso = ref_iso,
+                        ref_iso_w = ref_iso_w
+  )
+}
+
+print("Table 4 done!")
+
+# Table 5
+for (i in seq(1,s.num+1)) {
+  table5 <- table5_fill(scenario_list[[i]],i,table5,
+                        ref_case_rate = ref_case_rate,
+                        ref_case_rate_w = ref_case_rate_w,
+                        ref_case_count = ref_case_count,
+                        ref_case_count_w = ref_case_count_w,
+                        ref_iso = ref_iso,
+                        ref_iso_w = ref_iso_w)
+}
+
+print("Table 5 done!")
+
+# Create an Excel workbook
+wb <- createWorkbook()
+
+# Add data frames to different sheets
+addWorksheet(wb, "Table2")
+writeData(wb, sheet = 1, x = table2)
+
+addWorksheet(wb, "Table3")
+writeData(wb, sheet = 2, x = table3)
+
+addWorksheet(wb, "Table4")
+writeData(wb, sheet = 3, x = table4)
+
+addWorksheet(wb, "Table5")
+writeData(wb, sheet = 4, x = table5)
+
+# Save the workbook to a file
+saveWorkbook(wb, here::here("tbl_fig","result-tables-8000.xlsx"))
+
+print("Excel with tables saved!")
 
 # Ratio Plot: Cases to Isolated ------------------------------------------------
-#
-# ratio.plot <- function(sim,i) {
-#   sim <- mutate_epi(sim,
-#                     totCase = ic.num.w + h.num.w,
-#                     totIso = iso.mild.num.w + iso.sev.num.w,
-#                     totMask = mask.post.num.w + mask.exp.num.w)
-#
-#   sim <- mutate_epi(sim,
-#                     CaseIsoRatio = totCase/totIso,
-#                     CaseIsoSum = totCase+totIso)
-#
-#   df <- as.data.frame(sim) %>%
-#     ungroup() %>%
-#     group_by(time) %>%
-#     summarise(med.case = median(totCase, na.rm = TRUE),
-#               p25.case = quantile(totCase, probs = 0.25, na.rm = TRUE),
-#               p75.case = quantile(totCase, probs = 0.75, na.rm = TRUE),
-#               med.iso = median(totIso, na.rm = TRUE),
-#               p25.iso = quantile(totIso, probs = 0.25, na.rm = TRUE),
-#               p75.iso = quantile(totIso, probs = 0.75, na.rm = TRUE),
-#               med.mask = median(totMask, na.rm = TRUE),
-#               p25.mask = quantile(totMask, probs = 0.25, na.rm = TRUE),
-#               p75.mask = quantile(totMask, probs = 0.75, na.rm = TRUE),
-#               med.ratio = median(CaseIsoRatio, na.rm = TRUE),
-#               p25.ratio = quantile(CaseIsoRatio, probs = 0.25, na.rm = TRUE),
-#               p75.ratio = quantile(CaseIsoRatio, probs = 0.75, na.rm = TRUE),
-#               med.sum = median(CaseIsoSum, na.rm = TRUE),
-#               p25.sum = quantile(CaseIsoSum, probs = 0.25, na.rm = TRUE),
-#               p75.sum = quantile(CaseIsoSum, probs = 0.75, na.rm = TRUE)) %>%
-#     mutate(scenario = i)
-#
-#   return(df)
-# }
-#
-# d.ratio <- data.frame(time = NA,
-#                       med.case = NA, p25.case = NA, p75.case = NA,
-#                       med.iso = NA, p25.iso = NA, p75.iso = NA,
-#                       med.mask = NA, p25.mask = NA, p75.mask = NA,
-#                       med.ratio = NA, p25.ratio = NA, p75.ratio = NA,
-#                       med.sum = NA, p25.sum = NA, p75.sum = NA,
-#                       scenario = i)
-#
-# for (i in seq(1,s.num+1,1)) {
-#
-#   temp <- ratio.plot(scenario_list[[i]],i-1)
-#
-#   d.ratio <- d.ratio %>%
-#     add_row(temp) %>%
-#     filter(!is.na(time))
-#
-#   rm(temp)
-#
-# }
-#
-# d.ratio <- d.ratio %>%
-#   mutate(scenario2 = factor(scenario,
-#                             levels = seq(0,s.num)))
-#
-# saveRDS(d.ratio, file = here::here("tbl_fig","ratio_df.rds"))
-#
-# print("Ratio data frame saved!")
+
+ratio.plot <- function(sim,i) {
+  sim <- mutate_epi(sim,
+                    totCase = ic.num.w + h.num.w,
+                    totIso = iso.mild.num.w + iso.sev.num.w,
+                    totMask = mask.post.num.w + mask.exp.num.w)
+
+  sim <- mutate_epi(sim,
+                    #CaseIsoRatio = totCase/totIso,
+                    CaseIsoSum1 = totCase+totIso - iso.and.sick.num.w,
+                    CaseIsoSum2 = iso.or.sick.num.w)
+
+  df <- as.data.frame(sim) %>%
+    ungroup() %>%
+    group_by(time) %>%
+    summarise(med.case = median(totCase, na.rm = TRUE),
+              p25.case = quantile(totCase, probs = 0.25, na.rm = TRUE),
+              p75.case = quantile(totCase, probs = 0.75, na.rm = TRUE),
+              med.iso = median(totIso, na.rm = TRUE),
+              p25.iso = quantile(totIso, probs = 0.25, na.rm = TRUE),
+              p75.iso = quantile(totIso, probs = 0.75, na.rm = TRUE),
+              med.mask = median(totMask, na.rm = TRUE),
+              p25.mask = quantile(totMask, probs = 0.25, na.rm = TRUE),
+              p75.mask = quantile(totMask, probs = 0.75, na.rm = TRUE),
+              # med.ratio = median(CaseIsoRatio, na.rm = TRUE),
+              # p25.ratio = quantile(CaseIsoRatio, probs = 0.25, na.rm = TRUE),
+              # p75.ratio = quantile(CaseIsoRatio, probs = 0.75, na.rm = TRUE),
+              med.sum1 = median(CaseIsoSum1, na.rm = TRUE),
+              p25.sum1 = quantile(CaseIsoSum1, probs = 0.25, na.rm = TRUE),
+              p75.sum1 = quantile(CaseIsoSum1, probs = 0.75, na.rm = TRUE),
+              med.sum2 = median(CaseIsoSum2, na.rm = TRUE),
+              p25.sum2 = quantile(CaseIsoSum2, probs = 0.25, na.rm = TRUE),
+              p75.sum2 = quantile(CaseIsoSum2, probs = 0.75, na.rm = TRUE)) %>%
+    mutate(scenario = i)
+
+  return(df)
+}
+
+d.ratio <- data.frame(time = NA,
+                      med.case = NA, p25.case = NA, p75.case = NA,
+                      med.iso = NA, p25.iso = NA, p75.iso = NA,
+                      med.mask = NA, p25.mask = NA, p75.mask = NA,
+                      # med.ratio = NA, p25.ratio = NA, p75.ratio = NA,
+                      med.sum1 = NA, p25.sum1 = NA, p75.sum1 = NA,
+                      med.sum2 = NA, p25.sum2 = NA, p75.sum2 = NA,
+                      scenario = i)
+
+for (i in seq(1,s.num+1,1)) {
+
+  temp <- ratio.plot(scenario_list[[i]],i-1)
+
+  d.ratio <- d.ratio %>%
+    add_row(temp) %>%
+    filter(!is.na(time))
+
+  rm(temp)
+
+}
+
+d.ratio <- d.ratio %>%
+  mutate(scenario2 = factor(scenario,
+                            levels = seq(0,s.num)))
+
+saveRDS(d.ratio, file = here::here("tbl_fig","ratio_df_8000.rds"))
+
+print("Ratio data frame saved!")
 
 # Summary measures by different time periods -----------------------------------
 
@@ -506,197 +499,197 @@ table5_fill <- function(sim, rownum, table5,
 #                         time4 = NA,
 #                         T4_NNT_Inf = NA, T4_NNT_InfW = NA,
 #                         T4_NNT_Case = NA, T4_NNT_CaseW = NA)
-
-table_nnt <- data.frame(scenario = scenarios,
-                        T1_RefIso = NA, T1_TotalIso = NA,
-                        T1_AddtlIso = NA,
-                        T1_RefIsoW = NA, T1_TotalIsoW = NA,
-                        T1_AddtlIsoW = NA,
-
-                        T1_RefInf = NA, T1_TotalInf = NA,
-                        T1_InfAvert = NA,
-                        T1_NNT_Inf = NA,
-
-                        T1_RefInfW = NA, T1_TotalInfW = NA,
-                        T1_InfAvertW = NA,
-                        T1_NNT_InfW = NA,
-
-                        T1_RefCase = NA, T1_TotalCase = NA,
-                        T1_CaseAvert = NA,
-                        T1_NNT_Case = NA,
-
-                        T1_RefCaseW = NA, T1_TotalCaseW = NA,
-                        T1_CaseAvertW = NA,
-                        T1_NNT_CaseW = NA,
-                        ###
-                        T2_RefIso = NA, T2_TotalIso = NA,
-                        T2_AddtlIso = NA,
-                        T2_RefIsoW = NA, T2_TotalIsoW = NA,
-                        T2_AddtlIsoW = NA,
-
-                        T2_RefInf = NA, T2_TotalInf = NA,
-                        T2_InfAvert = NA,
-                        T2_NNT_Inf = NA,
-
-                        T2_RefInfW = NA, T2_TotalInfW = NA,
-                        T2_InfAvertW = NA,
-                        T2_NNT_InfW = NA,
-
-                        T2_RefCase = NA, T2_TotalCase = NA,
-                        T2_CaseAvert = NA,
-                        T2_NNT_Case = NA,
-
-                        T2_RefCaseW = NA, T2_TotalCaseW = NA,
-                        T2_CaseAvertW = NA,
-                        T2_NNT_CaseW = NA,
-                        ###
-                        T3_RefIso = NA, T3_TotalIso = NA,
-                        T3_AddtlIso = NA,
-                        T3_RefIsoW = NA, T3_TotalIsoW = NA,
-                        T3_AddtlIsoW = NA,
-
-                        T3_RefInf = NA, T3_TotalInf = NA,
-                        T3_InfAvert = NA,
-                        T3_NNT_Inf = NA,
-
-                        T3_RefInfW = NA, T3_TotalInfW = NA,
-                        T3_InfAvertW = NA,
-                        T3_NNT_InfW = NA,
-
-                        T3_RefCase = NA, T3_TotalCase = NA,
-                        T3_CaseAvert = NA,
-                        T3_NNT_Case = NA,
-
-                        T3_RefCaseW = NA, T3_TotalCaseW = NA,
-                        T3_CaseAvertW = NA,
-                        T3_NNT_CaseW = NA,
-                        ###
-                        T4_RefIso = NA, T4_TotalIso = NA,
-                        T4_AddtlIso = NA,
-                        T4_RefIsoW = NA, T4_TotalIsoW = NA,
-                        T4_AddtlIsoW = NA,
-
-                        T4_RefInf = NA, T4_TotalInf = NA,
-                        T4_InfAvert = NA,
-                        T4_NNT_Inf = NA,
-
-                        T4_RefInfW = NA, T4_TotalInfW = NA,
-                        T4_InfAvertW = NA,
-                        T4_NNT_InfW = NA,
-
-                        T4_RefCase = NA, T4_TotalCase = NA,
-                        T4_CaseAvert = NA,
-                        T4_NNT_Case = NA,
-
-                        T4_RefCaseW = NA, T4_TotalCaseW = NA,
-                        T4_CaseAvertW = NA,
-                        T4_NNT_CaseW = NA)
-
-nnt_fill <- function(sim,rownum,table_nnt) {
-
-  colnum <- 2
-
-  # Define row ranges
-  row_ranges <- list(c(1, 151),
-                     c(152, 304),
-                     c(305, 424),
-                     c(425, 608))
-
-  # Iterate through row ranges
-  for (i in seq_along(row_ranges)) {
-
-    row_range <- row_ranges[[i]]
-    # table_nnt[rownum,colnum] <- paste0(row_range[[1]],"-",row_range[[2]])
-    # colnum <- colnum + 1
-
-    ## reference scenario values
-    ref_iso <- median(colSums(baseline_sims$epi$iso1.flow[row_range[[1]]:row_range[[2]], ]))
-    ref_iso_w <- median(colSums(baseline_sims$epi$iso1.flow.w[row_range[[1]]:row_range[[2]], ]))
-    ref_inf_count <- quantile(colSums(baseline_sims$epi$se.flow[row_range[[1]]:row_range[[2]], ]), probs = 0.5)
-    ref_inf_count_w <- quantile(colSums(baseline_sims$epi$se.flow.l1[row_range[[1]]:row_range[[2]], ]), probs = 0.5)
-    ref_case_count <- quantile(colSums(baseline_sims$epi$ipic.flow[row_range[[1]]:row_range[[2]], ]), probs = 0.5)
-    ref_case_count_w <- quantile(colSums(baseline_sims$epi$ipic.flow.w[row_range[[1]]:row_range[[2]], ]), probs = 0.5)
-
-    ## total/additional isolations
-    total_iso <- colSums(sim$epi$iso1.flow[row_range[[1]]:row_range[[2]], ])
-    addtl_iso <- total_iso - ref_iso
-
-    total_iso.w <- colSums(sim$epi$iso1.flow.w[row_range[[1]]:row_range[[2]], ])
-    addtl_iso.w <- total_iso.w - ref_iso_w
-
-    variables <- list(ref_iso, total_iso, addtl_iso, ref_iso_w, total_iso.w, addtl_iso.w)
-    for (var in variables) {
-      temp <- round(quantile(var, probs = c(.25, 0.5, .75)), 1)
-      table_nnt[rownum, colnum] <- paste0(temp[2], " (",
-                                          temp[1], ", ",
-                                          temp[3], ")")
-      colnum <- colnum + 1
-    }
-
-    ## infections
-    total_inf <- colSums(sim$epi$se.flow[row_range[[1]]:row_range[[2]], ])
-    total_inf_averted <- ref_inf_count - total_inf
-
-    nnt.inf <- addtl_iso/total_inf_averted
-
-    total_inf.w <- colSums(sim$epi$se.flow.l1[row_range[[1]]:row_range[[2]], ])
-    total_inf_averted.w <- ref_inf_count_w - total_inf.w
-
-    nnt.inf.w <- addtl_iso.w/total_inf_averted.w
-
-    variables <- list(ref_inf_count, total_inf, total_inf_averted, nnt.inf,
-                      ref_inf_count_w, total_inf.w, total_inf_averted.w, nnt.inf.w)
-    for (var in variables) {
-      temp <- round(quantile(var, probs = c(.25, 0.5, .75)), 1)
-      table_nnt[rownum, colnum] <- paste0(temp[2], " (",
-                                          temp[1], ", ",
-                                          temp[3], ")")
-      colnum <- colnum + 1
-    }
-
-    ## cases
-    total_case <- colSums(sim$epi$ipic.flow[row_range[[1]]:row_range[[2]], ])
-    total_case_averted <- ref_case_count - total_case
-
-    nnt.case <- addtl_iso/total_case_averted
-
-    total_case.w <- colSums(sim$epi$ipic.flow.w[row_range[[1]]:row_range[[2]], ])
-    total_case_averted.w <- ref_case_count_w - total_case.w
-
-    nnt.case.w <- addtl_iso.w/total_case_averted.w
-
-    variables <- list(ref_case_count, total_case, total_case_averted, nnt.case,
-                      ref_case_count_w, total_case.w, total_case_averted.w, nnt.case.w)
-    for (var in variables) {
-      temp <- round(quantile(var, probs = c(.25, 0.5, .75)), 1)
-      table_nnt[rownum, colnum] <- paste0(temp[2], " (",
-                                          temp[1], ", ",
-                                          temp[3], ")")
-      colnum <- colnum + 1
-    }
-
-
-  }
-
-  return(table_nnt)
-
-}
-
-# NNT Table
-for (i in seq(1,s.num+1)) {
-  table_nnt <- nnt_fill(scenario_list[[i]],i,table_nnt)
-}
-
-# Save table
-
-# Create an Excel workbook
-wb <- createWorkbook()
-
-# Add data frames to different sheets
-addWorksheet(wb, "TableNNT")
-writeData(wb, sheet = 1, x = table_nnt)
-
-# Save the workbook to a file
-saveWorkbook(wb, here::here("tbl_fig","nnt-table.xlsx"))
-
-print("NNT table done!")
+#
+# table_nnt <- data.frame(scenario = scenarios,
+#                         T1_RefIso = NA, T1_TotalIso = NA,
+#                         T1_AddtlIso = NA,
+#                         T1_RefIsoW = NA, T1_TotalIsoW = NA,
+#                         T1_AddtlIsoW = NA,
+#
+#                         T1_RefInf = NA, T1_TotalInf = NA,
+#                         T1_InfAvert = NA,
+#                         T1_NNT_Inf = NA,
+#
+#                         T1_RefInfW = NA, T1_TotalInfW = NA,
+#                         T1_InfAvertW = NA,
+#                         T1_NNT_InfW = NA,
+#
+#                         T1_RefCase = NA, T1_TotalCase = NA,
+#                         T1_CaseAvert = NA,
+#                         T1_NNT_Case = NA,
+#
+#                         T1_RefCaseW = NA, T1_TotalCaseW = NA,
+#                         T1_CaseAvertW = NA,
+#                         T1_NNT_CaseW = NA,
+#                         ###
+#                         T2_RefIso = NA, T2_TotalIso = NA,
+#                         T2_AddtlIso = NA,
+#                         T2_RefIsoW = NA, T2_TotalIsoW = NA,
+#                         T2_AddtlIsoW = NA,
+#
+#                         T2_RefInf = NA, T2_TotalInf = NA,
+#                         T2_InfAvert = NA,
+#                         T2_NNT_Inf = NA,
+#
+#                         T2_RefInfW = NA, T2_TotalInfW = NA,
+#                         T2_InfAvertW = NA,
+#                         T2_NNT_InfW = NA,
+#
+#                         T2_RefCase = NA, T2_TotalCase = NA,
+#                         T2_CaseAvert = NA,
+#                         T2_NNT_Case = NA,
+#
+#                         T2_RefCaseW = NA, T2_TotalCaseW = NA,
+#                         T2_CaseAvertW = NA,
+#                         T2_NNT_CaseW = NA,
+#                         ###
+#                         T3_RefIso = NA, T3_TotalIso = NA,
+#                         T3_AddtlIso = NA,
+#                         T3_RefIsoW = NA, T3_TotalIsoW = NA,
+#                         T3_AddtlIsoW = NA,
+#
+#                         T3_RefInf = NA, T3_TotalInf = NA,
+#                         T3_InfAvert = NA,
+#                         T3_NNT_Inf = NA,
+#
+#                         T3_RefInfW = NA, T3_TotalInfW = NA,
+#                         T3_InfAvertW = NA,
+#                         T3_NNT_InfW = NA,
+#
+#                         T3_RefCase = NA, T3_TotalCase = NA,
+#                         T3_CaseAvert = NA,
+#                         T3_NNT_Case = NA,
+#
+#                         T3_RefCaseW = NA, T3_TotalCaseW = NA,
+#                         T3_CaseAvertW = NA,
+#                         T3_NNT_CaseW = NA,
+#                         ###
+#                         T4_RefIso = NA, T4_TotalIso = NA,
+#                         T4_AddtlIso = NA,
+#                         T4_RefIsoW = NA, T4_TotalIsoW = NA,
+#                         T4_AddtlIsoW = NA,
+#
+#                         T4_RefInf = NA, T4_TotalInf = NA,
+#                         T4_InfAvert = NA,
+#                         T4_NNT_Inf = NA,
+#
+#                         T4_RefInfW = NA, T4_TotalInfW = NA,
+#                         T4_InfAvertW = NA,
+#                         T4_NNT_InfW = NA,
+#
+#                         T4_RefCase = NA, T4_TotalCase = NA,
+#                         T4_CaseAvert = NA,
+#                         T4_NNT_Case = NA,
+#
+#                         T4_RefCaseW = NA, T4_TotalCaseW = NA,
+#                         T4_CaseAvertW = NA,
+#                         T4_NNT_CaseW = NA)
+#
+# nnt_fill <- function(sim,rownum,table_nnt) {
+#
+#   colnum <- 2
+#
+#   # Define row ranges
+#   row_ranges <- list(c(1, 151),
+#                      c(152, 304),
+#                      c(305, 424),
+#                      c(425, 608))
+#
+#   # Iterate through row ranges
+#   for (i in seq_along(row_ranges)) {
+#
+#     row_range <- row_ranges[[i]]
+#     # table_nnt[rownum,colnum] <- paste0(row_range[[1]],"-",row_range[[2]])
+#     # colnum <- colnum + 1
+#
+#     ## reference scenario values
+#     ref_iso <- median(colSums(baseline_sims$epi$iso1.flow[row_range[[1]]:row_range[[2]], ]))
+#     ref_iso_w <- median(colSums(baseline_sims$epi$iso1.flow.w[row_range[[1]]:row_range[[2]], ]))
+#     ref_inf_count <- quantile(colSums(baseline_sims$epi$se.flow[row_range[[1]]:row_range[[2]], ]), probs = 0.5)
+#     ref_inf_count_w <- quantile(colSums(baseline_sims$epi$se.flow.l1[row_range[[1]]:row_range[[2]], ]), probs = 0.5)
+#     ref_case_count <- quantile(colSums(baseline_sims$epi$ipic.flow[row_range[[1]]:row_range[[2]], ]), probs = 0.5)
+#     ref_case_count_w <- quantile(colSums(baseline_sims$epi$ipic.flow.w[row_range[[1]]:row_range[[2]], ]), probs = 0.5)
+#
+#     ## total/additional isolations
+#     total_iso <- colSums(sim$epi$iso1.flow[row_range[[1]]:row_range[[2]], ])
+#     addtl_iso <- total_iso - ref_iso
+#
+#     total_iso.w <- colSums(sim$epi$iso1.flow.w[row_range[[1]]:row_range[[2]], ])
+#     addtl_iso.w <- total_iso.w - ref_iso_w
+#
+#     variables <- list(ref_iso, total_iso, addtl_iso, ref_iso_w, total_iso.w, addtl_iso.w)
+#     for (var in variables) {
+#       temp <- round(quantile(var, probs = c(.25, 0.5, .75)), 1)
+#       table_nnt[rownum, colnum] <- paste0(temp[2], " (",
+#                                           temp[1], ", ",
+#                                           temp[3], ")")
+#       colnum <- colnum + 1
+#     }
+#
+#     ## infections
+#     total_inf <- colSums(sim$epi$se.flow[row_range[[1]]:row_range[[2]], ])
+#     total_inf_averted <- ref_inf_count - total_inf
+#
+#     nnt.inf <- addtl_iso/total_inf_averted
+#
+#     total_inf.w <- colSums(sim$epi$se.flow.l1[row_range[[1]]:row_range[[2]], ])
+#     total_inf_averted.w <- ref_inf_count_w - total_inf.w
+#
+#     nnt.inf.w <- addtl_iso.w/total_inf_averted.w
+#
+#     variables <- list(ref_inf_count, total_inf, total_inf_averted, nnt.inf,
+#                       ref_inf_count_w, total_inf.w, total_inf_averted.w, nnt.inf.w)
+#     for (var in variables) {
+#       temp <- round(quantile(var, probs = c(.25, 0.5, .75)), 1)
+#       table_nnt[rownum, colnum] <- paste0(temp[2], " (",
+#                                           temp[1], ", ",
+#                                           temp[3], ")")
+#       colnum <- colnum + 1
+#     }
+#
+#     ## cases
+#     total_case <- colSums(sim$epi$ipic.flow[row_range[[1]]:row_range[[2]], ])
+#     total_case_averted <- ref_case_count - total_case
+#
+#     nnt.case <- addtl_iso/total_case_averted
+#
+#     total_case.w <- colSums(sim$epi$ipic.flow.w[row_range[[1]]:row_range[[2]], ])
+#     total_case_averted.w <- ref_case_count_w - total_case.w
+#
+#     nnt.case.w <- addtl_iso.w/total_case_averted.w
+#
+#     variables <- list(ref_case_count, total_case, total_case_averted, nnt.case,
+#                       ref_case_count_w, total_case.w, total_case_averted.w, nnt.case.w)
+#     for (var in variables) {
+#       temp <- round(quantile(var, probs = c(.25, 0.5, .75)), 1)
+#       table_nnt[rownum, colnum] <- paste0(temp[2], " (",
+#                                           temp[1], ", ",
+#                                           temp[3], ")")
+#       colnum <- colnum + 1
+#     }
+#
+#
+#   }
+#
+#   return(table_nnt)
+#
+# }
+#
+# # NNT Table
+# for (i in seq(1,s.num+1)) {
+#   table_nnt <- nnt_fill(scenario_list[[i]],i,table_nnt)
+# }
+#
+# # Save table
+#
+# # Create an Excel workbook
+# wb <- createWorkbook()
+#
+# # Add data frames to different sheets
+# addWorksheet(wb, "TableNNT")
+# writeData(wb, sheet = 1, x = table_nnt)
+#
+# # Save the workbook to a file
+# saveWorkbook(wb, here::here("tbl_fig","nnt-table.xlsx"))
+#
+# print("NNT table done!")
