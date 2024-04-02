@@ -525,6 +525,29 @@ p.mask <- ggplot(d.ratio, aes(x = date_variable, y = med.mask))+
 ggsave(here::here("results","figures","Figure4_2april2024.tiff"),
        width = 15, height = 6, units = "in", dpi=300, compression = 'lzw')
 
+# Stacked area plot: Cases vs isolating ----
+d.long <- d.ratio %>%
+  select(scenario2,date_variable,med.casenotiso,med.both,med.isonotcase) %>%
+  pivot_longer(cols = -c("scenario2","date_variable"), names_to = "cat", values_to = "number") %>%
+  mutate(cat = case_when(cat == "med.casenotiso" ~ "Cases not isolating",
+                         cat == "med.both" ~ "Cases isolating",
+                         cat == "med.isonotcase" ~ "Non-cases isolating")) %>%
+  mutate(cat = factor(cat,levels = c("Non-cases isolating",
+                                     "Cases isolating",
+                                     "Cases not isolating")))
+
+ggplot(d.long, aes(x = date_variable, y = number, fill = cat)) +
+  geom_area(position = "stack")+
+  facet_wrap(vars(scenario2),nrow = 2)+
+  theme_bw()+
+  scale_fill_viridis(discrete = TRUE)+
+  labs(x = "Date",
+       y = "Number of persons ill and/or isolating",
+       fill = "")
+
+ggsave(here::here("results","figures","Figure5.tiff"),
+       width = 12, height = 6, units = "in", dpi=300, compression = 'lzw')
+
 ################################################################################
 # Contour plot libraries -------------------------------------------------------
 library("viridis")
@@ -690,7 +713,7 @@ g_inc_cont <- ggplot(cInc, aes(iso.prob, act.rate.iso)) +
   theme_minimal() +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Isolation Probability", y = "Change in contact intensity") +
+  labs(x = "Isolation Probability", y = "Relative contact intensity") +
   scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
                      name = "", limits = c(minval.i, maxval.i), guide = "none") +
   theme(axis.text = element_text(size = rel(1.2)),
@@ -708,7 +731,7 @@ g_inc_cont_w <- ggplot(cIncWork, aes(iso.prob, act.rate.iso)) +
   theme_minimal() +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Isolation Probability", y = "Change in contact intensity") +
+  labs(x = "Isolation Probability", y = "Relative contact intensity") +
   scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
                      name = "", limits = c(minval.iw, maxval.iw), guide = "none") +
   theme(axis.text = element_text(size = rel(1.2)),
@@ -726,7 +749,7 @@ g_death_cont <- ggplot(cDeaths, aes(iso.prob, act.rate.iso)) +
   theme_minimal() +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Isolation Probability", y = "Change in contact intensity") +
+  labs(x = "Isolation Probability", y = "Relative contact intensity") +
   scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
                      name = "", limits = c(minval.d, maxval.d), guide = "none") +
   theme(axis.text = element_text(size = rel(1.2)),
@@ -744,7 +767,7 @@ g_death_cont_w <- ggplot(cDeathsWork, aes(iso.prob, act.rate.iso)) +
   theme_minimal() +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Isolation Probability", y = "Change in contact intensity") +
+  labs(x = "Isolation Probability", y = "Relative contact intensity") +
   scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
                      name = "", limits = c(minval.dw, maxval.dw), guide = "none") +
   theme(axis.text = element_text(size = rel(1.2)),
@@ -762,7 +785,7 @@ g_iso_cont <- ggplot(cIso, aes(iso.prob, act.rate.iso)) +
   theme_minimal() +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Isolation Probability", y = "Change in contact intensity") +
+  labs(x = "Isolation Probability", y = "Relative contact intensity") +
   scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
                      name = "", limits = c(minval.v, maxval.v), guide = "none") +
   theme(axis.text = element_text(size = rel(1.2)),
@@ -780,7 +803,7 @@ g_iso_cont_w <- ggplot(cIsoWork, aes(iso.prob, act.rate.iso)) +
   theme_minimal() +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Isolation Probability", y = "Change in contact intensity") +
+  labs(x = "Isolation Probability", y = "Relative contact intensity") +
   scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
                      name = "", limits = c(minval.vw, maxval.vw), guide = "none") +
   theme(axis.text = element_text(size = rel(1.2)),
