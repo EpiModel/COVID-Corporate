@@ -128,3 +128,31 @@ EpiModelHPC::sbatch_master(
   partition.main = "epimodel", # Name of partition for runs
   account.main = "epimodel", # Name of account for runs
 )
+
+
+# Final set of scenarios for results
+iso.vars <- list(
+  iso.prob.x =    c(0.58,0,0.25,0.5,0.75,1),
+  notif.work =    c(rep(0.5,6)),
+  notif.com =     c(rep(0.1,6)),
+  notif.home =    c(rep(0.9,6)),
+  act.rate.iso =  c(rep(0.3,6)),
+  inf.prob.mask = c(rep(0.3,6))
+)
+
+# then that list gets passed into this sbatch_function
+EpiModelHPC::sbatch_master(
+  vars = iso.vars, # the list above
+  expand.vars = FALSE, # do not create a run for each combination of parameters
+  master.file = "master.sh", # function creates a new file with this name in your working directory
+  runsim.file = "runsim_corp.sh", # this is the name of your runsim file
+  simno.start =8000, # to name each parameter set, a starting number for your runs
+  nsims = 250, # number of total simulations per parameter set (32 is fine for testing now)
+  ncores = 32, # number of cores per parameter set simulation
+  #narray = 1,
+  append = TRUE, # If TRUE, you can write more parameter set lines at the bottom of an existing master.sh file
+  mem = "0", # Good default for memory use
+  walltime = "1:00:00", # Good default for run time
+  partition.main = "epimodel", # Name of partition for runs
+  account.main = "epimodel", # Name of account for runs
+)
