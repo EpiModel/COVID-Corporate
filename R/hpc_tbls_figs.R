@@ -326,90 +326,90 @@ table5_fill <- function(sim, rownum, table5,
 
 # Fill in tables ---------------------------------------------------------------
 
-ref_inf_rate <- quantile(colSums(baseline_sims$epi$se.flow) / colSums(baseline_sims$epi$num) * 100000, probs = 0.5)
-ref_inf_count <- quantile(colSums(baseline_sims$epi$se.flow), probs = 0.5)
-ref_case_rate <- quantile(colSums(baseline_sims$epi$ipic.flow) / colSums(baseline_sims$epi$num) * 100000, probs = 0.5)
-ref_case_count <- quantile(colSums(baseline_sims$epi$ipic.flow), probs = 0.5)
-ref_death_rate <- quantile(colSums(baseline_sims$epi$d.h.flow) / colSums(baseline_sims$epi$num) * 100000, probs = 0.5)
-ref_death_count <- quantile(colSums(baseline_sims$epi$d.h.flow), probs = 0.5)
-ref_iso <- median(colSums(baseline_sims$epi$iso1.flow))
-
-# reference values among office workers
-ref_inf_rate_w <- quantile(colSums(baseline_sims$epi$se.flow.l1) / colSums(baseline_sims$epi$num.w) * 100000, probs = 0.5)
-ref_inf_count_w <- quantile(colSums(baseline_sims$epi$se.flow.l1), probs = 0.5)
-ref_case_rate_w <- quantile(colSums(baseline_sims$epi$ipic.flow.w) / colSums(baseline_sims$epi$num.w) * 100000, probs = 0.5)
-ref_case_count_w <- quantile(colSums(baseline_sims$epi$ipic.flow.w), probs = 0.5)
-ref_death_rate_w <- quantile(colSums(baseline_sims$epi$d.h.flow.w) / colSums(baseline_sims$epi$num.w) * 100000, probs = 0.5)
-ref_death_count_w <- quantile(colSums(baseline_sims$epi$d.h.flow.w), probs = 0.5)
-ref_iso_w <- median(colSums(baseline_sims$epi$iso1.flow.w))
-
-# Table 2
-for (i in seq(1,s.num+1)) {
-  table2 <- table2_fill(scenario_list[[i]],i,table2)
-}
-
-print("Table 2 done!")
-
-# Table 3
-for (i in seq(1,s.num+1)) {
-  table3 <- table3_fill(scenario_list[[i]],i,table3,
-                        ref_inf_rate = ref_inf_rate,
-                        ref_inf_rate_w = ref_inf_rate_w,
-                        ref_inf_count = ref_inf_count,
-                        ref_inf_count_w = ref_inf_count_w,
-                        ref_iso = ref_iso,
-                        ref_iso_w = ref_iso_w)
-}
-
-print("Table 3 done!")
-
-# Table 4
-for (i in seq(1,s.num+1)) {
-  table4 <- table4_fill(scenario_list[[i]],i,table4,
-                        ref_death_rate = ref_death_rate,
-                        ref_death_rate_w = ref_death_rate_w,
-                        ref_death_count = ref_death_count,
-                        ref_death_count_w = ref_death_count_w,
-                        ref_iso = ref_iso,
-                        ref_iso_w = ref_iso_w
-  )
-}
-
-print("Table 4 done!")
-
-# Table 5
-for (i in seq(1,s.num+1)) {
-  table5 <- table5_fill(scenario_list[[i]],i,table5,
-                        ref_case_rate = ref_case_rate,
-                        ref_case_rate_w = ref_case_rate_w,
-                        ref_case_count = ref_case_count,
-                        ref_case_count_w = ref_case_count_w,
-                        ref_iso = ref_iso,
-                        ref_iso_w = ref_iso_w)
-}
-
-print("Table 5 done!")
-
-# Create an Excel workbook
-wb <- createWorkbook()
-
-# Add data frames to different sheets
-addWorksheet(wb, "Table2")
-writeData(wb, sheet = 1, x = table2)
-
-addWorksheet(wb, "Table3")
-writeData(wb, sheet = 2, x = table3)
-
-addWorksheet(wb, "Table4")
-writeData(wb, sheet = 3, x = table4)
-
-addWorksheet(wb, "Table5")
-writeData(wb, sheet = 4, x = table5)
-
-# Save the workbook to a file
-saveWorkbook(wb, here::here("tbl_fig","result-tables-8000.xlsx"))
-
-print("Excel with tables saved!")
+# ref_inf_rate <- quantile(colSums(baseline_sims$epi$se.flow) / colSums(baseline_sims$epi$num) * 100000, probs = 0.5)
+# ref_inf_count <- quantile(colSums(baseline_sims$epi$se.flow), probs = 0.5)
+# ref_case_rate <- quantile(colSums(baseline_sims$epi$ipic.flow) / colSums(baseline_sims$epi$num) * 100000, probs = 0.5)
+# ref_case_count <- quantile(colSums(baseline_sims$epi$ipic.flow), probs = 0.5)
+# ref_death_rate <- quantile(colSums(baseline_sims$epi$d.h.flow) / colSums(baseline_sims$epi$num) * 100000, probs = 0.5)
+# ref_death_count <- quantile(colSums(baseline_sims$epi$d.h.flow), probs = 0.5)
+# ref_iso <- median(colSums(baseline_sims$epi$iso1.flow))
+#
+# # reference values among office workers
+# ref_inf_rate_w <- quantile(colSums(baseline_sims$epi$se.flow.l1) / colSums(baseline_sims$epi$num.w) * 100000, probs = 0.5)
+# ref_inf_count_w <- quantile(colSums(baseline_sims$epi$se.flow.l1), probs = 0.5)
+# ref_case_rate_w <- quantile(colSums(baseline_sims$epi$ipic.flow.w) / colSums(baseline_sims$epi$num.w) * 100000, probs = 0.5)
+# ref_case_count_w <- quantile(colSums(baseline_sims$epi$ipic.flow.w), probs = 0.5)
+# ref_death_rate_w <- quantile(colSums(baseline_sims$epi$d.h.flow.w) / colSums(baseline_sims$epi$num.w) * 100000, probs = 0.5)
+# ref_death_count_w <- quantile(colSums(baseline_sims$epi$d.h.flow.w), probs = 0.5)
+# ref_iso_w <- median(colSums(baseline_sims$epi$iso1.flow.w))
+#
+# # Table 2
+# for (i in seq(1,s.num+1)) {
+#   table2 <- table2_fill(scenario_list[[i]],i,table2)
+# }
+#
+# print("Table 2 done!")
+#
+# # Table 3
+# for (i in seq(1,s.num+1)) {
+#   table3 <- table3_fill(scenario_list[[i]],i,table3,
+#                         ref_inf_rate = ref_inf_rate,
+#                         ref_inf_rate_w = ref_inf_rate_w,
+#                         ref_inf_count = ref_inf_count,
+#                         ref_inf_count_w = ref_inf_count_w,
+#                         ref_iso = ref_iso,
+#                         ref_iso_w = ref_iso_w)
+# }
+#
+# print("Table 3 done!")
+#
+# # Table 4
+# for (i in seq(1,s.num+1)) {
+#   table4 <- table4_fill(scenario_list[[i]],i,table4,
+#                         ref_death_rate = ref_death_rate,
+#                         ref_death_rate_w = ref_death_rate_w,
+#                         ref_death_count = ref_death_count,
+#                         ref_death_count_w = ref_death_count_w,
+#                         ref_iso = ref_iso,
+#                         ref_iso_w = ref_iso_w
+#   )
+# }
+#
+# print("Table 4 done!")
+#
+# # Table 5
+# for (i in seq(1,s.num+1)) {
+#   table5 <- table5_fill(scenario_list[[i]],i,table5,
+#                         ref_case_rate = ref_case_rate,
+#                         ref_case_rate_w = ref_case_rate_w,
+#                         ref_case_count = ref_case_count,
+#                         ref_case_count_w = ref_case_count_w,
+#                         ref_iso = ref_iso,
+#                         ref_iso_w = ref_iso_w)
+# }
+#
+# print("Table 5 done!")
+#
+# # Create an Excel workbook
+# wb <- createWorkbook()
+#
+# # Add data frames to different sheets
+# addWorksheet(wb, "Table2")
+# writeData(wb, sheet = 1, x = table2)
+#
+# addWorksheet(wb, "Table3")
+# writeData(wb, sheet = 2, x = table3)
+#
+# addWorksheet(wb, "Table4")
+# writeData(wb, sheet = 3, x = table4)
+#
+# addWorksheet(wb, "Table5")
+# writeData(wb, sheet = 4, x = table5)
+#
+# # Save the workbook to a file
+# saveWorkbook(wb, here::here("tbl_fig","result-tables-8000.xlsx"))
+#
+# print("Excel with tables saved!")
 
 # Ratio Plot: Cases to Isolated ------------------------------------------------
 
@@ -417,7 +417,9 @@ ratio.plot <- function(sim,i) {
   sim <- mutate_epi(sim,
                     totCase = ic.num.w + h.num.w,
                     totIso = iso.mild.num.w + iso.sev.num.w,
-                    totMask = mask.post.num.w + mask.exp.num.w)
+                    totMask = mask.post.num.w + mask.exp.num.w,
+                    CaseNotIso = ic.num.w + h.num.w - iso.and.sick.num.w,
+                    IsoNotCase = iso.mild.num.w + iso.sev.num.w - iso.and.sick.num.w)
 
   sim <- mutate_epi(sim,
                     #CaseIsoRatio = totCase/totIso,
@@ -444,7 +446,16 @@ ratio.plot <- function(sim,i) {
               p75.sum1 = quantile(CaseIsoSum1, probs = 0.75, na.rm = TRUE),
               med.sum2 = median(CaseIsoSum2, na.rm = TRUE),
               p25.sum2 = quantile(CaseIsoSum2, probs = 0.25, na.rm = TRUE),
-              p75.sum2 = quantile(CaseIsoSum2, probs = 0.75, na.rm = TRUE)) %>%
+              p75.sum2 = quantile(CaseIsoSum2, probs = 0.75, na.rm = TRUE),
+              med.both = median(iso.and.sick.num.w, na.rm = TRUE),
+              p25.both = quantile(iso.and.sick.num.w, probs = 0.25, na.rm = TRUE),
+              p75.both = quantile(iso.and.sick.num.w, probs = 0.75, na.rm = TRUE),
+              med.casenotiso = median(CaseNotIso, na.rm = TRUE),
+              p25.casenotiso = quantile(CaseNotIso, probs = 0.25, na.rm = TRUE),
+              p75.casenotiso = quantile(CaseNotIso, probs = 0.75, na.rm = TRUE),
+              med.isonotcase = median(IsoNotCase, na.rm = TRUE),
+              p25.isonotcase = quantile(IsoNotCase, probs = 0.25, na.rm = TRUE),
+              p75.isonotcase = quantile(IsoNotCase, probs = 0.75, na.rm = TRUE)) %>%
     mutate(scenario = i)
 
   return(df)
@@ -457,7 +468,10 @@ d.ratio <- data.frame(time = NA,
                       # med.ratio = NA, p25.ratio = NA, p75.ratio = NA,
                       med.sum1 = NA, p25.sum1 = NA, p75.sum1 = NA,
                       med.sum2 = NA, p25.sum2 = NA, p75.sum2 = NA,
-                      scenario = i)
+                      med.both = NA, p25.both = NA, p75.both = NA,
+                      med.casenotiso = NA, p25.casenotiso = NA, p75.casenotiso = NA,
+                      med.isonotcase = NA, p25.isonotcase = NA, p75.isonotcase = NA,
+                      scenario = NA)
 
 for (i in seq(1,s.num+1,1)) {
 
