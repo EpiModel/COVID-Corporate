@@ -413,85 +413,85 @@ table5_fill <- function(sim, rownum, table5,
 
 # Ratio Plot: Cases to Isolated ------------------------------------------------
 
-ratio.plot <- function(sim,i) {
-  sim <- mutate_epi(sim,
-                    totCase = ic.num.w + h.num.w,
-                    totIso = iso.mild.num.w + iso.sev.num.w,
-                    totMask = mask.post.num.w + mask.exp.num.w,
-                    CaseNotIso = ic.num.w + h.num.w - iso.and.sick.num.w,
-                    IsoNotCase = iso.mild.num.w + iso.sev.num.w - iso.and.sick.num.w)
-
-  sim <- mutate_epi(sim,
-                    #CaseIsoRatio = totCase/totIso,
-                    CaseIsoSum1 = totCase+totIso - iso.and.sick.num.w,
-                    CaseIsoSum2 = iso.or.sick.num.w)
-
-  df <- as.data.frame(sim) %>%
-    ungroup() %>%
-    group_by(time) %>%
-    summarise(med.case = median(totCase, na.rm = TRUE),
-              p25.case = quantile(totCase, probs = 0.25, na.rm = TRUE),
-              p75.case = quantile(totCase, probs = 0.75, na.rm = TRUE),
-              med.iso = median(totIso, na.rm = TRUE),
-              p25.iso = quantile(totIso, probs = 0.25, na.rm = TRUE),
-              p75.iso = quantile(totIso, probs = 0.75, na.rm = TRUE),
-              med.mask = median(totMask, na.rm = TRUE),
-              p25.mask = quantile(totMask, probs = 0.25, na.rm = TRUE),
-              p75.mask = quantile(totMask, probs = 0.75, na.rm = TRUE),
-              # med.ratio = median(CaseIsoRatio, na.rm = TRUE),
-              # p25.ratio = quantile(CaseIsoRatio, probs = 0.25, na.rm = TRUE),
-              # p75.ratio = quantile(CaseIsoRatio, probs = 0.75, na.rm = TRUE),
-              med.sum1 = median(CaseIsoSum1, na.rm = TRUE),
-              p25.sum1 = quantile(CaseIsoSum1, probs = 0.25, na.rm = TRUE),
-              p75.sum1 = quantile(CaseIsoSum1, probs = 0.75, na.rm = TRUE),
-              med.sum2 = median(CaseIsoSum2, na.rm = TRUE),
-              p25.sum2 = quantile(CaseIsoSum2, probs = 0.25, na.rm = TRUE),
-              p75.sum2 = quantile(CaseIsoSum2, probs = 0.75, na.rm = TRUE),
-              med.both = median(iso.and.sick.num.w, na.rm = TRUE),
-              p25.both = quantile(iso.and.sick.num.w, probs = 0.25, na.rm = TRUE),
-              p75.both = quantile(iso.and.sick.num.w, probs = 0.75, na.rm = TRUE),
-              med.casenotiso = median(CaseNotIso, na.rm = TRUE),
-              p25.casenotiso = quantile(CaseNotIso, probs = 0.25, na.rm = TRUE),
-              p75.casenotiso = quantile(CaseNotIso, probs = 0.75, na.rm = TRUE),
-              med.isonotcase = median(IsoNotCase, na.rm = TRUE),
-              p25.isonotcase = quantile(IsoNotCase, probs = 0.25, na.rm = TRUE),
-              p75.isonotcase = quantile(IsoNotCase, probs = 0.75, na.rm = TRUE)) %>%
-    mutate(scenario = i)
-
-  return(df)
-}
-
-d.ratio <- data.frame(time = NA,
-                      med.case = NA, p25.case = NA, p75.case = NA,
-                      med.iso = NA, p25.iso = NA, p75.iso = NA,
-                      med.mask = NA, p25.mask = NA, p75.mask = NA,
-                      # med.ratio = NA, p25.ratio = NA, p75.ratio = NA,
-                      med.sum1 = NA, p25.sum1 = NA, p75.sum1 = NA,
-                      med.sum2 = NA, p25.sum2 = NA, p75.sum2 = NA,
-                      med.both = NA, p25.both = NA, p75.both = NA,
-                      med.casenotiso = NA, p25.casenotiso = NA, p75.casenotiso = NA,
-                      med.isonotcase = NA, p25.isonotcase = NA, p75.isonotcase = NA,
-                      scenario = NA)
-
-for (i in seq(1,s.num+1,1)) {
-
-  temp <- ratio.plot(scenario_list[[i]],i-1)
-
-  d.ratio <- d.ratio %>%
-    add_row(temp) %>%
-    filter(!is.na(time))
-
-  rm(temp)
-
-}
-
-d.ratio <- d.ratio %>%
-  mutate(scenario2 = factor(scenario,
-                            levels = seq(0,s.num)))
-
-saveRDS(d.ratio, file = here::here("tbl_fig","ratio_df_8000.rds"))
-
-print("Ratio data frame saved!")
+# ratio.plot <- function(sim,i) {
+#   sim <- mutate_epi(sim,
+#                     totCase = ic.num.w + h.num.w,
+#                     totIso = iso.mild.num.w + iso.sev.num.w,
+#                     totMask = mask.post.num.w + mask.exp.num.w,
+#                     CaseNotIso = ic.num.w + h.num.w - iso.and.sick.num.w,
+#                     IsoNotCase = iso.mild.num.w + iso.sev.num.w - iso.and.sick.num.w)
+#
+#   sim <- mutate_epi(sim,
+#                     #CaseIsoRatio = totCase/totIso,
+#                     CaseIsoSum1 = totCase+totIso - iso.and.sick.num.w,
+#                     CaseIsoSum2 = iso.or.sick.num.w)
+#
+#   df <- as.data.frame(sim) %>%
+#     ungroup() %>%
+#     group_by(time) %>%
+#     summarise(med.case = median(totCase, na.rm = TRUE),
+#               p25.case = quantile(totCase, probs = 0.25, na.rm = TRUE),
+#               p75.case = quantile(totCase, probs = 0.75, na.rm = TRUE),
+#               med.iso = median(totIso, na.rm = TRUE),
+#               p25.iso = quantile(totIso, probs = 0.25, na.rm = TRUE),
+#               p75.iso = quantile(totIso, probs = 0.75, na.rm = TRUE),
+#               med.mask = median(totMask, na.rm = TRUE),
+#               p25.mask = quantile(totMask, probs = 0.25, na.rm = TRUE),
+#               p75.mask = quantile(totMask, probs = 0.75, na.rm = TRUE),
+#               # med.ratio = median(CaseIsoRatio, na.rm = TRUE),
+#               # p25.ratio = quantile(CaseIsoRatio, probs = 0.25, na.rm = TRUE),
+#               # p75.ratio = quantile(CaseIsoRatio, probs = 0.75, na.rm = TRUE),
+#               med.sum1 = median(CaseIsoSum1, na.rm = TRUE),
+#               p25.sum1 = quantile(CaseIsoSum1, probs = 0.25, na.rm = TRUE),
+#               p75.sum1 = quantile(CaseIsoSum1, probs = 0.75, na.rm = TRUE),
+#               med.sum2 = median(CaseIsoSum2, na.rm = TRUE),
+#               p25.sum2 = quantile(CaseIsoSum2, probs = 0.25, na.rm = TRUE),
+#               p75.sum2 = quantile(CaseIsoSum2, probs = 0.75, na.rm = TRUE),
+#               med.both = median(iso.and.sick.num.w, na.rm = TRUE),
+#               p25.both = quantile(iso.and.sick.num.w, probs = 0.25, na.rm = TRUE),
+#               p75.both = quantile(iso.and.sick.num.w, probs = 0.75, na.rm = TRUE),
+#               med.casenotiso = median(CaseNotIso, na.rm = TRUE),
+#               p25.casenotiso = quantile(CaseNotIso, probs = 0.25, na.rm = TRUE),
+#               p75.casenotiso = quantile(CaseNotIso, probs = 0.75, na.rm = TRUE),
+#               med.isonotcase = median(IsoNotCase, na.rm = TRUE),
+#               p25.isonotcase = quantile(IsoNotCase, probs = 0.25, na.rm = TRUE),
+#               p75.isonotcase = quantile(IsoNotCase, probs = 0.75, na.rm = TRUE)) %>%
+#     mutate(scenario = i)
+#
+#   return(df)
+# }
+#
+# d.ratio <- data.frame(time = NA,
+#                       med.case = NA, p25.case = NA, p75.case = NA,
+#                       med.iso = NA, p25.iso = NA, p75.iso = NA,
+#                       med.mask = NA, p25.mask = NA, p75.mask = NA,
+#                       # med.ratio = NA, p25.ratio = NA, p75.ratio = NA,
+#                       med.sum1 = NA, p25.sum1 = NA, p75.sum1 = NA,
+#                       med.sum2 = NA, p25.sum2 = NA, p75.sum2 = NA,
+#                       med.both = NA, p25.both = NA, p75.both = NA,
+#                       med.casenotiso = NA, p25.casenotiso = NA, p75.casenotiso = NA,
+#                       med.isonotcase = NA, p25.isonotcase = NA, p75.isonotcase = NA,
+#                       scenario = NA)
+#
+# for (i in seq(1,s.num+1,1)) {
+#
+#   temp <- ratio.plot(scenario_list[[i]],i-1)
+#
+#   d.ratio <- d.ratio %>%
+#     add_row(temp) %>%
+#     filter(!is.na(time))
+#
+#   rm(temp)
+#
+# }
+#
+# d.ratio <- d.ratio %>%
+#   mutate(scenario2 = factor(scenario,
+#                             levels = seq(0,s.num)))
+#
+# saveRDS(d.ratio, file = here::here("tbl_fig","ratio_df_8000.rds"))
+#
+# print("Ratio data frame saved!")
 
 # Summary measures by different time periods -----------------------------------
 
@@ -707,3 +707,25 @@ print("Ratio data frame saved!")
 # saveWorkbook(wb, here::here("tbl_fig","nnt-table.xlsx"))
 #
 # print("NNT table done!")
+
+
+# Cumulative isolation and cases for individual simulations ----
+for (i in c(0,2,4,5)) {
+  iso.prob <- scenario_list[[i+1]]$param$iso.prob
+
+  sim <- mutate_epi(scenario_list[[i+1]],
+                    cum.iso = cumsum(scenario_list[[i+1]]$epi$iso1.flow),
+                    cum.case = cumsum(scenario_list[[i+1]]$epi$ipic.flow),
+                    cum.iso.w = cumsum(scenario_list[[i+1]]$epi$iso1.flow.w),
+                    cum.case.w = cumsum(scenario_list[[i+1]]$epi$ipic.flow.w))
+
+  assign(paste0("d", i),
+         as.data.frame(sim) %>%
+           filter(time == 608) %>%
+           select(sim,time,starts_with("cum.")) %>%
+           mutate(iso.prob.param = iso.prob))
+}
+
+d <- bind_rows(d0, d2, d4, d5)
+
+saveRDS(d, file = here::here("tbl_fig","sim_df.rds"))
