@@ -4,7 +4,7 @@ suppressWarnings(suppressMessages(library(tidyverse)))
 suppressWarnings(suppressMessages(library(tidyr)))
 suppressWarnings(suppressMessages(library(dplyr)))
 suppressWarnings(suppressMessages(library(patchwork)))
-
+suppressWarnings(suppressMessages(library(viridis)))
 ################################################################################
 # Calibration Figures ----------------------------------------------------------
 baseline_sims <- readRDS(here::here("data","output","results",
@@ -543,6 +543,18 @@ ggplot(d.long, aes(x = date_variable, y = number, fill = cat)) +
        fill = "Category")
 
 ggsave(here::here("results","figures","Figure5.tiff"),
+       width = 8, height = 4, units = "in", dpi=300, compression = 'lzw')
+
+ggplot(d.long, aes(x = date_variable, y = number, fill = cat)) +
+  geom_area(position = "fill")+
+  facet_wrap(vars(scenario2),nrow = 2)+
+  theme_bw()+
+  scale_fill_viridis(discrete = TRUE)+
+  labs(x = "Date",
+       y = "Proportion of office workers ill and/or isolating",
+       fill = "Category")
+
+ggsave(here::here("results","figures","Figure5B.tiff"),
        width = 12, height = 6, units = "in", dpi=300, compression = 'lzw')
 
 # Cumulative cases vs isolations in individual simulations ----
@@ -611,7 +623,7 @@ g_inc_cont <- ggplot(cInc, aes(iso.prob, work.notif.prob)) +
   theme_minimal() +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Isolation probability", y = "Notification probability at work") +
+  labs(x = "Adherence probability", y = "Notification probability at work") +
   scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
                      name = "", limits = c(minval.i, maxval.i), guide = "none") +
   theme(axis.text = element_text(size = rel(1.2)),
@@ -629,7 +641,7 @@ g_inc_cont_w <- ggplot(cIncWork, aes(iso.prob, work.notif.prob)) +
   theme_minimal() +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Isolation probability", y = "Notification probability at work") +
+  labs(x = "Adherence probability", y = "Notification probability at work") +
   scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
                      name = "", limits = c(minval.iw, maxval.iw), guide = "none") +
   theme(axis.text = element_text(size = rel(1.2)),
@@ -647,7 +659,7 @@ g_death_cont <- ggplot(cDeaths, aes(iso.prob, work.notif.prob)) +
   theme_minimal() +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Isolation probability", y = "Notification probability at work") +
+  labs(x = "Adherence probability", y = "Notification probability at work") +
   scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
                      name = "", limits = c(minval.d, maxval.d), guide = "none") +
   theme(axis.text = element_text(size = rel(1.2)),
@@ -665,7 +677,7 @@ g_death_cont_w <- ggplot(cDeathsWork, aes(iso.prob, work.notif.prob)) +
   theme_minimal() +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Isolation probability", y = "Notification probability at work") +
+  labs(x = "Adherence probability", y = "Notification probability at work") +
   scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
                      name = "", limits = c(minval.dw, maxval.dw), guide = "none") +
   theme(axis.text = element_text(size = rel(1.2)),
@@ -683,7 +695,7 @@ g_iso_cont <- ggplot(cIso, aes(iso.prob, work.notif.prob)) +
   theme_minimal() +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Isolation probability", y = "Notification probability at work") +
+  labs(x = "Adherence probability", y = "Notification probability at work") +
   scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
                      name = "", limits = c(minval.v, maxval.v), guide = "none") +
   theme(axis.text = element_text(size = rel(1.2)),
@@ -701,7 +713,7 @@ g_iso_cont_w <- ggplot(cIsoWork, aes(iso.prob, work.notif.prob)) +
   theme_minimal() +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Isolation probability", y = "Notification probability at work") +
+  labs(x = "Adherence probability", y = "Notification probability at work") +
   scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
                      name = "", limits = c(minval.vw, maxval.vw), guide = "none") +
   theme(axis.text = element_text(size = rel(1.2)),
@@ -746,7 +758,7 @@ g_inc_cont <- ggplot(cInc, aes(iso.prob, act.rate.iso)) +
   theme_minimal() +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Isolation probability", y = "Relative contact intensity") +
+  labs(x = "Adherence probability", y = "Relative contact intensity") +
   scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
                      name = "", limits = c(minval.i, maxval.i), guide = "none") +
   theme(axis.text = element_text(size = rel(1.2)),
@@ -764,7 +776,7 @@ g_inc_cont_w <- ggplot(cIncWork, aes(iso.prob, act.rate.iso)) +
   theme_minimal() +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Isolation probability", y = "Relative contact intensity") +
+  labs(x = "Adherence probability", y = "Relative contact intensity") +
   scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
                      name = "", limits = c(minval.iw, maxval.iw), guide = "none") +
   theme(axis.text = element_text(size = rel(1.2)),
@@ -782,7 +794,7 @@ g_death_cont <- ggplot(cDeaths, aes(iso.prob, act.rate.iso)) +
   theme_minimal() +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Isolation probability", y = "Relative contact intensity") +
+  labs(x = "Adherence probability", y = "Relative contact intensity") +
   scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
                      name = "", limits = c(minval.d, maxval.d), guide = "none") +
   theme(axis.text = element_text(size = rel(1.2)),
@@ -800,7 +812,7 @@ g_death_cont_w <- ggplot(cDeathsWork, aes(iso.prob, act.rate.iso)) +
   theme_minimal() +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Isolation probability", y = "Relative contact intensity") +
+  labs(x = "Adherence probability", y = "Relative contact intensity") +
   scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
                      name = "", limits = c(minval.dw, maxval.dw), guide = "none") +
   theme(axis.text = element_text(size = rel(1.2)),
@@ -818,7 +830,7 @@ g_iso_cont <- ggplot(cIso, aes(iso.prob, act.rate.iso)) +
   theme_minimal() +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Isolation probability", y = "Relative contact intensity") +
+  labs(x = "Adherence probability", y = "Relative contact intensity") +
   scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
                      name = "", limits = c(minval.v, maxval.v), guide = "none") +
   theme(axis.text = element_text(size = rel(1.2)),
@@ -836,7 +848,7 @@ g_iso_cont_w <- ggplot(cIsoWork, aes(iso.prob, act.rate.iso)) +
   theme_minimal() +
   scale_y_continuous(expand = c(0, 0)) +
   scale_x_continuous(expand = c(0, 0)) +
-  labs(x = "Isolation probability", y = "Relative contact intensity") +
+  labs(x = "Adherence probability", y = "Relative contact intensity") +
   scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
                      name = "", limits = c(minval.vw, maxval.vw), guide = "none") +
   theme(axis.text = element_text(size = rel(1.2)),
