@@ -100,7 +100,7 @@ mr_vec <- rep(mr_pp_pd, times = age_spans)
 # hhPairs <- readRDS("hhPairs.rds")
 
 # Model parameters
-pull_env_vars(num.vars = c("iso.prob.x",
+pull_env_vars(num.vars = c("iso.prob.off","iso.prob.non",
                            "notif.work","notif.com","notif.home",
                            "act.rate.iso",
                            "inf.prob.mask"))
@@ -120,7 +120,9 @@ param <- param.net(inf.prob = c(0.38,0.38,0.38),
                    inf.prob.a.rr = 0.5, # asymptomatic infection
                    inf.prob.mask.rr = c(inf.prob.mask), # baseline 0.3 but need to search literature
 
-                   iso.prob = c(iso.prob.x), # Fischer et al: https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0249891
+                   iso.prob.office = c(iso.prob.off),
+                   iso.prob.other = c(iso.prob.non),
+                   # Fischer et al: https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0249891
                    # Adherence to masking in GA September 2020
                    # baseline = 0.58
                    notif.prob = c(notif.work,notif.com,notif.home), # assumed

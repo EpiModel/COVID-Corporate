@@ -6,9 +6,9 @@ suppressWarnings(suppressMessages(library(EpiModelCOVID)))
 library(future.apply)
 
 # Set baseline simulation number and directory ---------------------------------
-base.sim <- 5000
+base.sim <- 18000
 my.dir <- "sims/"
-s.num <- 69 # number of scenarios, excluding reference scenario
+s.num <- 10 # number of scenarios, excluding reference scenario
 
 # Function to merge sim files (same as in 04-calib-figures) --------------------
 merge_simfiles <- function(simno, indir = "sims/", vars = NULL,  truncate.at = NULL, verbose = TRUE) {
@@ -66,13 +66,13 @@ baseline_sims <- merge_simfiles(base.sim, indir = "sims/",
 # scenario0 <- baseline_sims
 
 saveRDS(baseline_sims, file = here::here("processed_sims",
-                                         "baseline_sim.rds"))
+                                         "baseline_sim2.rds"))
 
-# for (i in 0:s.num) {
-#   scenario_list[[i]] <- merge_simfiles(base.sim + i, indir = my.dir,
-#                                        vars = NULL,  truncate.at = 181, verbose = TRUE)
-#
-# }
+for (i in 0:s.num) {
+  scenario_list[[i]] <- merge_simfiles(base.sim + i, indir = my.dir,
+                                       vars = NULL,  truncate.at = 181, verbose = TRUE)
+
+}
 
 future::plan("multisession", workers = 4)
 
@@ -84,28 +84,28 @@ scenario_list <- future.apply::future_lapply(
 )
 
 saveRDS(scenario_list, file = here::here("processed_sims",
-                                         "scenario_list.rds"))
+                                         "scenario_list2.rds"))
 
 
 # Contour Plots: Isolation prob vs work notification prob ----------------------
 
-cInc <- data.frame(iso.prob = rep(NA, 121), work.notif.prob = rep(NA, 121), cInc = rep(NA, 121))
-cDeaths <- data.frame(iso.prob = rep(NA, 121), work.notif.prob = rep(NA, 121), cDeaths = rep(NA, 121))
-cIso <- data.frame(iso.prob = rep(NA, 121), work.notif.prob = rep(NA, 121), cIso = rep(NA, 121))
-cCases <- data.frame(iso.prob = rep(NA, 121), work.notif.prob = rep(NA, 121), cCases = rep(NA, 121))
+WcInc <- data.frame(iso.prob.off = rep(NA, 121), work.notif.prob = rep(NA, 121), cInc = rep(NA, 121))
+WcDeaths <- data.frame(iso.prob.off = rep(NA, 121), work.notif.prob = rep(NA, 121), cDeaths = rep(NA, 121))
+WcIso <- data.frame(iso.prob.off = rep(NA, 121), work.notif.prob = rep(NA, 121), cIso = rep(NA, 121))
+WcCases <- data.frame(iso.prob.off = rep(NA, 121), work.notif.prob = rep(NA, 121), cCases = rep(NA, 121))
 
-cIncWork <- data.frame(iso.prob = rep(NA, 121), work.notif.prob = rep(NA, 121), cInc = rep(NA, 121))
-cDeathsWork <- data.frame(iso.prob = rep(NA, 121), work.notif.prob = rep(NA, 121), cDeaths = rep(NA, 121))
-cIsoWork <- data.frame(iso.prob = rep(NA, 121), work.notif.prob = rep(NA, 121), cIso = rep(NA, 121))
-cCasesWork <- data.frame(iso.prob = rep(NA, 121), work.notif.prob = rep(NA, 121), cCases = rep(NA, 121))
+WcIncWork <- data.frame(iso.prob.off = rep(NA, 121), work.notif.prob = rep(NA, 121), cInc = rep(NA, 121))
+WcDeathsWork <- data.frame(iso.prob.off = rep(NA, 121), work.notif.prob = rep(NA, 121), cDeaths = rep(NA, 121))
+WcIsoWork <- data.frame(iso.prob.off = rep(NA, 121), work.notif.prob = rep(NA, 121), cIso = rep(NA, 121))
+WcCasesWork <- data.frame(iso.prob.off = rep(NA, 121), work.notif.prob = rep(NA, 121), cCases = rep(NA, 121))
 
-for (i in 6000:6120) {
+for (i in 16000:16120) {
 
   print(i)
 
   temp <- merge_simfiles(i, indir = my.dir, vars = NULL,  truncate.at = 181, verbose = TRUE)
 
-  scale.1 <- temp$param$iso.prob
+  scale.1 <- temp$param$iso.prob.office
   scale.2 <- temp$param$notif.prob[1]
 
   scenario.cInc <- median(colSums(temp$epi$se.flow) / colSums(temp$epi$num) * 100000)
@@ -118,47 +118,47 @@ for (i in 6000:6120) {
   scenario.cIsoWork <- median(colSums(temp$epi$iso1.flow.w))
   scenario.cCasesWork <- median(colSums(temp$epi$ipic.flow.w) / colSums(temp$epi$num.w) * 100000)
 
-  cInc[(i - 5999), ] <- c(scale.1, scale.2, scenario.cInc)
-  cDeaths[(i - 5999), ] <- c(scale.1, scale.2, scenario.cDeaths)
-  cIso[(i - 5999), ] <- c(scale.1, scale.2, scenario.cIso)
-  cCases[(i - 5999), ] <- c(scale.1, scale.2, scenario.cCases)
+  WcInc[(i - 15999), ] <- c(scale.1, scale.2, scenario.cInc)
+  WcDeaths[(i - 15999), ] <- c(scale.1, scale.2, scenario.cDeaths)
+  WcIso[(i - 15999), ] <- c(scale.1, scale.2, scenario.cIso)
+  WcCases[(i - 15999), ] <- c(scale.1, scale.2, scenario.cCases)
 
-  cIncWork[(i - 5999), ] <- c(scale.1, scale.2, scenario.cIncWork)
-  cDeathsWork[(i - 5999), ] <- c(scale.1, scale.2, scenario.cDeathsWork)
-  cIsoWork[(i - 5999), ] <- c(scale.1, scale.2, scenario.cIsoWork)
-  cCasesWork[(i - 5999), ] <- c(scale.1, scale.2, scenario.cCasesWork)
+  WcIncWork[(i - 15999), ] <- c(scale.1, scale.2, scenario.cIncWork)
+  WcDeathsWork[(i - 15999), ] <- c(scale.1, scale.2, scenario.cDeathsWork)
+  WcIsoWork[(i - 15999), ] <- c(scale.1, scale.2, scenario.cIsoWork)
+  WcCasesWork[(i - 15999), ] <- c(scale.1, scale.2, scenario.cCasesWork)
 
   remove(temp)
 }
 
-saveRDS(cInc, file = here::here("processed_sims","cInc.rds"))
-saveRDS(cDeaths, file = here::here("processed_sims","cDeaths.rds"))
-saveRDS(cIso, file = here::here("processed_sims","cIso.rds"))
-saveRDS(cCases, file = here::here("processed_sims","cCases.rds"))
-saveRDS(cIncWork, file = here::here("processed_sims","cIncWork.rds"))
-saveRDS(cDeathsWork, file = here::here("processed_sims","cDeathsWork.rds"))
-saveRDS(cIsoWork, file = here::here("processed_sims","cIsoWork.rds"))
-saveRDS(cCasesWork, file = here::here("processed_sims","cCasesWork.rds"))
+saveRDS(WcInc, file = here::here("processed_sims","WcInc.rds"))
+saveRDS(WcDeaths, file = here::here("processed_sims","WcDeaths.rds"))
+saveRDS(WcIso, file = here::here("processed_sims","WcIso.rds"))
+saveRDS(WcCases, file = here::here("processed_sims","WcCases.rds"))
+saveRDS(WcIncWork, file = here::here("processed_sims","WcIncWork.rds"))
+saveRDS(WcDeathsWork, file = here::here("processed_sims","WcDeathsWork.rds"))
+saveRDS(WcIsoWork, file = here::here("processed_sims","WcIsoWork.rds"))
+saveRDS(WcCasesWork, file = here::here("processed_sims","WcCasesWork.rds"))
 
 # Contour Plots: Isolation prob vs iso act rate --------------------------------
 
-cInc2 <- data.frame(iso.prob = rep(NA, 121), act.rate.iso = rep(NA, 121), cInc = rep(NA, 121))
-cDeaths2 <- data.frame(iso.prob = rep(NA, 121), act.rate.iso = rep(NA, 121), cDeaths = rep(NA, 121))
-cIso2 <- data.frame(iso.prob = rep(NA, 121), act.rate.iso = rep(NA, 121), cIso = rep(NA, 121))
-cCases2 <- data.frame(iso.prob = rep(NA, 121), act.rate.iso = rep(NA, 121), cCases = rep(NA, 121))
+WcInc2 <- data.frame(iso.prob.off = rep(NA, 121), act.rate.iso = rep(NA, 121), cInc = rep(NA, 121))
+WcDeaths2 <- data.frame(iso.prob.off = rep(NA, 121), act.rate.iso = rep(NA, 121), cDeaths = rep(NA, 121))
+WcIso2 <- data.frame(iso.prob.off = rep(NA, 121), act.rate.iso = rep(NA, 121), cIso = rep(NA, 121))
+WcCases2 <- data.frame(iso.prob.off = rep(NA, 121), act.rate.iso = rep(NA, 121), cCases = rep(NA, 121))
 
-cIncWork2 <- data.frame(iso.prob = rep(NA, 121), act.rate.iso = rep(NA, 121), cInc = rep(NA, 121))
-cDeathsWork2 <- data.frame(iso.prob = rep(NA, 121), act.rate.iso = rep(NA, 121), cDeaths = rep(NA, 121))
-cIsoWork2 <- data.frame(iso.prob = rep(NA, 121), act.rate.iso = rep(NA, 121), cIso = rep(NA, 121))
-cCasesWork2 <- data.frame(iso.prob = rep(NA, 121), act.rate.iso = rep(NA, 121), cCases = rep(NA, 121))
+WcIncWork2 <- data.frame(iso.prob.off = rep(NA, 121), act.rate.iso = rep(NA, 121), cInc = rep(NA, 121))
+WcDeathsWork2 <- data.frame(iso.prob.off = rep(NA, 121), act.rate.iso = rep(NA, 121), cDeaths = rep(NA, 121))
+WcIsoWork2 <- data.frame(iso.prob.off = rep(NA, 121), act.rate.iso = rep(NA, 121), cIso = rep(NA, 121))
+WcCasesWork2 <- data.frame(iso.prob.off = rep(NA, 121), act.rate.iso = rep(NA, 121), cCases = rep(NA, 121))
 
-for (i in 7000:7120) {
+for (i in 17000:17120) {
 
   print(i)
 
   temp <- merge_simfiles(i, indir = my.dir, vars = NULL,  truncate.at = 181, verbose = TRUE)
 
-  scale.1 <- temp$param$iso.prob
+  scale.1 <- temp$param$iso.prob.office
   scale.2 <- temp$param$act.rate.iso.inter.rr
 
   scenario.cInc <- median(colSums(temp$epi$se.flow) / colSums(temp$epi$num) * 100000)
@@ -171,24 +171,77 @@ for (i in 7000:7120) {
   scenario.cIsoWork <- median(colSums(temp$epi$iso1.flow.w))
   scenario.cCasesWork <- median(colSums(temp$epi$ipic.flow.w) / colSums(temp$epi$num.w) * 100000)
 
-  cInc2[(i - 6999), ] <- c(scale.1, scale.2, scenario.cInc)
-  cDeaths2[(i - 6999), ] <- c(scale.1, scale.2, scenario.cDeaths)
-  cIso2[(i - 6999), ] <- c(scale.1, scale.2, scenario.cIso)
-  cCases2[(i - 6999), ] <- c(scale.1, scale.2, scenario.cCases)
+  WcInc2[(i - 16999), ] <- c(scale.1, scale.2, scenario.cInc)
+  WcDeaths2[(i - 16999), ] <- c(scale.1, scale.2, scenario.cDeaths)
+  WcIso2[(i - 16999), ] <- c(scale.1, scale.2, scenario.cIso)
+  WcCases2[(i - 16999), ] <- c(scale.1, scale.2, scenario.cCases)
 
-  cIncWork2[(i - 6999), ] <- c(scale.1, scale.2, scenario.cIncWork)
-  cDeathsWork2[(i - 6999), ] <- c(scale.1, scale.2, scenario.cDeathsWork)
-  cIsoWork2[(i - 6999), ] <- c(scale.1, scale.2, scenario.cIsoWork)
-  cCasesWork2[(i - 6999), ] <- c(scale.1, scale.2, scenario.cCasesWork)
+  WcIncWork2[(i - 16999), ] <- c(scale.1, scale.2, scenario.cIncWork)
+  WcDeathsWork2[(i - 16999), ] <- c(scale.1, scale.2, scenario.cDeathsWork)
+  WcIsoWork2[(i - 16999), ] <- c(scale.1, scale.2, scenario.cIsoWork)
+  WcCasesWork2[(i - 16999), ] <- c(scale.1, scale.2, scenario.cCasesWork)
 
   remove(temp)
 }
 
-saveRDS(cInc2, file = here::here("processed_sims","cInc2.rds"))
-saveRDS(cDeaths2, file = here::here("processed_sims","cDeaths2.rds"))
-saveRDS(cIso2, file = here::here("processed_sims","cIso2.rds"))
-saveRDS(cCases2, file = here::here("processed_sims","cCases2.rds"))
-saveRDS(cIncWork2, file = here::here("processed_sims","cIncWork2.rds"))
-saveRDS(cDeathsWork2, file = here::here("processed_sims","cDeathsWork2.rds"))
-saveRDS(cIsoWork2, file = here::here("processed_sims","cIsoWork2.rds"))
-saveRDS(cCasesWork2, file = here::here("processed_sims","cCasesWork2.rds"))
+saveRDS(WcInc2, file = here::here("processed_sims","WcInc2.rds"))
+saveRDS(WcDeaths2, file = here::here("processed_sims","WcDeaths2.rds"))
+saveRDS(WcIso2, file = here::here("processed_sims","WcIso2.rds"))
+saveRDS(WcCases2, file = here::here("processed_sims","WcCases2.rds"))
+saveRDS(WcIncWork2, file = here::here("processed_sims","WcIncWork2.rds"))
+saveRDS(WcDeathsWork2, file = here::here("processed_sims","WcDeathsWork2.rds"))
+saveRDS(WcIsoWork2, file = here::here("processed_sims","WcIsoWork2.rds"))
+saveRDS(WcCasesWork2, file = here::here("processed_sims","WcCasesWork2.rds"))
+
+# Contour Plots: Office isolation prob vs Other isolation prob --------------------------------
+
+WcInc3 <- data.frame(iso.prob.off = rep(NA, 121), iso.prob.non = rep(NA, 121), cInc = rep(NA, 121))
+WcDeaths3 <- data.frame(iso.prob.off = rep(NA, 121), iso.prob.non = rep(NA, 121), cDeaths = rep(NA, 121))
+WcIso3 <- data.frame(iso.prob.off = rep(NA, 121), iso.prob.non = rep(NA, 121), cIso = rep(NA, 121))
+WcCases3 <- data.frame(iso.prob.off = rep(NA, 121), iso.prob.non = rep(NA, 121), cCases = rep(NA, 121))
+
+WcIncWork3 <- data.frame(iso.prob.off = rep(NA, 121), iso.prob.non = rep(NA, 121), cInc = rep(NA, 121))
+WcDeathsWork3 <- data.frame(iso.prob.off = rep(NA, 121), iso.prob.non = rep(NA, 121), cDeaths = rep(NA, 121))
+WcIsoWork3 <- data.frame(iso.prob.off = rep(NA, 121), iso.prob.non = rep(NA, 121), cIso = rep(NA, 121))
+WcCasesWork3 <- data.frame(iso.prob.off = rep(NA, 121), iso.prob.non = rep(NA, 121), cCases = rep(NA, 121))
+
+for (i in 11000:11120) {
+
+  print(i)
+
+  temp <- merge_simfiles(i, indir = my.dir, vars = NULL,  truncate.at = 181, verbose = TRUE)
+
+  scale.1 <- temp$param$iso.prob.office
+  scale.2 <- temp$param$iso.prob.other
+
+  scenario.cInc <- median(colSums(temp$epi$se.flow) / colSums(temp$epi$num) * 100000)
+  scenario.cDeaths <- median(colSums(temp$epi$d.h.flow) / colSums(temp$epi$num) * 100000)
+  scenario.cIso <- median(colSums(temp$epi$iso1.flow))
+  scenario.cCases <- median(colSums(temp$epi$ipic.flow) / colSums(temp$epi$num) * 100000)
+
+  scenario.cIncWork <- median(colSums(temp$epi$se.flow.l1) / colSums(temp$epi$num.w) * 100000)
+  scenario.cDeathsWork <- median(colSums(temp$epi$d.h.flow.w) / colSums(temp$epi$num.w) * 100000)
+  scenario.cIsoWork <- median(colSums(temp$epi$iso1.flow.w))
+  scenario.cCasesWork <- median(colSums(temp$epi$ipic.flow.w) / colSums(temp$epi$num.w) * 100000)
+
+  WcInc3[(i - 10999), ] <- c(scale.1, scale.2, scenario.cInc)
+  WcDeaths3[(i - 10999), ] <- c(scale.1, scale.2, scenario.cDeaths)
+  WcIso3[(i - 10999), ] <- c(scale.1, scale.2, scenario.cIso)
+  WcCases3[(i - 10999), ] <- c(scale.1, scale.2, scenario.cCases)
+
+  WcIncWork3[(i - 10999), ] <- c(scale.1, scale.2, scenario.cIncWork)
+  WcDeathsWork3[(i - 10999), ] <- c(scale.1, scale.2, scenario.cDeathsWork)
+  WcIsoWork3[(i - 10999), ] <- c(scale.1, scale.2, scenario.cIsoWork)
+  WcCasesWork3[(i - 10999), ] <- c(scale.1, scale.2, scenario.cCasesWork)
+
+  remove(temp)
+}
+
+saveRDS(WcInc3, file = here::here("processed_sims","WcInc3.rds"))
+saveRDS(WcDeaths3, file = here::here("processed_sims","WcDeaths3.rds"))
+saveRDS(WcIso3, file = here::here("processed_sims","WcIso3.rds"))
+saveRDS(WcCases3, file = here::here("processed_sims","WcCases3.rds"))
+saveRDS(WcIncWork3, file = here::here("processed_sims","WcIncWork3.rds"))
+saveRDS(WcDeathsWork3, file = here::here("processed_sims","WcDeathsWork3.rds"))
+saveRDS(WcIsoWork3, file = here::here("processed_sims","WcIsoWork3.rds"))
+saveRDS(WcCasesWork3, file = here::here("processed_sims","WcCasesWork3.rds"))
