@@ -422,10 +422,10 @@ ggsave(here::here("results","figures","Figure2.tiff"),
 
 # Clean up objects in environment ----------------------------------------------
 rm(list=setdiff(ls(), c("baseline_sims")))
+##################### VARYING ISOLATION ACROSS ENTIRE POPULATION ###############
 ################################################################################
 
-# Ratio Plot: Cases to Isolated ------------------------------------------------
-
+# Setup data (RUN THIS FIRST) -------------
 d.ratio <- readRDS(here::here("results","ratio_df_8000.rds"))
 
 d.ratio <- d.ratio %>%
@@ -447,22 +447,7 @@ d.ratio <- cbind(d.ratio, date_variable)
 
 # Rename the new column
 colnames(d.ratio)[ncol(d.ratio)] <- "date_variable"
-
-
-# p.ratio <- ggplot(d.ratio, aes(x = time, y = med.ratio))+
-#   geom_line(aes(y = med.ratio, color = scenario2, group = scenario2)) +
-#   # scale_x_continuous(expand = c(0,0),
-#   #                    limits = c(1, 20),
-#   #                    breaks = c(1, 4, 7, 10, 13, 16, 19),
-#   #                    labels = c("1" = "Jan 21", "4" = "Apr 21", "7" = "Jul 21",
-#   #                               "10" = "Oct 21", "13" = "Jan 22", "16" = "Apr 22",
-#   #                               "19" = "Jul 22")) +
-#   # scale_y_continuous(expand = c(0, 0), lim = c(0, 26500)) +
-#   labs(x = "Time",
-#        y = "Number cases/Number in isolation",
-#        color = "Scenario") +
-#   guides(color = "none")+
-#   ggtitle("Ratio of clinical cases to persons in isolation") + theme_classic()
+# Ratio Plot: Cases to Isolated -------------
 
 p.sum2 <- ggplot(d.ratio, aes(x = date_variable, y = med.sum2))+
   geom_line(aes(y = med.sum2, color = scenario2, group = scenario2),
@@ -517,9 +502,14 @@ p.mask <- ggplot(d.ratio, aes(x = date_variable, y = med.mask))+
   ggtitle("Total number of office workers masked") + theme_classic()+
   theme(legend.position = c(0.83,0.8))
 
-(p.sum2 | p.mask) / (p.cases | p.iso)
+patch <- (p.sum2 | p.mask) / (p.cases | p.iso)
+patch <- patch + plot_annotation(
+  title = 'Impact of varying adherence to CDC guidelines among entire population',
+  caption = 'Figures represent office workers only'
+)
+patch
 
-ggsave(here::here("results","figures","Figure4.tiff"),
+ggsave(here::here("results","figures","Figure4A.tiff"),
        width = 15, height = 6, units = "in", dpi=300, compression = 'lzw')
 
 # Stacked area plot: Cases vs isolating ----
@@ -540,22 +530,23 @@ ggplot(d.long, aes(x = date_variable, y = number, fill = cat)) +
   scale_fill_viridis(discrete = TRUE)+
   labs(x = "Date",
        y = "Number of office workers ill and/or isolating",
-       fill = "Category")
+       fill = "Category",
+       title = "Impact of varying adherence among entire population")
 
-ggsave(here::here("results","figures","Figure5.tiff"),
+ggsave(here::here("results","figures","Figure5A.tiff"),
        width = 8, height = 4, units = "in", dpi=300, compression = 'lzw')
 
-ggplot(d.long, aes(x = date_variable, y = number, fill = cat)) +
-  geom_area(position = "fill")+
-  facet_wrap(vars(scenario2),nrow = 2)+
-  theme_bw()+
-  scale_fill_viridis(discrete = TRUE)+
-  labs(x = "Date",
-       y = "Proportion of office workers ill and/or isolating",
-       fill = "Category")
-
-ggsave(here::here("results","figures","Figure5B.tiff"),
-       width = 12, height = 6, units = "in", dpi=300, compression = 'lzw')
+# ggplot(d.long, aes(x = date_variable, y = number, fill = cat)) +
+#   geom_area(position = "fill")+
+#   facet_wrap(vars(scenario2),nrow = 2)+
+#   theme_bw()+
+#   scale_fill_viridis(discrete = TRUE)+
+#   labs(x = "Date",
+#        y = "Proportion of office workers ill and/or isolating",
+#        fill = "Category")
+#
+# ggsave(here::here("results","figures","Figure5A_prop.tiff"),
+#        width = 12, height = 6, units = "in", dpi=300, compression = 'lzw')
 
 # Cumulative cases vs isolations in individual simulations ----
 d.sim <- readRDS(here::here("results","sim_df.rds")) %>%
@@ -588,10 +579,11 @@ p.sim2 <- ggplot(d.sim, aes(x = cum.case.w, y = cum.iso.w, color = factor(scenar
 
 combined.sim <- p.sim1 + p.sim2 +
   plot_annotation(tag_levels = list(c("A", "B")),
-                  title = "Cumulative cases and persons who isolated at the end of the time period")
+                  title = "Cumulative cases and persons who isolated at the end of the time period",
+                  subtitle = "Varying adherence among entire population")
 combined.sim
 
-ggsave(here::here("results","figures","Figure6.tiff"),
+ggsave(here::here("results","figures","Figure6A.tiff"),
        width = 10, height = 5, units = "in", dpi=300)
 ################################################################################
 # Contour plot libraries -------------------------------------------------------
@@ -867,4 +859,581 @@ combined3 <- g_death_cont +
 wrap_elements(combined1) / wrap_elements(combined2) / wrap_elements(combined3)
 
 ggsave(here::here("results","figures","Figure3B.tiff"),
+       width = 12, height = 12, units = "in", dpi=300, compression = 'lzw')
+
+##################### VARYING ISOLATION AMONG OFFICE WORKERS ONLY ##############
+################################################################################
+
+# Setup data (RUN THIS FIRST) --------
+
+d.ratio <- readRDS(here::here("results","ratio_df_18000.rds"))
+
+d.ratio <- d.ratio %>%
+  filter(scenario2 %in% c(0,2,4,5)) %>%
+  mutate(scenario2 = factor(scenario2,
+                            levels = c(0,2,4,5),
+                            labels = c("Reference (58%)",
+                                       "Worse adherence (25%)",
+                                       "Improved adherence (75%)",
+                                       "Perfect adherence (100%)")))
+
+# Start date
+start_date <- as.Date("2021-01-01")
+
+# Convert numeric days to date format by adding to start date
+date_variable <- start_date + d.ratio$time - 1
+
+d.ratio <- cbind(d.ratio, date_variable)
+
+# Rename the new column
+colnames(d.ratio)[ncol(d.ratio)] <- "date_variable"
+
+# Ratio Plot: Cases to Isolated -------------
+
+p.sum2 <- ggplot(d.ratio, aes(x = date_variable, y = med.sum2))+
+  geom_line(aes(y = med.sum2, color = scenario2, group = scenario2),
+            linewidth = 0.8) +
+  geom_ribbon(aes(ymin = p25.sum2, ymax = p75.sum2, group = scenario2,
+                  fill = scenario2), alpha = 0.1)+
+  scale_x_date(date_breaks = "3 months")+
+  ylim(0,1500)+
+  labs(x = "Date",
+       y = "Sum of cases and persons in isolation",
+       color = "Scenario") +
+  guides(fill = "none", color = "none")+
+  ggtitle("Total number of office workers ill or in isolation") + theme_classic()
+
+p.cases <- ggplot(d.ratio, aes(x = date_variable, y = med.case))+
+  geom_line(aes(y = med.case, color = scenario2, group = scenario2),
+            linewidth = 0.8) +
+  geom_ribbon(aes(ymin = p25.case, ymax = p75.case, group = scenario2,
+                  fill = scenario2), alpha = 0.1)+
+  scale_x_date(date_breaks = "3 months")+
+  ylim(0,1500)+
+  labs(x = "Date",
+       y = "Number of cases",
+       color = "Scenario") +
+  guides(fill = "none", color = "none")+
+  ggtitle("Total number of office workers ill") + theme_classic()
+
+p.iso <- ggplot(d.ratio, aes(x = date_variable, y = med.iso))+
+  geom_line(aes(y = med.iso, color = scenario2, group = scenario2),
+            linewidth = 0.8) +
+  geom_ribbon(aes(ymin = p25.iso, ymax = p75.iso, group = scenario2,
+                  fill = scenario2), alpha = 0.1)+
+  scale_x_date(date_breaks = "3 months")+
+  ylim(0,1500)+
+  labs(x = "Date",
+       y = "Number of persons in isolation",
+       color = "Scenario") +
+  guides(fill = "none", color = "none")+
+  ggtitle("Total number of office workers in isolation") + theme_classic()
+
+p.mask <- ggplot(d.ratio, aes(x = date_variable, y = med.mask))+
+  geom_line(aes(y = med.mask, color = scenario2, group = scenario2),
+            linewidth = 0.8) +
+  geom_ribbon(aes(ymin = p25.mask, ymax = p75.mask, group = scenario2,
+                  fill = scenario2), alpha = 0.1)+
+  scale_x_date(date_breaks = "3 months")+
+  ylim(0,1500)+
+  labs(x = "Date",
+       y = "Number of persons masked",
+       color = "Scenario") +
+  guides(fill = "none")+
+  ggtitle("Total number of office workers masked") + theme_classic()+
+  theme(legend.position = c(0.83,0.8))
+
+patch <- (p.sum2 | p.mask) / (p.cases | p.iso)
+patch <- patch + plot_annotation(
+  title = 'Impact of varying adherence to CDC guidelines among office workers',
+  caption = 'Adherence among non-office workers is fixed at the reference value (58%) across scenarios'
+)
+patch
+
+ggsave(here::here("results","figures","Figure4B.tiff"),
+       width = 15, height = 6, units = "in", dpi=300, compression = 'lzw')
+
+# Stacked area plot: Cases vs isolating ----
+d.long <- d.ratio %>%
+  select(scenario2,date_variable,med.casenotiso,med.both,med.isonotcase) %>%
+  pivot_longer(cols = -c("scenario2","date_variable"), names_to = "cat", values_to = "number") %>%
+  mutate(cat = case_when(cat == "med.casenotiso" ~ "Cases not isolating",
+                         cat == "med.both" ~ "Cases isolating",
+                         cat == "med.isonotcase" ~ "Non-cases isolating")) %>%
+  mutate(cat = factor(cat,levels = c("Non-cases isolating",
+                                     "Cases isolating",
+                                     "Cases not isolating")))
+
+ggplot(d.long, aes(x = date_variable, y = number, fill = cat)) +
+  geom_area(position = "stack")+
+  facet_wrap(vars(scenario2),nrow = 2)+
+  theme_bw()+
+  scale_fill_viridis(discrete = TRUE)+
+  labs(x = "Date",
+       y = "Number of office workers ill and/or isolating",
+       fill = "Category",
+       title = "Impact of varying adherence among office workers")
+
+ggsave(here::here("results","figures","Figure5B.tiff"),
+       width = 8, height = 4, units = "in", dpi=300, compression = 'lzw')
+
+# ggplot(d.long, aes(x = date_variable, y = number, fill = cat)) +
+#   geom_area(position = "fill")+
+#   facet_wrap(vars(scenario2),nrow = 2)+
+#   theme_bw()+
+#   scale_fill_viridis(discrete = TRUE)+
+#   labs(x = "Date",
+#        y = "Proportion of office workers ill and/or isolating",
+#        fill = "Category")
+#
+# ggsave(here::here("results","figures","Figure5B_prop.tiff"),
+#        width = 12, height = 6, units = "in", dpi=300, compression = 'lzw')
+
+# Cumulative cases vs isolations in individual simulations ----
+d.sim <- readRDS(here::here("results","sim_df2.rds")) %>%
+  filter(iso.prob.other.param == 0.58 &
+           iso.prob.office.param %in% c(0.25,0.58,0.75,1)) %>%
+  mutate(scenario = case_when(iso.prob.office.param == 0.25 ~ "Worse adherence (25%)",
+                              iso.prob.office.param == 0.58 ~ "Reference (58%)",
+                              iso.prob.office.param == 0.75 ~ "Improved adherence (75%)",
+                              iso.prob.office.param == 1 ~ "Perfect adherence (100%)")) %>%
+  mutate(scenario = factor(scenario,
+                           levels = c("Worse adherence (25%)",
+                                      "Reference (58%)",
+                                      "Improved adherence (75%)",
+                                      "Perfect adherence (100%)")))
+
+p.sim1 <- ggplot(d.sim, aes(x = cum.case, y = cum.iso, color = factor(scenario))) +
+  geom_point(alpha = 0.3) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "black") +
+  scale_color_viridis(discrete = TRUE)+
+  guides(color = "none")+
+  labs(x = "Cumulative cases", y = "Cumulative isolations",
+       title = "Total population") +
+  theme_bw()
+
+p.sim2 <- ggplot(d.sim, aes(x = cum.case.w, y = cum.iso.w, color = factor(scenario))) +
+  geom_point(alpha = 0.3) +
+  geom_abline(intercept = 0, slope = 1, linetype = "dashed", color = "black") +
+  scale_color_viridis(discrete = TRUE)+
+  labs(x = "Cumulative cases", y = "Cumulative isolations", color = "Scenario",
+       title = "Office workers") +
+  theme_bw()
+
+combined.sim <- p.sim1 + p.sim2 +
+  plot_annotation(tag_levels = list(c("A", "B")),
+                  title = "Cumulative cases and persons who isolated at the end of the time period",
+                  subtitle = "Varying adherence among office workers only (others at 58%)")
+combined.sim
+
+ggsave(here::here("results","figures","Figure6B.tiff"),
+       width = 10, height = 5, units = "in", dpi=300)
+################################################################################
+# Contour plot libraries -------------------------------------------------------
+library("viridis")
+library("ggplot2")
+library("metR")
+library("patchwork")
+
+# Load contour plot data (iso prob office vs work notif) ------------------------------
+
+cInc <- readRDS(here::here("data","output","results","WcInc.rds"))
+cDeaths <- readRDS(here::here("data","output","results","WcDeaths.rds"))
+cIso <- readRDS(here::here("data","output","results","WcIso.rds"))
+cCases <- readRDS(here::here("data","output","results","WcCases.rds"))
+cIncWork <- readRDS(here::here("data","output","results","WcIncWork.rds"))
+cDeathsWork <- readRDS(here::here("data","output","results","WcDeathsWork.rds"))
+cIsoWork <- readRDS(here::here("data","output","results","WcIsoWork.rds"))
+cCasesWork <- readRDS(here::here("data","output","results","WcCasesWork.rds"))
+
+# Contour Plots: Iso prob vs work notif ----------------------------------------
+
+# Plot cases
+minval.i <- floor(min(cInc$cInc))
+maxval.i <- ceiling(max(cInc$cInc))
+g_inc_cont <- ggplot(cInc, aes(iso.prob.off, work.notif.prob)) +
+  geom_raster(aes(fill = cInc), interpolate = TRUE) +
+  geom_contour(aes(z = cInc), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cInc), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Adherence probability\namong office workers", y = "Notification probability at work") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.i, maxval.i), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+# Plot cases - Office Workers
+minval.iw <- floor(min(cIncWork$cInc))
+maxval.iw <- ceiling(max(cIncWork$cInc))
+g_inc_cont_w <- ggplot(cIncWork, aes(iso.prob.off, work.notif.prob)) +
+  geom_raster(aes(fill = cInc), interpolate = TRUE) +
+  geom_contour(aes(z = cInc), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cInc), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Adherence probability\namong office workers", y = "Notification probability at work") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.iw, maxval.iw), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+# Plot deaths
+minval.d <- min(cDeaths$cDeaths)
+maxval.d <- max(cDeaths$cDeaths)
+g_death_cont <- ggplot(cDeaths, aes(iso.prob.off, work.notif.prob)) +
+  geom_raster(aes(fill = cDeaths), interpolate = TRUE) +
+  geom_contour(aes(z = cDeaths), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cDeaths), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Adherence probability\namong office workers", y = "Notification probability at work") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.d, maxval.d), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+# Plot deaths - Office Workers
+minval.dw <- min(cDeathsWork$cDeaths)
+maxval.dw <- max(cDeathsWork$cDeaths)
+g_death_cont_w <- ggplot(cDeathsWork, aes(iso.prob.off, work.notif.prob)) +
+  geom_raster(aes(fill = cDeaths), interpolate = TRUE) +
+  geom_contour(aes(z = cDeaths), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cDeaths), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Adherence probability\namong office workers", y = "Notification probability at work") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.dw, maxval.dw), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+# Plot isolation
+minval.v <- min(cIso$cIso)
+maxval.v <- max(cIso$cIso)
+g_iso_cont <- ggplot(cIso, aes(iso.prob.off, work.notif.prob)) +
+  geom_raster(aes(fill = cIso), interpolate = TRUE) +
+  geom_contour(aes(z = cIso), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cIso), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Adherence probability\namong office workers", y = "Notification probability at work") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.v, maxval.v), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+# Plot isolation - Office Workers
+minval.vw <- min(cIsoWork$cIso)
+maxval.vw <- max(cIsoWork$cIso)
+g_iso_cont_w <- ggplot(cIsoWork, aes(iso.prob.off, work.notif.prob)) +
+  geom_raster(aes(fill = cIso), interpolate = TRUE) +
+  geom_contour(aes(z = cIso), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cIso), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Adherence probability\namong office workers", y = "Notification probability at work") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.vw, maxval.vw), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+combined1 <- g_iso_cont + g_iso_cont_w +
+  plot_annotation(tag_levels = list(c("A1", "A2")), title = "Total Persons Entering Isolation")
+combined2 <- g_inc_cont + g_inc_cont_w +
+  plot_annotation(tag_levels = list(c("B1", "B2")), title = "Infections per 100'000 Person-Days")
+combined3 <- g_death_cont +
+  g_death_cont_w +
+  plot_annotation(tag_levels = list(c("C1", "C2")), title = "Deaths per 100'000 Person-Days")
+
+wrap_elements(combined1) / wrap_elements(combined2) / wrap_elements(combined3)
+
+ggsave(here::here("results","figures","Figure3A_office.tiff"),
+       width = 12, height = 12, units = "in", dpi=300, compression = 'lzw')
+
+
+# Load contour plot data (iso prob office vs iso act) ---------------------------------
+
+cInc <- readRDS(here::here("data","output","results","WcInc2.rds"))
+cDeaths <- readRDS(here::here("data","output","results","WcDeaths2.rds"))
+cIso <- readRDS(here::here("data","output","results","WcIso2.rds"))
+cCases <- readRDS(here::here("data","output","results","WcCases2.rds"))
+cIncWork <- readRDS(here::here("data","output","results","WcIncWork2.rds"))
+cDeathsWork <- readRDS(here::here("data","output","results","WcDeathsWork2.rds"))
+cIsoWork <- readRDS(here::here("data","output","results","WcIsoWork2.rds"))
+cCasesWork <- readRDS(here::here("data","output","results","WcCasesWork2.rds"))
+
+# Contour Plots: Iso prob vs iso act -------------------------------------------
+
+# Plot cases
+minval.i <- floor(min(cInc$cInc))
+maxval.i <- ceiling(max(cInc$cInc))
+g_inc_cont <- ggplot(cInc, aes(iso.prob.off, act.rate.iso)) +
+  geom_raster(aes(fill = cInc), interpolate = TRUE) +
+  geom_contour(aes(z = cInc), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cInc), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Adherence probability\namong office workers", y = "Relative contact intensity") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.i, maxval.i), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+# Plot cases - Office Workers
+minval.iw <- floor(min(cIncWork$cInc))
+maxval.iw <- ceiling(max(cIncWork$cInc))
+g_inc_cont_w <- ggplot(cIncWork, aes(iso.prob.off, act.rate.iso)) +
+  geom_raster(aes(fill = cInc), interpolate = TRUE) +
+  geom_contour(aes(z = cInc), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cInc), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Adherence probability\namong office workers", y = "Relative contact intensity") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.iw, maxval.iw), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+# Plot deaths
+minval.d <- min(cDeaths$cDeaths)
+maxval.d <- max(cDeaths$cDeaths)
+g_death_cont <- ggplot(cDeaths, aes(iso.prob.off, act.rate.iso)) +
+  geom_raster(aes(fill = cDeaths), interpolate = TRUE) +
+  geom_contour(aes(z = cDeaths), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cDeaths), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Adherence probability\namong office workers", y = "Relative contact intensity") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.d, maxval.d), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+# Plot deaths - Office Workers
+minval.dw <- min(cDeathsWork$cDeaths)
+maxval.dw <- max(cDeathsWork$cDeaths)
+g_death_cont_w <- ggplot(cDeathsWork, aes(iso.prob.off, act.rate.iso)) +
+  geom_raster(aes(fill = cDeaths), interpolate = TRUE) +
+  geom_contour(aes(z = cDeaths), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cDeaths), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Adherence probability\namong office workers", y = "Relative contact intensity") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.dw, maxval.dw), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+# Plot isolation
+minval.v <- min(cIso$cIso)
+maxval.v <- max(cIso$cIso)
+g_iso_cont <- ggplot(cIso, aes(iso.prob.off, act.rate.iso)) +
+  geom_raster(aes(fill = cIso), interpolate = TRUE) +
+  geom_contour(aes(z = cIso), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cIso), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Adherence probability\namong office workers", y = "Relative contact intensity") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.v, maxval.v), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+# Plot isolation - Office Workers
+minval.vw <- min(cIsoWork$cIso)
+maxval.vw <- max(cIsoWork$cIso)
+g_iso_cont_w <- ggplot(cIsoWork, aes(iso.prob.off, act.rate.iso)) +
+  geom_raster(aes(fill = cIso), interpolate = TRUE) +
+  geom_contour(aes(z = cIso), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cIso), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Adherence probability\namong office workers", y = "Relative contact intensity") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.vw, maxval.vw), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+combined1 <- g_iso_cont + g_iso_cont_w +
+  plot_annotation(tag_levels = list(c("A1", "A2")), title = "Total Persons Entering Isolation")
+combined2 <- g_inc_cont + g_inc_cont_w +
+  plot_annotation(tag_levels = list(c("B1", "B2")), title = "Infections per 100'000 Person-Days")
+combined3 <- g_death_cont +
+  g_death_cont_w +
+  plot_annotation(tag_levels = list(c("C1", "C2")), title = "Deaths per 100'000 Person-Days")
+
+wrap_elements(combined1) / wrap_elements(combined2) / wrap_elements(combined3)
+
+ggsave(here::here("results","figures","Figure3B_office.tiff"),
+       width = 12, height = 12, units = "in", dpi=300, compression = 'lzw')
+
+# Load contour plot data (iso prob office vs iso prob other) ---------------------------------
+
+cInc <- readRDS(here::here("data","output","results","WcInc3.rds"))
+cDeaths <- readRDS(here::here("data","output","results","WcDeaths3.rds"))
+cIso <- readRDS(here::here("data","output","results","WcIso3.rds"))
+cCases <- readRDS(here::here("data","output","results","WcCases3.rds"))
+cIncWork <- readRDS(here::here("data","output","results","WcIncWork3.rds"))
+cDeathsWork <- readRDS(here::here("data","output","results","WcDeathsWork3.rds"))
+cIsoWork <- readRDS(here::here("data","output","results","WcIsoWork3.rds"))
+cCasesWork <- readRDS(here::here("data","output","results","WcCasesWork3.rds"))
+
+# Contour Plots: Iso prob office vs iso prob other -------------------------------------------
+
+# Plot cases
+minval.i <- floor(min(cInc$cInc))
+maxval.i <- ceiling(max(cInc$cInc))
+g_inc_cont <- ggplot(cInc, aes(iso.prob.off, iso.prob.non)) +
+  geom_raster(aes(fill = cInc), interpolate = TRUE) +
+  geom_contour(aes(z = cInc), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cInc), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Adherence probability\namong office workers", y = "Adherence probability\namong non-office workers") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.i, maxval.i), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+# Plot cases - Office Workers
+minval.iw <- floor(min(cIncWork$cInc))
+maxval.iw <- ceiling(max(cIncWork$cInc))
+g_inc_cont_w <- ggplot(cIncWork, aes(iso.prob.off, iso.prob.non)) +
+  geom_raster(aes(fill = cInc), interpolate = TRUE) +
+  geom_contour(aes(z = cInc), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cInc), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Adherence probability\namong office workers", y = "Adherence probability\namong non-office workers") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.iw, maxval.iw), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+# Plot deaths
+minval.d <- min(cDeaths$cDeaths)
+maxval.d <- max(cDeaths$cDeaths)
+g_death_cont <- ggplot(cDeaths, aes(iso.prob.off, iso.prob.non)) +
+  geom_raster(aes(fill = cDeaths), interpolate = TRUE) +
+  geom_contour(aes(z = cDeaths), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cDeaths), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Adherence probability\namong office workers", y = "Adherence probability\namong non-office workers") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.d, maxval.d), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+# Plot deaths - Office Workers
+minval.dw <- min(cDeathsWork$cDeaths)
+maxval.dw <- max(cDeathsWork$cDeaths)
+g_death_cont_w <- ggplot(cDeathsWork, aes(iso.prob.off, iso.prob.non)) +
+  geom_raster(aes(fill = cDeaths), interpolate = TRUE) +
+  geom_contour(aes(z = cDeaths), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cDeaths), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Adherence probability\namong office workers", y = "Adherence probability\namong non-office workers") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.dw, maxval.dw), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+# Plot isolation
+minval.v <- min(cIso$cIso)
+maxval.v <- max(cIso$cIso)
+g_iso_cont <- ggplot(cIso, aes(iso.prob.off, iso.prob.non)) +
+  geom_raster(aes(fill = cIso), interpolate = TRUE) +
+  geom_contour(aes(z = cIso), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cIso), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Adherence probability\namong office workers", y = "Adherence probability\namong non-office workers") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.v, maxval.v), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+# Plot isolation - Office Workers
+minval.vw <- min(cIsoWork$cIso)
+maxval.vw <- max(cIsoWork$cIso)
+g_iso_cont_w <- ggplot(cIsoWork, aes(iso.prob.off, iso.prob.non)) +
+  geom_raster(aes(fill = cIso), interpolate = TRUE) +
+  geom_contour(aes(z = cIso), col = "white", alpha = 0.5, lwd = 0.5) +
+  geom_text_contour(aes(z = cIso), stroke = 0.1) +
+  theme_minimal() +
+  scale_y_continuous(expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  labs(x = "Adherence probability\namong office workers", y = "Adherence probability\namong non-office workers") +
+  scale_fill_viridis(discrete = FALSE, alpha = 1, option = "D", direction = 1,
+                     name = "", limits = c(minval.vw, maxval.vw), guide = "none") +
+  theme(axis.text = element_text(size = rel(1.2)),
+        axis.title = element_text(size = rel(1.2)),
+        legend.text = element_text(size = rel(1.2))) +
+  coord_fixed()
+
+combined1 <- g_iso_cont + g_iso_cont_w +
+  plot_annotation(tag_levels = list(c("A1", "A2")), title = "Total Persons Entering Isolation")
+combined2 <- g_inc_cont + g_inc_cont_w +
+  plot_annotation(tag_levels = list(c("B1", "B2")), title = "Infections per 100'000 Person-Days")
+combined3 <- g_death_cont +
+  g_death_cont_w +
+  plot_annotation(tag_levels = list(c("C1", "C2")), title = "Deaths per 100'000 Person-Days")
+
+wrap_elements(combined1) / wrap_elements(combined2) / wrap_elements(combined3)
+
+ggsave(here::here("results","figures","Figure3C_office.tiff"),
        width = 12, height = 12, units = "in", dpi=300, compression = 'lzw')
