@@ -15,9 +15,9 @@ d <- read_excel("data/corpmix_table_data.xlsx",
 # format data ----
 d2 <- d %>%
   mutate(
-    p.avert.lo = as.numeric(str_extract(p.avert, "(?<=\\().*?(?=,)"))/100, # Lower interval
-    p.avert.hi = as.numeric(str_extract(p.avert, "(?<=, ).*?(?=\\))"))/100, # Upper interval
-    p.avert = as.numeric(str_extract(p.avert, "^[^ ]+"))/100 # Point estimate
+    p.avert.lo = as.numeric(str_extract(p.avert, "(?<=\\().*?(?=,)"))/-100, # Lower interval
+    p.avert.hi = as.numeric(str_extract(p.avert, "(?<=, ).*?(?=\\))"))/-100, # Upper interval
+    p.avert = as.numeric(str_extract(p.avert, "^[^ ]+"))/-100 # Point estimate
     ) %>%
   mutate(
     scenario2 = paste0("Office: ",p.office*100,"%\n",
@@ -38,10 +38,11 @@ d2 <- d %>%
                      levels = c("Infections","Cases","Deaths"))
     )
 
-# figure of % averted ----
+# figure of % change ----
 
 ggplot(d2 %>%
-         filter(change != "Reference"),
+         filter(change != "Reference",
+                outcome != "Infections"),
        aes(x = scenario3, y = p.avert, fill = type)) +
   geom_bar(stat = "identity", position = position_dodge(width = 0.9)) +
   geom_errorbar(aes(ymin = p.avert.lo, ymax = p.avert.hi),
@@ -53,7 +54,36 @@ ggplot(d2 %>%
   labs(x = "Adherence", y = "Percent difference",
        fill = "Population") +
   theme_bw() +
-    scale_fill_grey()
+    scale_fill_grey() +
+  theme(legend.position = "bottom")
 
 ggsave(here::here("results","figures","Figure_outcomes.tiff"),
-       height = 7,width = 8)
+       height = 5,width = 6)
+
+# figure for infections ----
+
+d3 <- d2 %>%
+  filter(outcome == "Infections") %>%
+  mutate(type = ifelse(type == "Total population",
+                       "All infections",
+                       "Workplace infections"))
+
+ggplot(d3 %>%
+         filter(change != "Reference"),
+       aes(x = scenario3, y = p.avert, fill = type)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0.9)) +
+  geom_errorbar(aes(ymin = p.avert.lo, ymax = p.avert.hi),
+                position = position_dodge(width = 0.9), width = 0.25) +
+  scale_y_continuous(labels = percent,
+                     limits = c(-0.5,0.5),
+                     breaks = seq(-0.5,0.5,0.1))+
+  facet_grid(. ~ change2, scales = "free") +
+  labs(x = "Adherence", y = "Percent difference",
+       fill = "") +
+  theme_bw() +
+  scale_fill_grey() +
+  theme(legend.position = "bottom")
+
+ggsave(here::here("results","figures","Figure_infections.tiff"),
+       height = 3,width = 6)
+
