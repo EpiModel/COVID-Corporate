@@ -5,6 +5,7 @@ suppressWarnings(suppressMessages(library(tidyr)))
 suppressWarnings(suppressMessages(library(dplyr)))
 suppressWarnings(suppressMessages(library(patchwork)))
 suppressWarnings(suppressMessages(library(viridis)))
+suppressWarnings(suppressMessages(library(cowplot)))
 ################################################################################
 # Calibration Figures ----------------------------------------------------------
 baseline_sims <- readRDS(here::here("data","output","results",
@@ -22,7 +23,7 @@ times <- data.frame(DayNum = c(608, 577, 546, 516, 485,
                               "May-21", "Apr-21", "Mar-21", "Feb-21", "Jan-21"))
 times <- times %>% map_df(rev)
 
-colors1 <- c("Result (median)" = "dodgerblue4", "Target (Empirical)" = "black")
+colors1 <- c("Result" = "dodgerblue4", "Target (Empirical)" = "deepskyblue")
 colors <- c("Dose 1: Result" = "dodgerblue4", "Dose 2: Result" = "darkgreen",
             "Dose 3: Result" = "darkred", "Dose 4: Result" = "darkorchid4",
             "Dose 1: Target" = "deepskyblue", "Dose 2: Target" = "chartreuse",
@@ -49,19 +50,14 @@ for (i in 1:num.sim){
 names <- paste0("cases_", 1:num.sim)
 cases_all_runs <- bind_rows(mget(names))
 cases_all_runs <- cases_all_runs %>% group_by(ROW) %>%
-  summarise(Month = min(Month),
-            minResult = quantile(cases, 0.25),
-            meanResult = mean(cases),
-            maxResult = quantile(cases, 0.75))
+  summarise(Month = min(Month), minResult = min(cases), meanResult = mean(cases), maxResult = max(cases))
 
 cases_all_runs$target <- case_targets
 
 f1 <- ggplot(data = cases_all_runs, aes(x = ROW, y = minResult)) +
-  geom_ribbon(data = cases_all_runs, aes(ymin = minResult, ymax = maxResult,
-                                         fill = "50% Simulation Interval"),
-              alpha=0.5) +
-  geom_line(aes(y = meanResult, color = "Result (median)")) +
-  geom_point(aes(y = target, color = "Target (Empirical)"), size = 1) +
+  geom_ribbon(data = cases_all_runs, aes(ymin = minResult, ymax = maxResult), fill="dodgerblue4", alpha=0.5) +
+  geom_line(aes(y = meanResult, color = "Result")) +
+  geom_line(aes(y = target, color = "Target (Empirical)")) +
   scale_x_continuous(expand = c(0,0),
                      limits = c(1, 20),
                      breaks = seq(1,19,2),
@@ -73,9 +69,7 @@ f1 <- ggplot(data = cases_all_runs, aes(x = ROW, y = minResult)) +
   xlab("Month") +
   ylab("Incident Infections") +
   scale_color_manual(values = colors1, name = "") +
-  scale_fill_manual(values=c("50% Simulation Interval" = "dodgerblue4"), name = "")+
   ggtitle("Infections") + theme_classic()
-f1
 
 # Hospitalizations --------------------------------------------------------
 
@@ -97,18 +91,14 @@ for (i in 1:num.sim){
 names <- paste0("hosp_", 1:num.sim)
 hosp_all_runs <- bind_rows(mget(names))
 hosp_all_runs <- hosp_all_runs %>% group_by(ROW) %>%
-  summarise(Month = min(Month), minResult = quantile(hosp, 0.25),
-            meanResult = mean(hosp),
-            maxResult = quantile(hosp, 0.75))
+  summarise(Month = min(Month), minResult = min(hosp), meanResult = mean(hosp), maxResult = max(hosp))
 
 hosp_all_runs$target <- hosp_targets
 
 f2 <- ggplot(data = hosp_all_runs, aes(x = ROW, y = minResult)) +
-  geom_ribbon(data = hosp_all_runs, aes(ymin = minResult, ymax = maxResult,
-                                        fill = "50% Simulation Interval"),
-              alpha=0.5) +
-  geom_line(aes(y = meanResult, color = "Result (median)")) +
-  geom_point(aes(y = target, color = "Target (Empirical)"), size = 1) +
+  geom_ribbon(data = hosp_all_runs, aes(ymin = minResult, ymax = maxResult), fill="dodgerblue4", alpha=0.5) +
+  geom_line(aes(y = meanResult, color = "Result")) +
+  geom_line(aes(y = target, color = "Target (Empirical)")) +
   scale_x_continuous(expand = c(0,0),
                      limits = c(1, 20),
                      breaks = seq(1,19,2),
@@ -120,9 +110,7 @@ f2 <- ggplot(data = hosp_all_runs, aes(x = ROW, y = minResult)) +
   xlab("Month") +
   ylab("Incident Hospitalizations") +
   scale_color_manual(values = colors1, name = "") +
-  scale_fill_manual(values=c("50% Simulation Interval" = "dodgerblue4"), name = "")+
   ggtitle("Hospitalizations") + theme_classic()
-f2
 
 # Deaths ------------------------------------------------------------------
 
@@ -144,18 +132,14 @@ for (i in 1:num.sim){
 names <- paste0("death_", 1:num.sim)
 death_all_runs <- bind_rows(mget(names))
 death_all_runs <- death_all_runs %>% group_by(ROW) %>%
-  summarise(Month = min(Month), minResult = quantile(death, 0.25),
-            meanResult = mean(death),
-            maxResult = quantile(death, 0.75))
+  summarise(Month = min(Month), minResult = min(death), meanResult = mean(death), maxResult = max(death))
 
 death_all_runs$target <- death_targets
 
 f3 <- ggplot(data = death_all_runs, aes(x = ROW, y = minResult)) +
-  geom_ribbon(data = death_all_runs, aes(ymin = minResult, ymax = maxResult,
-                                         fill = "50% Simulation Interval"),
-              alpha=0.5) +
-  geom_line(aes(y = meanResult, color = "Result (median)")) +
-  geom_point(aes(y = target, color = "Target (Empirical)"), size = 1) +
+  geom_ribbon(data = death_all_runs, aes(ymin = minResult, ymax = maxResult), fill="dodgerblue4", alpha=0.5) +
+  geom_line(aes(y = meanResult, color = "Result")) +
+  geom_line(aes(y = target, color = "Target (Empirical)")) +
   scale_x_continuous(expand = c(0,0),
                      limits = c(1, 20),
                      breaks = seq(1,19,2),
@@ -167,9 +151,7 @@ f3 <- ggplot(data = death_all_runs, aes(x = ROW, y = minResult)) +
   xlab("Month") +
   ylab("Incident Deaths") +
   scale_color_manual(values = colors1, name = "") +
-  scale_fill_manual(values=c("50% Simulation Interval" = "dodgerblue4"), name = "")+
   ggtitle("Deaths") + theme_classic()
-f3
 
 combined <- f1 + f2 + f3 & theme(legend.position = "bottom")
 combined + plot_layout(ncol = 1, guides = "collect")
@@ -445,14 +427,14 @@ rm(list=setdiff(ls(), c("baseline_sims")))
 ################################################################################
 
 # Setup data (RUN THIS FIRST) -------------
-d.ratio <- readRDS(here::here("results","ratio_df_8000.rds"))
+d.ratio.tot <- readRDS(here::here("results","ratio_df_8000.rds"))
 
-d.ratio <- d.ratio %>%
+d.ratio.tot <- d.ratio.tot %>%
   filter(scenario2 %in% c(0,2,4,5)) %>%
   mutate(scenario2 = factor(scenario2,
-                            levels = c(0,2,4,5),
-                            labels = c("Reference (58%)",
-                                       "Worse adherence (25%)",
+                            levels = c(2,0,4,5),
+                            labels = c("Worse adherence (25%)",
+                                       "Reference (58%)",
                                        "Improved adherence (75%)",
                                        "Perfect adherence (100%)")))
 
@@ -460,20 +442,26 @@ d.ratio <- d.ratio %>%
 start_date <- as.Date("2021-01-01")
 
 # Convert numeric days to date format by adding to start date
-date_variable <- start_date + d.ratio$time - 1
+date_variable <- start_date + d.ratio.tot$time - 1
 
-d.ratio <- cbind(d.ratio, date_variable)
+d.ratio.tot <- cbind(d.ratio.tot, date_variable)
 
 # Rename the new column
-colnames(d.ratio)[ncol(d.ratio)] <- "date_variable"
+colnames(d.ratio.tot)[ncol(d.ratio.tot)] <- "date_variable"
+
+# custom palette
+custom_palette <- gradient_n_pal(viridis::viridis_pal(option = "magma")(100)[0:90])
+
 # Ratio Plot: Cases to Isolated -------------
 
-p.sum2 <- ggplot(d.ratio, aes(x = date_variable, y = med.sum2))+
+p.sum2.tot <- ggplot(d.ratio.tot, aes(x = date_variable, y = med.sum2))+
   geom_line(aes(y = med.sum2, color = scenario2, group = scenario2),
             linewidth = 0.8) +
   geom_ribbon(aes(ymin = p25.sum2, ymax = p75.sum2, group = scenario2,
                   fill = scenario2), alpha = 0.1)+
   scale_x_date(date_breaks = "3 months")+
+  scale_color_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
+  scale_fill_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
   ylim(0,1500)+
   labs(x = "Date",
        y = "Sum of cases and persons in isolation",
@@ -481,12 +469,14 @@ p.sum2 <- ggplot(d.ratio, aes(x = date_variable, y = med.sum2))+
   guides(fill = "none", color = "none")+
   ggtitle("Total number of office workers ill or in isolation") + theme_classic()
 
-p.cases <- ggplot(d.ratio, aes(x = date_variable, y = med.case))+
+p.cases.tot <- ggplot(d.ratio.tot, aes(x = date_variable, y = med.case))+
   geom_line(aes(y = med.case, color = scenario2, group = scenario2),
             linewidth = 0.8) +
   geom_ribbon(aes(ymin = p25.case, ymax = p75.case, group = scenario2,
                   fill = scenario2), alpha = 0.1)+
   scale_x_date(date_breaks = "3 months")+
+  scale_color_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
+  scale_fill_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
   ylim(0,1500)+
   labs(x = "Date",
        y = "Number of cases",
@@ -494,12 +484,14 @@ p.cases <- ggplot(d.ratio, aes(x = date_variable, y = med.case))+
   guides(fill = "none", color = "none")+
   ggtitle("Total number of office workers ill") + theme_classic()
 
-p.iso <- ggplot(d.ratio, aes(x = date_variable, y = med.iso))+
+p.iso.tot <- ggplot(d.ratio.tot, aes(x = date_variable, y = med.iso))+
   geom_line(aes(y = med.iso, color = scenario2, group = scenario2),
             linewidth = 0.8) +
   geom_ribbon(aes(ymin = p25.iso, ymax = p75.iso, group = scenario2,
                   fill = scenario2), alpha = 0.1)+
   scale_x_date(date_breaks = "3 months")+
+  scale_color_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
+  scale_fill_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
   ylim(0,1500)+
   labs(x = "Date",
        y = "Number of persons in isolation",
@@ -507,12 +499,14 @@ p.iso <- ggplot(d.ratio, aes(x = date_variable, y = med.iso))+
   guides(fill = "none", color = "none")+
   ggtitle("Total number of office workers in isolation") + theme_classic()
 
-p.mask <- ggplot(d.ratio, aes(x = date_variable, y = med.mask))+
+p.mask.tot <- ggplot(d.ratio.tot, aes(x = date_variable, y = med.mask))+
   geom_line(aes(y = med.mask, color = scenario2, group = scenario2),
             linewidth = 0.8) +
   geom_ribbon(aes(ymin = p25.mask, ymax = p75.mask, group = scenario2,
                   fill = scenario2), alpha = 0.1)+
   scale_x_date(date_breaks = "3 months")+
+  scale_color_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
+  scale_fill_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
   ylim(0,1500)+
   labs(x = "Date",
        y = "Number of persons masked",
@@ -521,18 +515,18 @@ p.mask <- ggplot(d.ratio, aes(x = date_variable, y = med.mask))+
   ggtitle("Total number of office workers masked") + theme_classic()+
   theme(legend.position = c(0.83,0.8))
 
-patch <- (p.sum2 | p.mask) / (p.cases | p.iso)
-patch <- patch + plot_annotation(
+patch.tot <- (p.sum2.tot | p.mask.tot) / (p.cases.tot | p.iso.tot)
+patch.tot <- patch.tot + plot_annotation(
   title = 'Impact of varying adherence to CDC guidelines among entire population',
   caption = 'Figures represent office workers only'
 )
-patch
+patch.tot
 
 ggsave(here::here("results","figures","Figure4A.tiff"),
        width = 15, height = 6, units = "in", dpi=300, compression = 'lzw')
 
 # Stacked area plot: Cases vs isolating ----
-d.long <- d.ratio %>%
+d.long <- d.ratio.tot %>%
   select(scenario2,date_variable,med.casenotiso,med.both,med.isonotcase) %>%
   pivot_longer(cols = -c("scenario2","date_variable"), names_to = "cat", values_to = "number") %>%
   mutate(cat = case_when(cat == "med.casenotiso" ~ "Cases not isolating",
@@ -885,14 +879,14 @@ ggsave(here::here("results","figures","Figure3B.tiff"),
 
 # Setup data (RUN THIS FIRST) --------
 
-d.ratio <- readRDS(here::here("results","ratio_df_18000.rds"))
+d.ratio.ow <- readRDS(here::here("results","ratio_df_18000.rds"))
 
-d.ratio <- d.ratio %>%
+d.ratio.ow <- d.ratio.ow %>%
   filter(scenario2 %in% c(0,2,4,5)) %>%
   mutate(scenario2 = factor(scenario2,
-                            levels = c(0,2,4,5),
-                            labels = c("Reference (58%)",
-                                       "Worse adherence (25%)",
+                            levels = c(2,0,4,5),
+                            labels = c("Worse adherence (25%)",
+                                       "Reference (58%)",
                                        "Improved adherence (75%)",
                                        "Perfect adherence (100%)")))
 
@@ -900,20 +894,25 @@ d.ratio <- d.ratio %>%
 start_date <- as.Date("2021-01-01")
 
 # Convert numeric days to date format by adding to start date
-date_variable <- start_date + d.ratio$time - 1
+date_variable <- start_date + d.ratio.ow$time - 1
 
-d.ratio <- cbind(d.ratio, date_variable)
+d.ratio.ow <- cbind(d.ratio.ow, date_variable)
 
 # Rename the new column
-colnames(d.ratio)[ncol(d.ratio)] <- "date_variable"
+colnames(d.ratio.ow)[ncol(d.ratio.ow)] <- "date_variable"
+
+# custom palette
+custom_palette <- gradient_n_pal(viridis::viridis_pal(option = "magma")(100)[0:90])
 
 # Ratio Plot: Cases to Isolated -------------
 
-p.sum2 <- ggplot(d.ratio, aes(x = date_variable, y = med.sum2))+
+p.sum2.ow <- ggplot(d.ratio.ow, aes(x = date_variable, y = med.sum2))+
   geom_line(aes(y = med.sum2, color = scenario2, group = scenario2),
             linewidth = 0.8) +
   geom_ribbon(aes(ymin = p25.sum2, ymax = p75.sum2, group = scenario2,
                   fill = scenario2), alpha = 0.1)+
+  scale_color_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
+  scale_fill_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
   scale_x_date(date_breaks = "3 months")+
   ylim(0,1500)+
   labs(x = "Date",
@@ -922,11 +921,13 @@ p.sum2 <- ggplot(d.ratio, aes(x = date_variable, y = med.sum2))+
   guides(fill = "none", color = "none")+
   ggtitle("Total number of office workers ill or in isolation") + theme_classic()
 
-p.cases <- ggplot(d.ratio, aes(x = date_variable, y = med.case))+
+p.cases.ow <- ggplot(d.ratio.ow, aes(x = date_variable, y = med.case))+
   geom_line(aes(y = med.case, color = scenario2, group = scenario2),
             linewidth = 0.8) +
   geom_ribbon(aes(ymin = p25.case, ymax = p75.case, group = scenario2,
                   fill = scenario2), alpha = 0.1)+
+  scale_color_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
+  scale_fill_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
   scale_x_date(date_breaks = "3 months")+
   ylim(0,1500)+
   labs(x = "Date",
@@ -935,11 +936,13 @@ p.cases <- ggplot(d.ratio, aes(x = date_variable, y = med.case))+
   guides(fill = "none", color = "none")+
   ggtitle("Total number of office workers ill") + theme_classic()
 
-p.iso <- ggplot(d.ratio, aes(x = date_variable, y = med.iso))+
+p.iso.ow <- ggplot(d.ratio.ow, aes(x = date_variable, y = med.iso))+
   geom_line(aes(y = med.iso, color = scenario2, group = scenario2),
             linewidth = 0.8) +
   geom_ribbon(aes(ymin = p25.iso, ymax = p75.iso, group = scenario2,
                   fill = scenario2), alpha = 0.1)+
+  scale_color_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
+  scale_fill_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
   scale_x_date(date_breaks = "3 months")+
   ylim(0,1500)+
   labs(x = "Date",
@@ -948,11 +951,13 @@ p.iso <- ggplot(d.ratio, aes(x = date_variable, y = med.iso))+
   guides(fill = "none", color = "none")+
   ggtitle("Total number of office workers in isolation") + theme_classic()
 
-p.mask <- ggplot(d.ratio, aes(x = date_variable, y = med.mask))+
+p.mask.ow <- ggplot(d.ratio.ow, aes(x = date_variable, y = med.mask))+
   geom_line(aes(y = med.mask, color = scenario2, group = scenario2),
             linewidth = 0.8) +
   geom_ribbon(aes(ymin = p25.mask, ymax = p75.mask, group = scenario2,
                   fill = scenario2), alpha = 0.1)+
+  scale_color_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
+  scale_fill_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
   scale_x_date(date_breaks = "3 months")+
   ylim(0,1500)+
   labs(x = "Date",
@@ -962,18 +967,18 @@ p.mask <- ggplot(d.ratio, aes(x = date_variable, y = med.mask))+
   ggtitle("Total number of office workers masked") + theme_classic()+
   theme(legend.position = c(0.83,0.8))
 
-patch <- (p.sum2 | p.mask) / (p.cases | p.iso)
-patch <- patch + plot_annotation(
+patch.ow <- (p.sum2.ow | p.mask.ow) / (p.cases.ow | p.iso.ow)
+patch.ow <- patch.ow + plot_annotation(
   title = 'Impact of varying adherence to CDC guidelines among office workers',
   caption = 'Adherence among non-office workers is fixed at the reference value (58%) across scenarios'
 )
-patch
+patch.ow
 
 ggsave(here::here("results","figures","Figure4B.tiff"),
        width = 15, height = 6, units = "in", dpi=300, compression = 'lzw')
 
 # Stacked area plot: Cases vs isolating ----
-d.long <- d.ratio %>%
+d.long <- d.ratio.ow %>%
   select(scenario2,date_variable,med.casenotiso,med.both,med.isonotcase) %>%
   pivot_longer(cols = -c("scenario2","date_variable"), names_to = "cat", values_to = "number") %>%
   mutate(cat = case_when(cat == "med.casenotiso" ~ "Cases not isolating",
@@ -1456,3 +1461,97 @@ wrap_elements(combined1) / wrap_elements(combined2) / wrap_elements(combined3)
 
 ggsave(here::here("results","figures","Figure3C_office.tiff"),
        width = 12, height = 12, units = "in", dpi=300, compression = 'lzw')
+
+##################### COMBINING SOME PLOTS ##############
+################################################################################
+# plot for cases/isolation over time -----
+
+# some edits to plots
+p.cases.tot <- ggplot(d.ratio.tot, aes(x = date_variable, y = med.case))+
+  geom_line(aes(y = med.case, color = scenario2, group = scenario2),
+            linewidth = 0.8) +
+  geom_ribbon(aes(ymin = p25.case, ymax = p75.case, group = scenario2,
+                  fill = scenario2), alpha = 0.1)+
+  scale_x_date(date_breaks = "3 months")+
+  scale_color_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
+  scale_fill_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
+  ylim(0,1500)+
+  labs(x = "Date",
+       y = "Office worker cases",
+       color = "Scenario") +
+  guides(fill = "none", color = "none")+
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+p.iso.tot <- ggplot(d.ratio.tot, aes(x = date_variable, y = med.iso))+
+  geom_line(aes(y = med.iso, color = scenario2, group = scenario2),
+            linewidth = 0.8) +
+  geom_ribbon(aes(ymin = p25.iso, ymax = p75.iso, group = scenario2,
+                  fill = scenario2), alpha = 0.1)+
+  scale_x_date(date_breaks = "3 months")+
+  scale_color_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
+  scale_fill_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
+  ylim(0,1500)+
+  labs(x = "Date",
+       y = "Office workers in isolation",
+       color = "Scenario") +
+  guides(fill = "none", color = "none")+
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+p.cases.ow <- ggplot(d.ratio.ow, aes(x = date_variable, y = med.case))+
+  geom_line(aes(y = med.case, color = scenario2, group = scenario2),
+            linewidth = 0.8) +
+  geom_ribbon(aes(ymin = p25.case, ymax = p75.case, group = scenario2,
+                  fill = scenario2), alpha = 0.1)+
+  scale_color_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
+  scale_fill_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
+  scale_x_date(date_breaks = "3 months")+
+  ylim(0,1500)+
+  labs(x = "Date",
+       y = "Office worker cases",
+       color = "Scenario") +
+  guides(fill = "none", color = "none")+
+  theme_classic() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+p.iso.ow <- ggplot(d.ratio.ow, aes(x = date_variable, y = med.iso))+
+  geom_line(aes(y = med.iso, color = scenario2, group = scenario2),
+            linewidth = 0.8) +
+  geom_ribbon(aes(ymin = p25.iso, ymax = p75.iso, group = scenario2,
+                  fill = scenario2), alpha = 0.1)+
+  scale_color_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
+  scale_fill_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
+  scale_x_date(date_breaks = "3 months")+
+  ylim(0,1500)+
+  labs(x = "Date",
+       y = "Office workers in isolation",
+       color = "Scenario") +
+  guides(fill = "none")+
+  theme_classic()+
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+# Extract the legend from one plot (e.g., `p.iso.ow`)
+legend_plot <- get_legend(p.iso.ow)
+
+# Remove the legend from `p.iso.ow`
+p.iso.ow <- p.iso.ow + guides(fill = "none", color = "none")
+
+# combine plots
+patch1 <- (p.iso.tot) / (p.cases.tot ) +
+  plot_annotation(tag_levels = list(c("A1", "A2")), title = "Varying adherence among total population")
+
+patch2 <- (p.iso.ow) / (p.cases.ow ) +
+  plot_annotation(tag_levels = list(c("B1", "B2")), title = "Varying adherence among office workers")
+
+patch <- (wrap_elements(patch1) | wrap_elements(patch2)) /
+  wrap_elements(legend_plot) &
+  theme(legend.position = "bottom")
+
+patch <- ((wrap_elements(patch1) | wrap_elements(patch2)) / wrap_elements(legend_plot)) +
+  plot_layout(heights = c(1, 0.2))  # Adjust legend height proportion as needed
+
+patch
+
+ggsave(here::here("results","figures","Figure_timevar.tiff"),
+       width = 13, height = 9, units = "in", dpi=300, compression = 'lzw')
