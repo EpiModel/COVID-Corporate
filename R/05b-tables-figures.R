@@ -22,7 +22,7 @@ times <- data.frame(DayNum = c(608, 577, 546, 516, 485,
                               "May-21", "Apr-21", "Mar-21", "Feb-21", "Jan-21"))
 times <- times %>% map_df(rev)
 
-colors1 <- c("Result" = "dodgerblue4", "Target (Empirical)" = "deepskyblue")
+colors1 <- c("Result (median)" = "dodgerblue4", "Target (Empirical)" = "black")
 colors <- c("Dose 1: Result" = "dodgerblue4", "Dose 2: Result" = "darkgreen",
             "Dose 3: Result" = "darkred", "Dose 4: Result" = "darkorchid4",
             "Dose 1: Target" = "deepskyblue", "Dose 2: Target" = "chartreuse",
@@ -49,14 +49,19 @@ for (i in 1:num.sim){
 names <- paste0("cases_", 1:num.sim)
 cases_all_runs <- bind_rows(mget(names))
 cases_all_runs <- cases_all_runs %>% group_by(ROW) %>%
-  summarise(Month = min(Month), minResult = min(cases), meanResult = mean(cases), maxResult = max(cases))
+  summarise(Month = min(Month),
+            minResult = quantile(cases, 0.25),
+            meanResult = mean(cases),
+            maxResult = quantile(cases, 0.75))
 
 cases_all_runs$target <- case_targets
 
 f1 <- ggplot(data = cases_all_runs, aes(x = ROW, y = minResult)) +
-  geom_ribbon(data = cases_all_runs, aes(ymin = minResult, ymax = maxResult), fill="dodgerblue4", alpha=0.5) +
-  geom_line(aes(y = meanResult, color = "Result")) +
-  geom_line(aes(y = target, color = "Target (Empirical)")) +
+  geom_ribbon(data = cases_all_runs, aes(ymin = minResult, ymax = maxResult,
+                                         fill = "50% Simulation Interval"),
+              alpha=0.5) +
+  geom_line(aes(y = meanResult, color = "Result (median)")) +
+  geom_point(aes(y = target, color = "Target (Empirical)"), size = 1) +
   scale_x_continuous(expand = c(0,0),
                      limits = c(1, 20),
                      breaks = seq(1,19,2),
@@ -68,7 +73,9 @@ f1 <- ggplot(data = cases_all_runs, aes(x = ROW, y = minResult)) +
   xlab("Month") +
   ylab("Incident Infections") +
   scale_color_manual(values = colors1, name = "") +
+  scale_fill_manual(values=c("50% Simulation Interval" = "dodgerblue4"), name = "")+
   ggtitle("Infections") + theme_classic()
+f1
 
 # Hospitalizations --------------------------------------------------------
 
@@ -90,14 +97,18 @@ for (i in 1:num.sim){
 names <- paste0("hosp_", 1:num.sim)
 hosp_all_runs <- bind_rows(mget(names))
 hosp_all_runs <- hosp_all_runs %>% group_by(ROW) %>%
-  summarise(Month = min(Month), minResult = min(hosp), meanResult = mean(hosp), maxResult = max(hosp))
+  summarise(Month = min(Month), minResult = quantile(hosp, 0.25),
+            meanResult = mean(hosp),
+            maxResult = quantile(hosp, 0.75))
 
 hosp_all_runs$target <- hosp_targets
 
 f2 <- ggplot(data = hosp_all_runs, aes(x = ROW, y = minResult)) +
-  geom_ribbon(data = hosp_all_runs, aes(ymin = minResult, ymax = maxResult), fill="dodgerblue4", alpha=0.5) +
-  geom_line(aes(y = meanResult, color = "Result")) +
-  geom_line(aes(y = target, color = "Target (Empirical)")) +
+  geom_ribbon(data = hosp_all_runs, aes(ymin = minResult, ymax = maxResult,
+                                        fill = "50% Simulation Interval"),
+              alpha=0.5) +
+  geom_line(aes(y = meanResult, color = "Result (median)")) +
+  geom_point(aes(y = target, color = "Target (Empirical)"), size = 1) +
   scale_x_continuous(expand = c(0,0),
                      limits = c(1, 20),
                      breaks = seq(1,19,2),
@@ -109,7 +120,9 @@ f2 <- ggplot(data = hosp_all_runs, aes(x = ROW, y = minResult)) +
   xlab("Month") +
   ylab("Incident Hospitalizations") +
   scale_color_manual(values = colors1, name = "") +
+  scale_fill_manual(values=c("50% Simulation Interval" = "dodgerblue4"), name = "")+
   ggtitle("Hospitalizations") + theme_classic()
+f2
 
 # Deaths ------------------------------------------------------------------
 
@@ -131,14 +144,18 @@ for (i in 1:num.sim){
 names <- paste0("death_", 1:num.sim)
 death_all_runs <- bind_rows(mget(names))
 death_all_runs <- death_all_runs %>% group_by(ROW) %>%
-  summarise(Month = min(Month), minResult = min(death), meanResult = mean(death), maxResult = max(death))
+  summarise(Month = min(Month), minResult = quantile(death, 0.25),
+            meanResult = mean(death),
+            maxResult = quantile(death, 0.75))
 
 death_all_runs$target <- death_targets
 
 f3 <- ggplot(data = death_all_runs, aes(x = ROW, y = minResult)) +
-  geom_ribbon(data = death_all_runs, aes(ymin = minResult, ymax = maxResult), fill="dodgerblue4", alpha=0.5) +
-  geom_line(aes(y = meanResult, color = "Result")) +
-  geom_line(aes(y = target, color = "Target (Empirical)")) +
+  geom_ribbon(data = death_all_runs, aes(ymin = minResult, ymax = maxResult,
+                                         fill = "50% Simulation Interval"),
+              alpha=0.5) +
+  geom_line(aes(y = meanResult, color = "Result (median)")) +
+  geom_point(aes(y = target, color = "Target (Empirical)"), size = 1) +
   scale_x_continuous(expand = c(0,0),
                      limits = c(1, 20),
                      breaks = seq(1,19,2),
@@ -150,7 +167,9 @@ f3 <- ggplot(data = death_all_runs, aes(x = ROW, y = minResult)) +
   xlab("Month") +
   ylab("Incident Deaths") +
   scale_color_manual(values = colors1, name = "") +
+  scale_fill_manual(values=c("50% Simulation Interval" = "dodgerblue4"), name = "")+
   ggtitle("Deaths") + theme_classic()
+f3
 
 combined <- f1 + f2 + f3 & theme(legend.position = "bottom")
 combined + plot_layout(ncol = 1, guides = "collect")
