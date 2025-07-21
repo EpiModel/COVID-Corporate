@@ -1464,64 +1464,118 @@ ggsave(here::here("results","figures","Figure3C_office.tiff"),
 
 ##################### COMBINING SOME PLOTS ##############
 ################################################################################
+# setup ----
+my.colors <- c("#641A80", "#DD4969", "#FECD90")
+
+d.ratio.tot.ref <- d.ratio.tot %>%
+  filter(scenario2 == "Reference (58%)") %>%
+  mutate(scenario2 = as.character(scenario2)) %>%
+  distinct()
+
+d.ratio.ow.ref <- d.ratio.ow %>%
+  filter(scenario2 == "Reference (58%)") %>%
+  mutate(scenario2 = as.character(scenario2)) %>%
+  distinct()
+
 # plot for cases/isolation over time -----
 
 # some edits to plots
-p.cases.tot <- ggplot(d.ratio.tot, aes(x = date_variable, y = med.case))+
+p.cases.tot <- ggplot(d.ratio.tot %>%
+                        filter(scenario2 != "Reference (58%)"),
+                      aes(x = date_variable, y = med.case))+
   geom_line(aes(y = med.case, color = scenario2, group = scenario2),
             linewidth = 0.8) +
   geom_ribbon(aes(ymin = p25.case, ymax = p75.case, group = scenario2,
                   fill = scenario2), alpha = 0.1)+
+  geom_line(data = d.ratio.tot.ref,
+            aes(x = date_variable,y = med.case,linetype = "Reference (58%)"),
+            color = "black",linewidth = 0.8)+
+  geom_ribbon(data = d.ratio.tot.ref,
+              aes(x = date_variable,
+                  ymin = p25.case, ymax = p75.case),
+              alpha = 0.1, fill = "black")+
   scale_x_date(date_breaks = "3 months")+
-  scale_color_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
-  scale_fill_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
+  scale_color_manual(values = my.colors)+
+  scale_fill_manual(values = my.colors)+
+  scale_linetype_manual(name = "", values = c("Reference (58%)" = "dashed"))+
   ylim(0,1500)+
   labs(x = "Date",
        y = "Office worker cases",
        color = "Scenario") +
-  guides(fill = "none", color = "none")+
+  guides(fill = "none", color = "none", linetype = "none")+
   theme_classic() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
+p.cases.tot
 
-p.iso.tot <- ggplot(d.ratio.tot, aes(x = date_variable, y = med.iso))+
+p.iso.tot <- ggplot(d.ratio.tot %>%
+                      filter(scenario2 != "Reference (58%)"),
+                    aes(x = date_variable, y = med.iso))+
   geom_line(aes(y = med.iso, color = scenario2, group = scenario2),
             linewidth = 0.8) +
   geom_ribbon(aes(ymin = p25.iso, ymax = p75.iso, group = scenario2,
                   fill = scenario2), alpha = 0.1)+
+  geom_line(data = d.ratio.tot.ref,
+            aes(x = date_variable,y = med.iso,linetype = "Reference (58%)"),
+            color = "black",linewidth = 0.8)+
+  geom_ribbon(data = d.ratio.tot.ref,
+              aes(x = date_variable,
+                  ymin = p25.iso, ymax = p75.iso),
+              alpha = 0.1, fill = "black")+
   scale_x_date(date_breaks = "3 months")+
-  scale_color_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
-  scale_fill_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
+  scale_color_manual(values = my.colors)+
+  scale_fill_manual(values = my.colors)+
+  scale_linetype_manual(name = "", values = c("Reference (58%)" = "dashed"))+
   ylim(0,1500)+
   labs(x = "Date",
        y = "Office workers in isolation",
        color = "Scenario") +
-  guides(fill = "none", color = "none")+
+  guides(fill = "none", color = "none", linetype = "none")+
   theme_classic() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-p.cases.ow <- ggplot(d.ratio.ow, aes(x = date_variable, y = med.case))+
+p.cases.ow <- ggplot(d.ratio.ow %>%
+                       filter(scenario2 != "Reference (58%)"),
+                     aes(x = date_variable, y = med.case))+
   geom_line(aes(y = med.case, color = scenario2, group = scenario2),
             linewidth = 0.8) +
   geom_ribbon(aes(ymin = p25.case, ymax = p75.case, group = scenario2,
                   fill = scenario2), alpha = 0.1)+
-  scale_color_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
-  scale_fill_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
+  geom_line(data = d.ratio.ow.ref,
+            aes(x = date_variable,y = med.case,linetype = "Reference (58%)"),
+            color = "black",linewidth = 0.8)+
+  geom_ribbon(data = d.ratio.ow.ref,
+              aes(x = date_variable,
+                  ymin = p25.case, ymax = p75.case),
+              alpha = 0.1, fill = "black")+
+  scale_color_manual(values = my.colors)+
+  scale_fill_manual(values = my.colors)+
+  scale_linetype_manual(name = "", values = c("Reference (58%)" = "dashed"))+
   scale_x_date(date_breaks = "3 months")+
   ylim(0,1500)+
   labs(x = "Date",
        y = "Office worker cases",
        color = "Scenario") +
-  guides(fill = "none", color = "none")+
+  guides(fill = "none", color = "none", linetype = "none")+
   theme_classic() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
-p.iso.ow <- ggplot(d.ratio.ow, aes(x = date_variable, y = med.iso))+
+p.iso.ow <- ggplot(d.ratio.ow %>%
+                     filter(scenario2 != "Reference (58%)"),
+                   aes(x = date_variable, y = med.iso))+
   geom_line(aes(y = med.iso, color = scenario2, group = scenario2),
             linewidth = 0.8) +
   geom_ribbon(aes(ymin = p25.iso, ymax = p75.iso, group = scenario2,
                   fill = scenario2), alpha = 0.1)+
-  scale_color_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
-  scale_fill_manual(values = custom_palette(seq(0, 1, length.out = n_distinct(d.ratio.tot$scenario2))))+
+  geom_line(data = d.ratio.ow.ref,
+            aes(x = date_variable,y = med.iso,linetype = "Reference (58%)"),
+            color = "black",linewidth = 0.8)+
+  geom_ribbon(data = d.ratio.ow.ref,
+              aes(x = date_variable,
+                  ymin = p25.iso, ymax = p75.iso),
+              alpha = 0.1, fill = "black")+
+  scale_color_manual(values = my.colors)+
+  scale_fill_manual(values = my.colors)+
+  scale_linetype_manual(name = "", values = c("Reference (58%)" = "dashed"))+
   scale_x_date(date_breaks = "3 months")+
   ylim(0,1500)+
   labs(x = "Date",
@@ -1529,13 +1583,15 @@ p.iso.ow <- ggplot(d.ratio.ow, aes(x = date_variable, y = med.iso))+
        color = "Scenario") +
   guides(fill = "none")+
   theme_classic()+
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        legend.box = "horizontal")
+p.iso.ow
 
 # Extract the legend from one plot (e.g., `p.iso.ow`)
 legend_plot <- get_legend(p.iso.ow)
 
 # Remove the legend from `p.iso.ow`
-p.iso.ow <- p.iso.ow + guides(fill = "none", color = "none")
+p.iso.ow <- p.iso.ow + guides(fill = "none", color = "none", linetype = "none")
 
 # combine plots
 patch1 <- (p.iso.tot) / (p.cases.tot ) +
