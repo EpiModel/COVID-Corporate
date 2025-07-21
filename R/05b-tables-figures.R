@@ -266,20 +266,20 @@ v1 <- ggplot(data = vax_all_runs_1, aes(x = ROW, y = mean.vax1.0to4)) +
   geom_ribbon(data=vax_all_runs_1, aes(ymin = min.vax2.0to4, ymax = max.vax2.0to4), fill="darkgreen", alpha=0.5) +
   geom_line(aes(y = mean.vax1.0to4, color = "Dose 1: Result")) +
   geom_line(aes(y = mean.vax2.0to4, color = "Dose 2: Result")) +
-  geom_line(aes(y = target.vax1.0to4, color = "Dose 1: Target")) +
-  geom_line(aes(y = target.vax2.0to4, color = "Dose 2: Target")) +
+  geom_point(aes(y = target.vax1.0to4, color = "Dose 1: Target"),size = 1) +
+  geom_point(aes(y = target.vax2.0to4, color = "Dose 2: Target"),size = 1) +
   scale_x_continuous(expand = c(0,0),
                      limits = c(1, 20),
                      breaks = c(1, 7, 13, 19),
                      labels = c("1" = "Jan 21", "7" = "Jul 21",
                                 "13" = "Jan 22", "19" = "Jul 22")) +
-  scale_y_continuous(expand = c(0, 0)) +
+  scale_y_continuous(expand = c(0, 0.05)) +
   xlab("Month") +
   ylab("Vaccine Coverage (%)") +
   ggtitle("Ages 0 to 4") +
   scale_color_manual(values = colors, guide = "none") +
   theme_classic()
-
+v1
 
 # Age Group 2 -------------------------------------------------------------
 
@@ -296,9 +296,9 @@ v2 <- ggplot(data = vax_all_runs_2, aes(x = ROW, y = mean.vax1.5to17)) +
   geom_line(aes(y = mean.vax1.5to17, color = "Dose 1: Result")) +
   geom_line(aes(y = mean.vax2.5to17, color = "Dose 2: Result")) +
   geom_line(aes(y = mean.vax3.5to17, color = "Dose 3: Result")) +
-  geom_line(aes(y = target.vax1.5to17, color = "Dose 1: Target")) +
-  geom_line(aes(y = target.vax2.5to17, color = "Dose 2: Target")) +
-  geom_line(aes(y = target.vax3.5to17, color = "Dose 3: Target")) +
+  geom_point(aes(y = target.vax1.5to17, color = "Dose 1: Target"),size = 1) +
+  geom_point(aes(y = target.vax2.5to17, color = "Dose 2: Target"),size = 1) +
+  geom_point(aes(y = target.vax3.5to17, color = "Dose 3: Target"),size = 1) +
   scale_x_continuous(expand = c(0,0),
                      limits = c(1, 20),
                      breaks = c(1, 7, 13, 19),
@@ -329,9 +329,9 @@ v3 <- ggplot(data = vax_all_runs_3, aes(x = ROW, y = mean.vax1.18to64)) +
   geom_line(aes(y = mean.vax1.18to64, color = "Dose 1: Result")) +
   geom_line(aes(y = mean.vax2.18to64, color = "Dose 2: Result")) +
   geom_line(aes(y = mean.vax3.18to49, color = "Dose 3: Result")) +
-  geom_line(aes(y = target.vax1.18to64, color = "Dose 1: Target")) +
-  geom_line(aes(y = target.vax2.18to64, color = "Dose 2: Target")) +
-  geom_line(aes(y = target.vax3.18to49, color = "Dose 3: Target")) +
+  geom_point(aes(y = target.vax1.18to64, color = "Dose 1: Target"),size = 1) +
+  geom_point(aes(y = target.vax2.18to64, color = "Dose 2: Target"),size = 1) +
+  geom_point(aes(y = target.vax3.18to49, color = "Dose 3: Target"),size = 1) +
   scale_x_continuous(expand = c(0,0),
                      limits = c(1, 20),
                      breaks = c(1, 7, 13, 19),
@@ -365,10 +365,10 @@ v4 <- ggplot(data = vax_all_runs_4, aes(x = ROW, y = mean.vax1.18to64)) +
   geom_line(aes(y = mean.vax2.18to64, color = "Dose 2: Result")) +
   geom_line(aes(y = mean.vax3.50to64, color = "Dose 3: Result")) +
   geom_line(aes(y = mean.vax4.50to64, color = "Dose 4: Result")) +
-  geom_line(aes(y = target.vax1.18to64, color = "Dose 1: Target")) +
-  geom_line(aes(y = target.vax2.18to64, color = "Dose 2: Target")) +
-  geom_line(aes(y = target.vax3.50to64, color = "Dose 3: Target")) +
-  geom_line(aes(y = target.vax4.50to64, color = "Dose 4: Target")) +
+  geom_point(aes(y = target.vax1.18to64, color = "Dose 1: Target"),size = 1) +
+  geom_point(aes(y = target.vax2.18to64, color = "Dose 2: Target"),size = 1) +
+  geom_point(aes(y = target.vax3.50to64, color = "Dose 3: Target"),size = 1) +
+  geom_point(aes(y = target.vax4.50to64, color = "Dose 4: Target"),size = 1) +
   scale_x_continuous(expand = c(0,0),
                      limits = c(1, 20),
                      breaks = c(1, 7, 13, 19),
@@ -400,10 +400,10 @@ v5 <- ggplot(data = vax_all_runs_5, aes(x = ROW, y = mean.vax1.65p)) +
   geom_line(aes(y = mean.vax2.65p, color = "Dose 2: Result")) +
   geom_line(aes(y = mean.vax3.65p, color = "Dose 3: Result")) +
   geom_line(aes(y = mean.vax4.65p, color = "Dose 4: Result")) +
-  geom_line(aes(y = target.vax1.65p, color = "Dose 1: Target")) +
-  geom_line(aes(y = target.vax2.65p, color = "Dose 2: Target")) +
-  geom_line(aes(y = target.vax3.65p, color = "Dose 3: Target")) +
-  geom_line(aes(y = target.vax4.65p, color = "Dose 4: Target")) +
+  geom_point(aes(y = target.vax1.65p, color = "Dose 1: Target"),size = 1) +
+  geom_point(aes(y = target.vax2.65p, color = "Dose 2: Target"),size = 1) +
+  geom_point(aes(y = target.vax3.65p, color = "Dose 3: Target"),size = 1) +
+  geom_point(aes(y = target.vax4.65p, color = "Dose 4: Target"),size = 1) +
   scale_x_continuous(expand = c(0,0),
                      limits = c(1, 20),
                      breaks = c(1, 7, 13, 19),
