@@ -116,8 +116,8 @@ param <- param.net(inf.prob = c(0.38,0.38,0.38),
 init <- init.net(e.num = 1600)
 
 # Control settings
-# pkgload::load_all("~/git/EpiModelCOVID")
-pkgload::load_all("C:/Users/mgarc48/git/EpiModelCOVID")
+pkgload::load_all("~/git/EpiModelCOVID")
+# pkgload::load_all("C:/Users/mgarc48/git/EpiModelCOVID")
 control <- control.net(nsteps = 50,
                        #steps = 180 + 608,
                        nsims = 1,

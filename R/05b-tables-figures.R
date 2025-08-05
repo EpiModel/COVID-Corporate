@@ -538,16 +538,16 @@ d.long <- d.ratio.tot %>%
 
 ggplot(d.long, aes(x = date_variable, y = number, fill = cat)) +
   geom_area(position = "stack")+
-  facet_wrap(vars(scenario2),nrow = 2)+
+  facet_wrap(vars(scenario2),nrow = 1)+
   theme_bw()+
   scale_fill_viridis(discrete = TRUE)+
   labs(x = "Date",
        y = "Number of office workers ill and/or isolating",
-       fill = "Category",
-       title = "Impact of varying adherence among entire population")
+       fill = "Category")+
+  theme(legend.position = "bottom")
 
-ggsave(here::here("results","figures","Figure5A.tiff"),
-       width = 8, height = 4, units = "in", dpi=300, compression = 'lzw')
+ggsave(here::here("results","figures","FigureS5.tiff"),
+       width = 10, height = 4, units = "in", dpi=300, compression = 'lzw')
 
 # ggplot(d.long, aes(x = date_variable, y = number, fill = cat)) +
 #   geom_area(position = "fill")+
@@ -990,16 +990,16 @@ d.long <- d.ratio.ow %>%
 
 ggplot(d.long, aes(x = date_variable, y = number, fill = cat)) +
   geom_area(position = "stack")+
-  facet_wrap(vars(scenario2),nrow = 2)+
+  facet_wrap(vars(scenario2),nrow = 1)+
   theme_bw()+
   scale_fill_viridis(discrete = TRUE)+
   labs(x = "Date",
        y = "Number of office workers ill and/or isolating",
-       fill = "Category",
-       title = "Impact of varying adherence among office workers")
+       fill = "Category")+
+  theme(legend.position = "bottom")
 
-ggsave(here::here("results","figures","Figure5B.tiff"),
-       width = 8, height = 4, units = "in", dpi=300, compression = 'lzw')
+ggsave(here::here("results","figures","Figure6.tiff"),
+       width = 10, height = 4, units = "in", dpi=300, compression = 'lzw')
 
 # ggplot(d.long, aes(x = date_variable, y = number, fill = cat)) +
 #   geom_area(position = "fill")+
