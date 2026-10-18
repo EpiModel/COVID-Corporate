@@ -40,3 +40,9 @@ vignettes/*.pdf
 .DS_Store
 renv/
 data/input/est.*
+
+# Corporate Mix participant and contact files (kept out of the repository)
+data/input/df_participant_clean_*
+data/input/df_contact_clean_*
+data/input/df_merged_*
+data/input/df_day_clean_*
